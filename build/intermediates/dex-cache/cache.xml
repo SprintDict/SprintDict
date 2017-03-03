@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="false"
+        jar="/home/val/git/SprintDict/app/build/intermediates/incremental-classes/debug/instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="b1a2afccf8538b5d5f209a727e61c12282fd98eb">
+        <dex dex="/home/val/git/SprintDict/app/build/intermediates/pre-dexed/debug/instant-run-bootstrap_b0a8ff8dcebcac77e911bc81c587d1aa1992dcb4.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="/home/val/Android/Sdk/extras/android/m2repository/com/android/support/support-v4/18.0.0/support-v4-18.0.0.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="44ec51e9d395a47aab135e5e1b556c0007442156">
+        <dex dex="/home/val/git/SprintDict/app/build/intermediates/pre-dexed/debug/support-v4-18.0.0_b70bb1ccef2add4493e2aa37a312f8e7a3d2821c.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="/home/val/git/SprintDict/app/libs/commons-compress-1.5.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="25.0.2"
+        sha1="d2bd2c0bd328f1dabdf33e10b6d223ebcbe93343">
+        <dex dex="/home/val/git/SprintDict/app/build/intermediates/pre-dexed/debug/commons-compress-1.5_f603b94c3cd0654ca6a713dc02375d724d96b983.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="/home/val/git/SprintDict/app/build/intermediates/incremental-runtime-classes/debug/instant-run.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="5049b30419843735cdca74d76715399fb00fd440">
+        <dex dex="/home/val/git/SprintDict/app/build/intermediates/pre-dexed/debug/instant-run_9259e621067e2be735f98f2c438e50f944c95a5b.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="/home/val/Android/Sdk/extras/android/m2repository/com/android/support/support-v4/18.0.0/support-v4-18.0.0.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="25.0.2"
+        sha1="44ec51e9d395a47aab135e5e1b556c0007442156">
+        <dex dex="/home/val/git/SprintDict/app/build/intermediates/pre-dexed/debug/support-v4-18.0.0_b70bb1ccef2add4493e2aa37a312f8e7a3d2821c.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="/home/val/git/SprintDict/app/libs/commons-compress-1.5.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="d2bd2c0bd328f1dabdf33e10b6d223ebcbe93343">
+        <dex dex="/home/val/git/SprintDict/app/build/intermediates/pre-dexed/debug/commons-compress-1.5_f603b94c3cd0654ca6a713dc02375d724d96b983.jar" />
+    </item>
+
+</items>

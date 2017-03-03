@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/xml/settings.xml",
+        "source": "/home/val/git/SprintDict/app/src/main/res/xml/settings.xml"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/xml/searchable.xml",
+        "source": "/home/val/git/SprintDict/app/src/main/res/xml/searchable.xml"
+    }
+]

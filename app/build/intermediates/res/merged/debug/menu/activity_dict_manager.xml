@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+	<item
+	    android:id="@+id/menu_set_dict_path"
+	    android:icon="@drawable/ic_menu_archive"
+	    android:title="@string/menu_dict_path" />
+	<item
+	    android:id="@+id/menu_rebuild_index"
+	    android:icon="@drawable/ic_menu_refresh"
+	    android:title="@string/menu_rebuild_index" />
+</menu>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal"
+    android:descendantFocusability="blocksDescendants" >
+
+    <CheckBox
+        android:id="@+id/dict_manager_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
+    
+    <ImageView
+        android:id="@+id/dict_manager_move_up"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:clickable="true"
+        android:contentDescription="@string/move_up"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:onClick="onMoveUp"
+        android:src="@drawable/ic_menu_move_up" />
+
+</RelativeLayout>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        android:key="@string/pref_dict_path"
+        android:title="@string/pref_dict_path"
+        android:selectable="false"
+        android:persistent="true"/>
+    <EditTextPreference
+        android:key="@string/pref_dict_title_font_size"
+        android:title="@string/pref_dict_title_font_size"
+        android:persistent="true"/>
+    <EditTextPreference
+        android:key="@string/pref_article_title_font_size"
+        android:title="@string/pref_article_title_font_size"
+        android:persistent="true"/>
+    <EditTextPreference
+        android:key="@string/pref_definitions_font_size"
+        android:title="@string/pref_definitions_font_size"
+        android:persistent="true"/>
+</PreferenceScreen>

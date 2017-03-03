@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lexical_entry_top_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    
+    <ImageView
+        android:id="@+id/expander_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp"
+        android:paddingRight="5dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="5dp"
+        android:clickable="true"
+        android:background="@color/black"
+        android:src="@drawable/expander_ic_minimized"
+        android:contentDescription="Definitions expander icon." />
+    
+    <TextView
+        android:id="@+id/dict_title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/dictionary_title"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:textColor="@color/white"
+        android:background="@color/black"
+        android:clickable="true"
+        android:layout_toRightOf="@id/expander_icon" />
+    
+    <TextView
+        android:id="@+id/article_title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/article_title"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:background="@color/black"
+        android:textColor="@color/white"
+        android:clickable="true"
+        android:layout_below="@id/expander_icon"
+        android:visibility="gone" />
+    
+    <net.bancer.sparkdict.views.DefinitionsView
+        android:id="@+id/definitions_body"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:text="@string/definitions_body"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:inputType="textMultiLine|textPhonetic"
+        android:background="@color/black"
+        android:editable="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:cursorVisible="false"
+        style="?android:attr/textViewStyle"
+        android:textColor="@color/white"
+        android:linksClickable="true"
+        android:layout_below="@id/article_title"
+        android:visibility="gone" />
+    
+    <View
+        android:id="@+id/horizontal_line"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="@color/white"
+        android:layout_alignParentBottom="true" />
+    
+</RelativeLayout>

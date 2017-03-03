@@ -1,0 +1,27 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 13
+    buildToolsVersion "25.0.2"
+
+    defaultConfig {
+        applicationId "net.bancer.sparkdict"
+        minSdkVersion 4
+        targetSdkVersion 10
+
+        testApplicationId "net.bancer.sparkdict.test"
+        testInstrumentationRunner "android.test.InstrumentationTestRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+dependencies {
+    compile 'com.android.support:support-v4:18.0.0'
+    compile files('libs/commons-compress-1.5.jar')
+}

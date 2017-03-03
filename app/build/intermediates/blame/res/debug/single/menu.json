@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/menu/activity_recent_history.xml",
+        "source": "/home/val/git/SprintDict/app/src/main/res/menu/activity_recent_history.xml"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/menu/activity_dict_manager.xml",
+        "source": "/home/val/git/SprintDict/app/src/main/res/menu/activity_dict_manager.xml"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/menu/activity_spark_dict.xml",
+        "source": "/home/val/git/SprintDict/app/src/main/res/menu/activity_spark_dict.xml"
+    }
+]

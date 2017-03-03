@@ -1,0 +1,313 @@
+ECLIPSE ANDROID PROJECT IMPORT SUMMARY
+======================================
+
+Ignored Files:
+--------------
+The following files were *not* copied into the new Gradle project; you
+should evaluate whether these are still needed in your project and if
+so manually move them:
+
+* .project~
+* build.xml.bak
+* build.xml.bak2
+* build_docs.xml
+* docs/
+* docs/allclasses-frame.html
+* docs/allclasses-noframe.html
+* docs/constant-values.html
+* docs/deprecated-list.html
+* docs/help-doc.html
+* docs/index-all.html
+* docs/index.html
+* docs/net/
+* docs/net/bancer/
+* docs/net/bancer/sparkdict/
+* docs/net/bancer/sparkdict/BaseActivity.dot
+* docs/net/bancer/sparkdict/BaseActivity.html
+* docs/net/bancer/sparkdict/BaseActivity.map
+* docs/net/bancer/sparkdict/BaseActivity.png
+* docs/net/bancer/sparkdict/BuildConfig.dot
+* docs/net/bancer/sparkdict/BuildConfig.html
+* docs/net/bancer/sparkdict/BuildConfig.map
+* docs/net/bancer/sparkdict/BuildConfig.png
+* docs/net/bancer/sparkdict/DictManagerActivity.IndexBuilder.dot
+* docs/net/bancer/sparkdict/DictManagerActivity.IndexBuilder.html
+* docs/net/bancer/sparkdict/DictManagerActivity.IndexBuilder.map
+* docs/net/bancer/sparkdict/DictManagerActivity.IndexBuilder.png
+* docs/net/bancer/sparkdict/DictManagerActivity.dot
+* docs/net/bancer/sparkdict/DictManagerActivity.html
+* docs/net/bancer/sparkdict/DictManagerActivity.map
+* docs/net/bancer/sparkdict/DictManagerActivity.png
+* docs/net/bancer/sparkdict/DictPreferencesActivity.dot
+* docs/net/bancer/sparkdict/DictPreferencesActivity.html
+* docs/net/bancer/sparkdict/DictPreferencesActivity.map
+* docs/net/bancer/sparkdict/DictPreferencesActivity.png
+* docs/net/bancer/sparkdict/DirectoryPickerActivity.dot
+* docs/net/bancer/sparkdict/DirectoryPickerActivity.html
+* docs/net/bancer/sparkdict/DirectoryPickerActivity.map
+* docs/net/bancer/sparkdict/DirectoryPickerActivity.png
+* docs/net/bancer/sparkdict/R.attr.dot
+* docs/net/bancer/sparkdict/R.attr.html
+* docs/net/bancer/sparkdict/R.attr.map
+* docs/net/bancer/sparkdict/R.attr.png
+* docs/net/bancer/sparkdict/R.color.dot
+* docs/net/bancer/sparkdict/R.color.html
+* docs/net/bancer/sparkdict/R.color.map
+* docs/net/bancer/sparkdict/R.color.png
+* docs/net/bancer/sparkdict/R.dot
+* docs/net/bancer/sparkdict/R.drawable.dot
+* docs/net/bancer/sparkdict/R.drawable.html
+* docs/net/bancer/sparkdict/R.drawable.map
+* docs/net/bancer/sparkdict/R.drawable.png
+* docs/net/bancer/sparkdict/R.html
+* docs/net/bancer/sparkdict/R.id.dot
+* docs/net/bancer/sparkdict/R.id.html
+* docs/net/bancer/sparkdict/R.id.map
+* docs/net/bancer/sparkdict/R.id.png
+* docs/net/bancer/sparkdict/R.layout.dot
+* docs/net/bancer/sparkdict/R.layout.html
+* docs/net/bancer/sparkdict/R.layout.map
+* docs/net/bancer/sparkdict/R.layout.png
+* docs/net/bancer/sparkdict/R.map
+* docs/net/bancer/sparkdict/R.menu.dot
+* docs/net/bancer/sparkdict/R.menu.html
+* docs/net/bancer/sparkdict/R.menu.map
+* docs/net/bancer/sparkdict/R.menu.png
+* docs/net/bancer/sparkdict/R.png
+* docs/net/bancer/sparkdict/R.string.dot
+* docs/net/bancer/sparkdict/R.string.html
+* docs/net/bancer/sparkdict/R.string.map
+* docs/net/bancer/sparkdict/R.string.png
+* docs/net/bancer/sparkdict/R.xml.dot
+* docs/net/bancer/sparkdict/R.xml.html
+* docs/net/bancer/sparkdict/R.xml.map
+* docs/net/bancer/sparkdict/R.xml.png
+* docs/net/bancer/sparkdict/RecentHistoryActivity.dot
+* docs/net/bancer/sparkdict/RecentHistoryActivity.html
+* docs/net/bancer/sparkdict/RecentHistoryActivity.map
+* docs/net/bancer/sparkdict/RecentHistoryActivity.png
+* docs/net/bancer/sparkdict/SparkDictActivity.SearchWorker.dot
+* docs/net/bancer/sparkdict/SparkDictActivity.SearchWorker.html
+* docs/net/bancer/sparkdict/SparkDictActivity.SearchWorker.map
+* docs/net/bancer/sparkdict/SparkDictActivity.SearchWorker.png
+* docs/net/bancer/sparkdict/SparkDictActivity.dot
+* docs/net/bancer/sparkdict/SparkDictActivity.html
+* docs/net/bancer/sparkdict/SparkDictActivity.map
+* docs/net/bancer/sparkdict/SparkDictActivity.png
+* docs/net/bancer/sparkdict/adapters/
+* docs/net/bancer/sparkdict/adapters/DictManagerItemsAdapter.dot
+* docs/net/bancer/sparkdict/adapters/DictManagerItemsAdapter.html
+* docs/net/bancer/sparkdict/adapters/DictManagerItemsAdapter.map
+* docs/net/bancer/sparkdict/adapters/DictManagerItemsAdapter.png
+* docs/net/bancer/sparkdict/adapters/IndexEntriesAdapter.IndexEntriesFilter.dot
+* docs/net/bancer/sparkdict/adapters/IndexEntriesAdapter.IndexEntriesFilter.html
+* docs/net/bancer/sparkdict/adapters/IndexEntriesAdapter.IndexEntriesFilter.map
+* docs/net/bancer/sparkdict/adapters/IndexEntriesAdapter.IndexEntriesFilter.png
+* docs/net/bancer/sparkdict/adapters/IndexEntriesAdapter.IndexEntriesRetriever.dot
+* docs/net/bancer/sparkdict/adapters/IndexEntriesAdapter.IndexEntriesRetriever.html
+* docs/net/bancer/sparkdict/adapters/IndexEntriesAdapter.IndexEntriesRetriever.map
+* docs/net/bancer/sparkdict/adapters/IndexEntriesAdapter.IndexEntriesRetriever.png
+* docs/net/bancer/sparkdict/adapters/IndexEntriesAdapter.dot
+* docs/net/bancer/sparkdict/adapters/IndexEntriesAdapter.html
+* docs/net/bancer/sparkdict/adapters/IndexEntriesAdapter.map
+* docs/net/bancer/sparkdict/adapters/IndexEntriesAdapter.png
+* docs/net/bancer/sparkdict/adapters/net.bancer.sparkdict.adapters.dot
+* docs/net/bancer/sparkdict/adapters/net.bancer.sparkdict.adapters.map
+* docs/net/bancer/sparkdict/adapters/net.bancer.sparkdict.adapters.png
+* docs/net/bancer/sparkdict/adapters/package-frame.html
+* docs/net/bancer/sparkdict/adapters/package-summary.html
+* docs/net/bancer/sparkdict/adapters/package-tree.html
+* docs/net/bancer/sparkdict/domain/
+* docs/net/bancer/sparkdict/domain/core/
+* docs/net/bancer/sparkdict/domain/core/Book.dot
+* docs/net/bancer/sparkdict/domain/core/Book.html
+* docs/net/bancer/sparkdict/domain/core/Book.map
+* docs/net/bancer/sparkdict/domain/core/Book.png
+* docs/net/bancer/sparkdict/domain/core/BookInfo.dot
+* docs/net/bancer/sparkdict/domain/core/BookInfo.html
+* docs/net/bancer/sparkdict/domain/core/BookInfo.map
+* docs/net/bancer/sparkdict/domain/core/BookInfo.png
+* docs/net/bancer/sparkdict/domain/core/Chunk.dot
+* docs/net/bancer/sparkdict/domain/core/Chunk.html
+* docs/net/bancer/sparkdict/domain/core/Chunk.map
+* docs/net/bancer/sparkdict/domain/core/Chunk.png
+* docs/net/bancer/sparkdict/domain/core/DictZipFile.dot
+* docs/net/bancer/sparkdict/domain/core/DictZipFile.html
+* docs/net/bancer/sparkdict/domain/core/DictZipFile.map
+* docs/net/bancer/sparkdict/domain/core/DictZipFile.png
+* docs/net/bancer/sparkdict/domain/core/ExactMatchSearchResult.dot
+* docs/net/bancer/sparkdict/domain/core/ExactMatchSearchResult.html
+* docs/net/bancer/sparkdict/domain/core/ExactMatchSearchResult.map
+* docs/net/bancer/sparkdict/domain/core/ExactMatchSearchResult.png
+* docs/net/bancer/sparkdict/domain/core/IObservable.dot
+* docs/net/bancer/sparkdict/domain/core/IObservable.html
+* docs/net/bancer/sparkdict/domain/core/IObservable.map
+* docs/net/bancer/sparkdict/domain/core/IObservable.png
+* docs/net/bancer/sparkdict/domain/core/IObserver.dot
+* docs/net/bancer/sparkdict/domain/core/IObserver.html
+* docs/net/bancer/sparkdict/domain/core/IObserver.map
+* docs/net/bancer/sparkdict/domain/core/IObserver.png
+* docs/net/bancer/sparkdict/domain/core/IndexEntriesIterator.dot
+* docs/net/bancer/sparkdict/domain/core/IndexEntriesIterator.html
+* docs/net/bancer/sparkdict/domain/core/IndexEntriesIterator.map
+* docs/net/bancer/sparkdict/domain/core/IndexEntriesIterator.png
+* docs/net/bancer/sparkdict/domain/core/IndexEntry.dot
+* docs/net/bancer/sparkdict/domain/core/IndexEntry.html
+* docs/net/bancer/sparkdict/domain/core/IndexEntry.map
+* docs/net/bancer/sparkdict/domain/core/IndexEntry.png
+* docs/net/bancer/sparkdict/domain/core/InflaterOutputStream.dot
+* docs/net/bancer/sparkdict/domain/core/InflaterOutputStream.html
+* docs/net/bancer/sparkdict/domain/core/InflaterOutputStream.map
+* docs/net/bancer/sparkdict/domain/core/InflaterOutputStream.png
+* docs/net/bancer/sparkdict/domain/core/LexicalEntry.dot
+* docs/net/bancer/sparkdict/domain/core/LexicalEntry.html
+* docs/net/bancer/sparkdict/domain/core/LexicalEntry.map
+* docs/net/bancer/sparkdict/domain/core/LexicalEntry.png
+* docs/net/bancer/sparkdict/domain/core/Shelf.dot
+* docs/net/bancer/sparkdict/domain/core/Shelf.html
+* docs/net/bancer/sparkdict/domain/core/Shelf.map
+* docs/net/bancer/sparkdict/domain/core/Shelf.png
+* docs/net/bancer/sparkdict/domain/core/SparkDictIndex.dot
+* docs/net/bancer/sparkdict/domain/core/SparkDictIndex.html
+* docs/net/bancer/sparkdict/domain/core/SparkDictIndex.map
+* docs/net/bancer/sparkdict/domain/core/SparkDictIndex.png
+* docs/net/bancer/sparkdict/domain/core/StarDictIndex.dot
+* docs/net/bancer/sparkdict/domain/core/StarDictIndex.html
+* docs/net/bancer/sparkdict/domain/core/StarDictIndex.map
+* docs/net/bancer/sparkdict/domain/core/StarDictIndex.png
+* docs/net/bancer/sparkdict/domain/core/net.bancer.sparkdict.domain.core.dot
+* docs/net/bancer/sparkdict/domain/core/net.bancer.sparkdict.domain.core.map
+* docs/net/bancer/sparkdict/domain/core/net.bancer.sparkdict.domain.core.png
+* docs/net/bancer/sparkdict/domain/core/package-frame.html
+* docs/net/bancer/sparkdict/domain/core/package-summary.html
+* docs/net/bancer/sparkdict/domain/core/package-tree.html
+* docs/net/bancer/sparkdict/domain/parsers/
+* docs/net/bancer/sparkdict/domain/parsers/DataType.dot
+* docs/net/bancer/sparkdict/domain/parsers/DataType.html
+* docs/net/bancer/sparkdict/domain/parsers/DataType.map
+* docs/net/bancer/sparkdict/domain/parsers/DataType.png
+* docs/net/bancer/sparkdict/domain/parsers/IParser.dot
+* docs/net/bancer/sparkdict/domain/parsers/IParser.html
+* docs/net/bancer/sparkdict/domain/parsers/IParser.map
+* docs/net/bancer/sparkdict/domain/parsers/IParser.png
+* docs/net/bancer/sparkdict/domain/parsers/MParser.dot
+* docs/net/bancer/sparkdict/domain/parsers/MParser.html
+* docs/net/bancer/sparkdict/domain/parsers/MParser.map
+* docs/net/bancer/sparkdict/domain/parsers/MParser.png
+* docs/net/bancer/sparkdict/domain/parsers/NParser.dot
+* docs/net/bancer/sparkdict/domain/parsers/NParser.html
+* docs/net/bancer/sparkdict/domain/parsers/NParser.map
+* docs/net/bancer/sparkdict/domain/parsers/NParser.png
+* docs/net/bancer/sparkdict/domain/parsers/ParsingStrategyFactory.dot
+* docs/net/bancer/sparkdict/domain/parsers/ParsingStrategyFactory.html
+* docs/net/bancer/sparkdict/domain/parsers/ParsingStrategyFactory.map
+* docs/net/bancer/sparkdict/domain/parsers/ParsingStrategyFactory.png
+* docs/net/bancer/sparkdict/domain/parsers/XParser.dot
+* docs/net/bancer/sparkdict/domain/parsers/XParser.html
+* docs/net/bancer/sparkdict/domain/parsers/XParser.map
+* docs/net/bancer/sparkdict/domain/parsers/XParser.png
+* docs/net/bancer/sparkdict/domain/parsers/net.bancer.sparkdict.domain.parsers.dot
+* docs/net/bancer/sparkdict/domain/parsers/net.bancer.sparkdict.domain.parsers.map
+* docs/net/bancer/sparkdict/domain/parsers/net.bancer.sparkdict.domain.parsers.png
+* docs/net/bancer/sparkdict/domain/parsers/package-frame.html
+* docs/net/bancer/sparkdict/domain/parsers/package-summary.html
+* docs/net/bancer/sparkdict/domain/parsers/package-tree.html
+* docs/net/bancer/sparkdict/net.bancer.sparkdict.dot
+* docs/net/bancer/sparkdict/net.bancer.sparkdict.map
+* docs/net/bancer/sparkdict/net.bancer.sparkdict.png
+* docs/net/bancer/sparkdict/package-frame.html
+* docs/net/bancer/sparkdict/package-summary.html
+* docs/net/bancer/sparkdict/package-tree.html
+* docs/net/bancer/sparkdict/providers/
+* docs/net/bancer/sparkdict/providers/SuggestionsProvider.dot
+* docs/net/bancer/sparkdict/providers/SuggestionsProvider.html
+* docs/net/bancer/sparkdict/providers/SuggestionsProvider.map
+* docs/net/bancer/sparkdict/providers/SuggestionsProvider.png
+* docs/net/bancer/sparkdict/providers/net.bancer.sparkdict.providers.dot
+* docs/net/bancer/sparkdict/providers/net.bancer.sparkdict.providers.map
+* docs/net/bancer/sparkdict/providers/net.bancer.sparkdict.providers.png
+* docs/net/bancer/sparkdict/providers/package-frame.html
+* docs/net/bancer/sparkdict/providers/package-summary.html
+* docs/net/bancer/sparkdict/providers/package-tree.html
+* docs/net/bancer/sparkdict/views/
+* docs/net/bancer/sparkdict/views/DefinitionsView.dot
+* docs/net/bancer/sparkdict/views/DefinitionsView.html
+* docs/net/bancer/sparkdict/views/DefinitionsView.map
+* docs/net/bancer/sparkdict/views/DefinitionsView.png
+* docs/net/bancer/sparkdict/views/LexicalEntriesListView.WordFocused.dot
+* docs/net/bancer/sparkdict/views/LexicalEntriesListView.WordFocused.html
+* docs/net/bancer/sparkdict/views/LexicalEntriesListView.WordFocused.map
+* docs/net/bancer/sparkdict/views/LexicalEntriesListView.WordFocused.png
+* docs/net/bancer/sparkdict/views/LexicalEntriesListView.dot
+* docs/net/bancer/sparkdict/views/LexicalEntriesListView.html
+* docs/net/bancer/sparkdict/views/LexicalEntriesListView.map
+* docs/net/bancer/sparkdict/views/LexicalEntriesListView.png
+* docs/net/bancer/sparkdict/views/LexicalEntryView.dot
+* docs/net/bancer/sparkdict/views/LexicalEntryView.html
+* docs/net/bancer/sparkdict/views/LexicalEntryView.map
+* docs/net/bancer/sparkdict/views/LexicalEntryView.png
+* docs/net/bancer/sparkdict/views/SearchInputField.dot
+* docs/net/bancer/sparkdict/views/SearchInputField.html
+* docs/net/bancer/sparkdict/views/SearchInputField.map
+* docs/net/bancer/sparkdict/views/SearchInputField.png
+* docs/net/bancer/sparkdict/views/net.bancer.sparkdict.views.dot
+* docs/net/bancer/sparkdict/views/net.bancer.sparkdict.views.map
+* docs/net/bancer/sparkdict/views/net.bancer.sparkdict.views.png
+* docs/net/bancer/sparkdict/views/package-frame.html
+* docs/net/bancer/sparkdict/views/package-summary.html
+* docs/net/bancer/sparkdict/views/package-tree.html
+* docs/overview-frame.html
+* docs/overview-summary.html
+* docs/overview-tree.html
+* docs/package-list
+* docs/resources/
+* docs/resources/inherit.gif
+* docs/stylesheet.css
+* lib/
+* lib/UmlGraph.jar
+* lib/sequence.pic
+* notes.txt
+* proguard-project.txt
+* sparkdict_uml_diagrams.xmi
+
+Replaced Jars with Dependencies:
+--------------------------------
+The importer recognized the following .jar files as third party
+libraries and replaced them with Gradle dependencies instead. This has
+the advantage that more explicit version information is known, and the
+libraries can be updated automatically. However, it is possible that
+the .jar file in your project was of an older version than the
+dependency we picked, which could render the project not compileable.
+You can disable the jar replacement in the import wizard and try again:
+
+android-support-v4.jar => com.android.support:support-v4:18.0.0
+
+Moved Files:
+------------
+Android Gradle projects use a different directory structure than ADT
+Eclipse projects. Here's how the projects were restructured:
+
+* AndroidManifest.xml => app/src/main/AndroidManifest.xml
+* assets/ => app/src/main/assets
+* libs/GoogleAdMobAdsSdk-6.3.1.jar => app/libs/GoogleAdMobAdsSdk-6.3.1.jar
+* libs/commons-compress-1.5.jar => app/libs/commons-compress-1.5.jar
+* lint.xml => app/lint.xml
+* res/ => app/src/main/res/
+* src/ => app/src/main/java/
+* Test/res/ => app/src/androidTest/res/
+* Test/src/ => app/src/androidTest/java/
+
+Next Steps:
+-----------
+You can now build the project. The Gradle project needs network
+connectivity to download dependencies.
+
+Bugs:
+-----
+If for some reason your project does not build, and you determine that
+it is due to a bug or limitation of the Eclipse to Gradle importer,
+please file a bug at http://b.android.com with category
+Component-Tools.
+
+(This import summary is for your information only, and can be deleted
+after import once you are satisfied with the results.)

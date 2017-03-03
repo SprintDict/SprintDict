@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+	<item
+	    android:id="@+id/menu_expand_all"
+	    android:icon="@drawable/expander_ic_minimized"
+	    android:title="@string/menu_expand_all" />
+	<item
+	    android:id="@+id/menu_collapse_all"
+	    android:icon="@drawable/expander_ic_maximized"
+	    android:title="@string/menu_collapse_all" />
+	<item
+	    android:id="@+id/menu_find_on_page"
+	    android:icon="@drawable/ic_menu_search"
+	    android:title="@string/menu_find_on_page" />
+	<item
+	    android:id="@+id/menu_recent_history"
+	    android:icon="@drawable/ic_menu_recent_history"
+	    android:title="@string/menu_recent_history" />
+	<item
+	    android:id="@+id/menu_manage_dictionaries"
+	    android:icon="@drawable/ic_menu_archive"
+	    android:title="@string/menu_manage_dictionaries" />
+	<item
+	    android:id="@+id/menu_settings"
+	    android:icon="@drawable/ic_menu_preferences"
+	    android:title="@string/menu_settings" />
+	<!-- Set visible to true after Adding Custom Suggestions from
+	http://developer.android.com/guide/topics/search/adding-custom-suggestions.html
+	will be implemented -->
+	<item
+	    android:id="@+id/search_dialog"
+	    android:icon="@drawable/ic_menu_search"
+	    android:title="@string/search"
+	    android:visible="false"/>
+</menu>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="net.bancer.sparkdict"
+    android:versionCode="6"
+    android:versionName="1.1.1" >
+
+    <uses-sdk
+        android:minSdkVersion="4"
+        android:targetSdkVersion="10" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:icon="@drawable/ic_launcher_sparkdict"
+        android:label="@string/app_name" >
+        <activity
+            android:name="net.bancer.sparkdict.SparkDictActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Start searchable config -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+            <!-- End searchable config -->
+
+
+            <!-- Start search dialog config -->
+            <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".SparkDictActivity" />
+            <!-- End search dialog config -->
+
+
+            <!-- Start link clicked in article config -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="net.bancer.sparkdict" />
+            </intent-filter>
+            <!-- End link clicked in article config -->
+
+        </activity>
+        <activity
+            android:name="net.bancer.sparkdict.DictManagerActivity"
+            android:label="@string/manage_dictionaries" />
+        <activity
+            android:name="net.bancer.sparkdict.DirectoryPickerActivity"
+            android:label="@string/set_dict_path" />
+        <activity
+            android:name="net.bancer.sparkdict.DictPreferencesActivity"
+            android:label="@string/activity_settings" />
+        <activity
+            android:name="net.bancer.sparkdict.RecentHistoryActivity"
+            android:label="@string/title_activity_recent_history" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="net.bancer.sparkdict.SparkDictActivity" />
+        </activity>
+
+        <provider
+            android:name="net.bancer.sparkdict.providers.SuggestionsProvider"
+            android:authorities="net.bancer.sparkdict.providers.SuggestionsProvider"
+            android:enabled="true"
+            android:exported="true" >
+        </provider>
+    </application>
+
+</manifest>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/spark_dict_activity_top_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:background="@color/black" >
+
+    <LinearLayout
+        android:id="@+id/search_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+        <net.bancer.sparkdict.views.SearchInputField
+            android:id="@+id/searchTextView"
+            android:layout_width="0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:inputType="textPhonetic">
+            <requestFocus android:id="@+id/focus_requester" />
+        </net.bancer.sparkdict.views.SearchInputField>
+        <ImageButton
+            android:id="@+id/searchButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_search"
+            android:contentDescription="@string/search"
+            android:padding="10dp" />       
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/find_on_page_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:baselineAligned="true"
+        android:orientation="horizontal"
+        android:fadingEdge="horizontal"
+        android:visibility="gone" >
+        <EditText
+            android:id="@+id/find_on_page_edit_text"
+            android:layout_width="0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:inputType="text" />
+        <Button
+            android:id="@+id/find_on_page_next_btn"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="&#x25BC;"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:onClick="onFindNextWordOnPageButtonClick"  />
+        <Button
+            android:id="@+id/find_on_page_previous_btn"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="&#x25B2;"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:onClick="onFindPreviousWordOnPageButtonClick" />
+        <Button
+            android:id="@+id/find_on_page_close_btn"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="&#x2715;"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:onClick="onCloseFindOnPageBarButtonClick" />
+    </LinearLayout>
+    
+    <ScrollView
+        android:id="@+id/articles_scroll_view"
+        android:layout_width="fill_parent"
+    	android:layout_height="wrap_content"
+    	android:layout_below="@id/search_layout"
+    	android:layout_above="@id/find_on_page_layout">
+        <net.bancer.sparkdict.views.LexicalEntriesListView
+            android:id="@+id/articles_list"
+    		android:layout_width="fill_parent"
+    		android:layout_height="wrap_content"
+       		android:orientation="vertical">
+       	</net.bancer.sparkdict.views.LexicalEntriesListView>
+    </ScrollView>
+
+    <ZoomControls
+        android:id="@+id/zoom_controls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/find_on_page_layout"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp" />
+
+</RelativeLayout>

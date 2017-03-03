@@ -1,0 +1,30 @@
+[
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/layout/activity_spark_dict.xml",
+        "source": "/home/val/git/SprintDict/app/src/main/res/layout/activity_spark_dict.xml"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/layout/dict_manager_item.xml",
+        "source": "/home/val/git/SprintDict/app/src/main/res/layout/dict_manager_item.xml"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/layout/lexical_entry.xml",
+        "source": "/home/val/git/SprintDict/app/src/main/res/layout/lexical_entry.xml"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/layout/activity_recent_history.xml",
+        "source": "/home/val/git/SprintDict/app/src/main/res/layout/activity_recent_history.xml"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/layout/activity_dict_manager.xml",
+        "source": "/home/val/git/SprintDict/app/src/main/res/layout/activity_dict_manager.xml"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/layout/chooser_list.xml",
+        "source": "/home/val/git/SprintDict/app/src/main/res/layout/chooser_list.xml"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/layout/list_item.xml",
+        "source": "/home/val/git/SprintDict/app/src/main/res/layout/list_item.xml"
+    }
+]

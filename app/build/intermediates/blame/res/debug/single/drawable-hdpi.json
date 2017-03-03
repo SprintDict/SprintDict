@@ -1,0 +1,66 @@
+[
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_menu_preferences.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_menu_preferences.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_search.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_search.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_menu_archive.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_menu_archive.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/expander_ic_maximized.9.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/expander_ic_maximized.9.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_action_search.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_action_search.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_menu_refresh.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_menu_refresh.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_menu_search.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_menu_search.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_menu_recent_history.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_menu_recent_history.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_menu_clear_playlist.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_menu_clear_playlist.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_menu_move_up.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_menu_move_up.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_launcher_sparkdict.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_launcher_sparkdict.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/expander_ic_minimized.9.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/expander_ic_minimized.9.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_audio_vol.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_audio_vol.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_search_api_holo_light.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_search_api_holo_light.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_search_category_default.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_search_category_default.png"
+    },
+    {
+        "merged": "/home/val/git/SprintDict/app/build/intermediates/res/merged/debug/drawable-hdpi/ic_launcher.png",
+        "source": "/home/val/git/SprintDict/app/src/main/res/drawable-hdpi/ic_launcher.png"
+    }
+]
