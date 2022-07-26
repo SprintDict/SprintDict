@@ -3,7 +3,7 @@ package net.bancer.sparkdict;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
+import androidx.core.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;

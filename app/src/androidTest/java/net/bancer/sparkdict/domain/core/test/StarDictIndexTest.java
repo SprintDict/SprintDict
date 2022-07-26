@@ -6,8 +6,6 @@ package net.bancer.sparkdict.domain.core.test;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import android.util.Log;
-
 import net.bancer.sparkdict.domain.core.BookInfo;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.StarDictIndex;
