@@ -269,8 +269,8 @@ public class DictManagerActivity extends BaseActivity {
 		Notification note = new Notification(
 				android.R.drawable.stat_sys_warning, message,
 				System.currentTimeMillis());
-		note.setLatestEventInfo(this,
-				getString(R.string.sprint_dict_indexing_error), message, pi);
+		//TODO: migrate from deprecated setLatestEventInfo to Notification.Builder
+		//note.setLatestEventInfo(this, getString(R.string.sprint_dict_indexing_error), message, pi);
 		note.defaults |= Notification.DEFAULT_SOUND;
 		note.flags |= Notification.FLAG_AUTO_CANCEL;
 		mgr.notify(message.hashCode(), note);

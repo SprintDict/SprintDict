@@ -5,8 +5,6 @@ package net.bancer.sparkdict.domain.core.test;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Arrays;
 
 import net.bancer.sparkdict.domain.core.BookInfo;
 import net.bancer.sparkdict.domain.core.SparkDictIndex;

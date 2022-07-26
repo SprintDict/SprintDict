@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 13
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId "net.bancer.sparkdict"
-        minSdkVersion 4
-        targetSdkVersion 10
+        minSdkVersion 14
+        targetSdkVersion 14
 
         testApplicationId "net.bancer.sparkdict.test"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -19,9 +18,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+    useLibrary 'android.test.runner'
+    useLibrary 'android.test.base'
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:18.0.0'
-    compile files('libs/commons-compress-1.5.jar')
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation files('libs/commons-compress-1.5.jar')
+    testImplementation 'junit:junit:3.8.1'
+    androidTestImplementation 'junit:junit:4.12'
 }
