@@ -150,8 +150,8 @@ public class IndexEntriesAdapter extends ArrayAdapter<IndexEntry>
 					}
 				}
 				if(suggestions[0].size() > 0) {
+					Collections.sort(suggestions[0]);
 					for (IndexEntry entry : suggestions[0]) {
-						Collections.sort(suggestions[0]);
 						int key = Collections.binarySearch(entries, entry);
 						if(key < 0) {
 							entries.add(-(key) - 1, entry);
