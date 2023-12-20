@@ -19,6 +19,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.DocumentsContract;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,6 +37,7 @@ import android.widget.ListView;
  */
 public class DictManagerActivity extends BaseActivity {
 
+	public static final int FILE_PERMISSIONS_ACCESS_REQUEST = 34232131;
 	public static final int PICK_DIRECTORY = 43522432;
 
 	/**
@@ -74,6 +76,11 @@ public class DictManagerActivity extends BaseActivity {
 	@Override
     public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		if (!Environment.isExternalStorageManager()) {
+			Uri uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID);
+			Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri);
+			startActivityForResult(intent, FILE_PERMISSIONS_ACCESS_REQUEST);
+		}
 		Bundle extras = getIntent().getExtras();
 		if(extras != null && extras.getInt(SUB_ACTIVITY) == START_DIR_PICKER) {
 			startDirPicker();
