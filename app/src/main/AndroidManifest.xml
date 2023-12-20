@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="net.bancer.sparkdict"
-    android:versionCode="6"
-    android:versionName="1.1.1" >
+    package="net.bancer.sparkdict">
 
-    <uses-sdk
-        android:minSdkVersion="4"
-        android:targetSdkVersion="10" />
-
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:icon="@drawable/ic_launcher_sparkdict"
-        android:label="@string/app_name" >
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme">
         <activity
             android:name=".SparkDictActivity"
             android:label="@string/app_name"
@@ -58,9 +54,6 @@
         <activity
             android:name=".DictManagerActivity"
             android:label="@string/manage_dictionaries" />
-        <activity
-            android:name=".DirectoryPickerActivity"
-            android:label="@string/set_dict_path" />
         <activity
             android:name=".DictPreferencesActivity"
             android:label="@string/activity_settings" />

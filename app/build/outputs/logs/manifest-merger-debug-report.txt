@@ -1,238 +1,238 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-86:12
-INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-86:12
-INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-86:12
-INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-86:12
-MERGED from [androidx.legacy:legacy-support-v4:1.0.0] /home/val/.gradle/caches/transforms-3/34c3819cee2951fdcdce0cc29fa8544c/transformed/legacy-support-v4-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.media:media:1.0.0] /home/val/.gradle/caches/transforms-3/134b728fa4e8aa6475e3c09158ebb5ed/transformed/media-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.fragment:fragment:1.0.0] /home/val/.gradle/caches/transforms-3/ad822f617078449710576407c5919783/transformed/fragment-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] /home/val/.gradle/caches/transforms-3/a0f487a4babc02e94edd80c903b84cb8/transformed/legacy-support-core-ui-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /home/val/.gradle/caches/transforms-3/9b680f4524c73cf4651435f7b7ab96a9/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.loader:loader:1.0.0] /home/val/.gradle/caches/transforms-3/a9f454f90017dca7389400a6976be6d0/transformed/loader-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.viewpager:viewpager:1.0.0] /home/val/.gradle/caches/transforms-3/e1b23a5846fa69c62ae6c2763eaeb253/transformed/viewpager-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.0.0] /home/val/.gradle/caches/transforms-3/9799da5c1e0689f1193d2bfe97eafa0b/transformed/coordinatorlayout-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /home/val/.gradle/caches/transforms-3/28987daf94618d12a626039a1bcb819f/transformed/drawerlayout-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] /home/val/.gradle/caches/transforms-3/672c698f430ef3053188faf174992e0a/transformed/slidingpanelayout-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.customview:customview:1.0.0] /home/val/.gradle/caches/transforms-3/167a7615f5c326be626c34db5c113190/transformed/customview-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] /home/val/.gradle/caches/transforms-3/5dc7619c10ef7678503baa0c7d18529c/transformed/swiperefreshlayout-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] /home/val/.gradle/caches/transforms-3/7f38362bc79cae2826970a4e78d0cb43/transformed/asynclayoutinflater-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.core:core:1.0.0] /home/val/.gradle/caches/transforms-3/b435c9c9cde5a7559bf6855b099cbe7a/transformed/core-1.0.0/AndroidManifest.xml:17:1-24:12
-MERGED from [androidx.versionedparcelable:versionedparcelable:1.0.0] /home/val/.gradle/caches/transforms-3/c1a9d072f675a0182d61ba643fe0605b/transformed/versionedparcelable-1.0.0/AndroidManifest.xml:17:1-25:12
-MERGED from [androidx.lifecycle:lifecycle-runtime:2.0.0] /home/val/.gradle/caches/transforms-3/e1e2678fabf72a33f79cbc86269cb4b6/transformed/lifecycle-runtime-2.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.documentfile:documentfile:1.0.0] /home/val/.gradle/caches/transforms-3/c91ee04b2e3e2b4e3408d247f58d785c/transformed/documentfile-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /home/val/.gradle/caches/transforms-3/daafd13ed6472e5d90ee94a442cae491/transformed/localbroadcastmanager-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.print:print:1.0.0] /home/val/.gradle/caches/transforms-3/bd2b858bc6569916fd0b165974e7ef03/transformed/print-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.interpolator:interpolator:1.0.0] /home/val/.gradle/caches/transforms-3/f11a2796b54455e05ab8603854e4e469/transformed/interpolator-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /home/val/.gradle/caches/transforms-3/b62f021449e53cd8f85a380c2a59df94/transformed/cursoradapter-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.0.0] /home/val/.gradle/caches/transforms-3/204d3d0be73b32d1e471282cc38c7187/transformed/lifecycle-viewmodel-2.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /home/val/.gradle/caches/transforms-3/50d1210be62fa0ff51eb398d1f0c84bc/transformed/lifecycle-livedata-2.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.0.0] /home/val/.gradle/caches/transforms-3/be65a5e1808a5e2d45730c2d80164a89/transformed/lifecycle-livedata-core-2.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.arch.core:core-runtime:2.0.0] /home/val/.gradle/caches/transforms-3/81f39f6b10eaffbd9990198b840796f5/transformed/core-runtime-2.0.0/AndroidManifest.xml:17:1-22:12
-INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-86:12
-INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-86:12
-INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-86:12
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-79:12
+INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-79:12
+INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-79:12
+INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-79:12
+MERGED from [androidx.legacy:legacy-support-v4:1.0.0] /home/val/.gradle/caches/transforms-3/2ce9ada1a4f67244c93a999b3e84b24b/transformed/legacy-support-v4-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media:media:1.0.0] /home/val/.gradle/caches/transforms-3/8e4789385d1dbba8cd6afa20d54cf6bd/transformed/media-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.fragment:fragment:1.0.0] /home/val/.gradle/caches/transforms-3/7fd4584e9a8d2c8b549d6200fb41477e/transformed/fragment-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] /home/val/.gradle/caches/transforms-3/43c683eb5b9310b1ebaf5a5f2c96253f/transformed/legacy-support-core-ui-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /home/val/.gradle/caches/transforms-3/7e3c8b16b5c0bdb2162b969a3b25b21e/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.loader:loader:1.0.0] /home/val/.gradle/caches/transforms-3/e8753969253d2876d2822c1816fa0222/transformed/loader-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.viewpager:viewpager:1.0.0] /home/val/.gradle/caches/transforms-3/e7b30545c7dde1e95f57bd7de9616f2c/transformed/viewpager-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.0.0] /home/val/.gradle/caches/transforms-3/e14ac85f1126e7980db99141db0fde12/transformed/coordinatorlayout-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /home/val/.gradle/caches/transforms-3/1128e9c06345c54c84b461842366e7e2/transformed/drawerlayout-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] /home/val/.gradle/caches/transforms-3/02ecd48b576a25fad542457244dca077/transformed/slidingpanelayout-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.customview:customview:1.0.0] /home/val/.gradle/caches/transforms-3/9132cd4c3ec82969d5da43cdeadd42df/transformed/customview-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] /home/val/.gradle/caches/transforms-3/29ad4765520015fe3dfdca66a979c1a8/transformed/swiperefreshlayout-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] /home/val/.gradle/caches/transforms-3/52070002d578ee9daa660a1b612de420/transformed/asynclayoutinflater-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.core:core:1.0.0] /home/val/.gradle/caches/transforms-3/2285b91efe25780c6e7d7713eefa7047/transformed/core-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.0.0] /home/val/.gradle/caches/transforms-3/e7f2c7063ba88424ded525892326e30e/transformed/versionedparcelable-1.0.0/AndroidManifest.xml:17:1-25:12
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.0.0] /home/val/.gradle/caches/transforms-3/7241b8f1ec37af109d4d2a2a19e27f98/transformed/lifecycle-runtime-2.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.documentfile:documentfile:1.0.0] /home/val/.gradle/caches/transforms-3/947452df7c2c68665319fec12718535f/transformed/documentfile-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /home/val/.gradle/caches/transforms-3/be78f20c96fdd8562774ce9c33a112b9/transformed/localbroadcastmanager-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.print:print:1.0.0] /home/val/.gradle/caches/transforms-3/f1c1f6112ea6a1f399972dce89bf2eda/transformed/print-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.interpolator:interpolator:1.0.0] /home/val/.gradle/caches/transforms-3/fd1b545579ee6fe17065c14f79977cf0/transformed/interpolator-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /home/val/.gradle/caches/transforms-3/6079f7a765a62598ba06a2f5fdead08d/transformed/cursoradapter-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.0.0] /home/val/.gradle/caches/transforms-3/60cfd4d0ce7cf2e64e675fbd60469bb6/transformed/lifecycle-viewmodel-2.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /home/val/.gradle/caches/transforms-3/9214917a2328e873e25f2a8df01ef814/transformed/lifecycle-livedata-2.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.0.0] /home/val/.gradle/caches/transforms-3/4db19e27d8dc3c18a0e11d542a3d656e/transformed/lifecycle-livedata-core-2.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.arch.core:core-runtime:2.0.0] /home/val/.gradle/caches/transforms-3/d8a2fa2fab3869b7293d51c10b767260/transformed/core-runtime-2.0.0/AndroidManifest.xml:17:1-22:12
+INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-79:12
+INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-79:12
+INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-79:12
 	package
 		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:3:5-35
 		INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
 		INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
 	android:versionName
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:5:5-32
 		INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-79:12
+		INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
+	android:versionCode
+		INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:1-79:12
 		INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
 	xmlns:android
 		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:2:11-69
-	android:versionCode
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:4:5-28
-		INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
-		INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
+uses-permission#android.permission.MANAGE_EXTERNAL_STORAGE
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:5:5-82
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:5:22-79
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:6:5-81
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:6:22-78
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:7:5-79
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:7:22-76
+uses-permission#android.permission.INTERNET
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:8:5-67
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:8:22-64
+application
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:10:5-77:19
+MERGED from [androidx.core:core:1.0.0] /home/val/.gradle/caches/transforms-3/2285b91efe25780c6e7d7713eefa7047/transformed/core-1.0.0/AndroidManifest.xml:22:5-89
+MERGED from [androidx.core:core:1.0.0] /home/val/.gradle/caches/transforms-3/2285b91efe25780c6e7d7713eefa7047/transformed/core-1.0.0/AndroidManifest.xml:22:5-89
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.0.0] /home/val/.gradle/caches/transforms-3/e7f2c7063ba88424ded525892326e30e/transformed/versionedparcelable-1.0.0/AndroidManifest.xml:22:5-23:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.0.0] /home/val/.gradle/caches/transforms-3/e7f2c7063ba88424ded525892326e30e/transformed/versionedparcelable-1.0.0/AndroidManifest.xml:22:5-23:19
+	android:appComponentFactory
+		ADDED from [androidx.core:core:1.0.0] /home/val/.gradle/caches/transforms-3/2285b91efe25780c6e7d7713eefa7047/transformed/core-1.0.0/AndroidManifest.xml:22:18-86
+	android:label
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:12:9-41
+	android:icon
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:11:9-55
+	android:theme
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:13:9-40
+activity#net.bancer.sparkdict.SparkDictActivity
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:14:9-53:20
+	android:label
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:16:13-45
+	android:launchMode
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:17:13-43
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:15:13-46
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:18:13-22:29
+action#android.intent.action.MAIN
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:19:17-69
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:19:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:21:17-77
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:21:27-74
+intent-filter#action:name:android.intent.action.SEARCH+category:name:android.intent.category.DEFAULT
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:25:13-28:29
+action#android.intent.action.SEARCH
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:26:17-71
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:26:25-68
+category#android.intent.category.DEFAULT
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:27:17-76
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:27:27-73
+meta-data#android.app.searchable
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:30:13-32:54
+	android:resource
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:32:17-51
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:31:17-54
+meta-data#android.app.default_searchable
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:37:13-39:54
+	android:value
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:39:17-51
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:38:17-62
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.DEFAULT+data:scheme:net.bancer.sparkdict
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:44:13-50:29
+action#android.intent.action.VIEW
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:45:17-69
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:45:25-66
+data
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:49:17-63
+	android:scheme
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:49:23-60
+activity#net.bancer.sparkdict.DictManagerActivity
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:54:9-56:59
+	android:label
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:56:13-56
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:55:13-48
+activity#net.bancer.sparkdict.DictPreferencesActivity
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:57:9-59:57
+	android:label
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:59:13-54
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:58:13-52
+activity#net.bancer.sparkdict.RecentHistoryActivity
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:60:9-66:20
+	android:label
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:62:13-66
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:61:13-70
+meta-data#android.support.PARENT_ACTIVITY
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:63:13-65:74
+	android:value
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:65:17-71
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:64:17-63
+provider#net.bancer.sparkdict.providers.SuggestionsProvider
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:68:9-73:20
+	android:enabled
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:71:13-35
+	android:authorities
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:70:13-85
+	android:exported
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:72:13-36
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:69:13-58
+uses-library#android.test.runner
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:75:9-85
+	android:required
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:75:58-82
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:75:23-57
+uses-library#android.test.base
+ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:76:9-83
+	android:required
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:76:56-80
+	android:name
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:76:23-55
 uses-sdk
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:7:5-9:41
-INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:7:5-9:41
-INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:7:5-9:41
-MERGED from [androidx.legacy:legacy-support-v4:1.0.0] /home/val/.gradle/caches/transforms-3/34c3819cee2951fdcdce0cc29fa8544c/transformed/legacy-support-v4-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.legacy:legacy-support-v4:1.0.0] /home/val/.gradle/caches/transforms-3/34c3819cee2951fdcdce0cc29fa8544c/transformed/legacy-support-v4-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.media:media:1.0.0] /home/val/.gradle/caches/transforms-3/134b728fa4e8aa6475e3c09158ebb5ed/transformed/media-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.media:media:1.0.0] /home/val/.gradle/caches/transforms-3/134b728fa4e8aa6475e3c09158ebb5ed/transformed/media-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.fragment:fragment:1.0.0] /home/val/.gradle/caches/transforms-3/ad822f617078449710576407c5919783/transformed/fragment-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.fragment:fragment:1.0.0] /home/val/.gradle/caches/transforms-3/ad822f617078449710576407c5919783/transformed/fragment-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] /home/val/.gradle/caches/transforms-3/a0f487a4babc02e94edd80c903b84cb8/transformed/legacy-support-core-ui-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] /home/val/.gradle/caches/transforms-3/a0f487a4babc02e94edd80c903b84cb8/transformed/legacy-support-core-ui-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /home/val/.gradle/caches/transforms-3/9b680f4524c73cf4651435f7b7ab96a9/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /home/val/.gradle/caches/transforms-3/9b680f4524c73cf4651435f7b7ab96a9/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.loader:loader:1.0.0] /home/val/.gradle/caches/transforms-3/a9f454f90017dca7389400a6976be6d0/transformed/loader-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.loader:loader:1.0.0] /home/val/.gradle/caches/transforms-3/a9f454f90017dca7389400a6976be6d0/transformed/loader-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.viewpager:viewpager:1.0.0] /home/val/.gradle/caches/transforms-3/e1b23a5846fa69c62ae6c2763eaeb253/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.viewpager:viewpager:1.0.0] /home/val/.gradle/caches/transforms-3/e1b23a5846fa69c62ae6c2763eaeb253/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.0.0] /home/val/.gradle/caches/transforms-3/9799da5c1e0689f1193d2bfe97eafa0b/transformed/coordinatorlayout-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.0.0] /home/val/.gradle/caches/transforms-3/9799da5c1e0689f1193d2bfe97eafa0b/transformed/coordinatorlayout-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /home/val/.gradle/caches/transforms-3/28987daf94618d12a626039a1bcb819f/transformed/drawerlayout-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /home/val/.gradle/caches/transforms-3/28987daf94618d12a626039a1bcb819f/transformed/drawerlayout-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] /home/val/.gradle/caches/transforms-3/672c698f430ef3053188faf174992e0a/transformed/slidingpanelayout-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] /home/val/.gradle/caches/transforms-3/672c698f430ef3053188faf174992e0a/transformed/slidingpanelayout-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.customview:customview:1.0.0] /home/val/.gradle/caches/transforms-3/167a7615f5c326be626c34db5c113190/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.customview:customview:1.0.0] /home/val/.gradle/caches/transforms-3/167a7615f5c326be626c34db5c113190/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] /home/val/.gradle/caches/transforms-3/5dc7619c10ef7678503baa0c7d18529c/transformed/swiperefreshlayout-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] /home/val/.gradle/caches/transforms-3/5dc7619c10ef7678503baa0c7d18529c/transformed/swiperefreshlayout-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] /home/val/.gradle/caches/transforms-3/7f38362bc79cae2826970a4e78d0cb43/transformed/asynclayoutinflater-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] /home/val/.gradle/caches/transforms-3/7f38362bc79cae2826970a4e78d0cb43/transformed/asynclayoutinflater-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.core:core:1.0.0] /home/val/.gradle/caches/transforms-3/b435c9c9cde5a7559bf6855b099cbe7a/transformed/core-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.core:core:1.0.0] /home/val/.gradle/caches/transforms-3/b435c9c9cde5a7559bf6855b099cbe7a/transformed/core-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.versionedparcelable:versionedparcelable:1.0.0] /home/val/.gradle/caches/transforms-3/c1a9d072f675a0182d61ba643fe0605b/transformed/versionedparcelable-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.versionedparcelable:versionedparcelable:1.0.0] /home/val/.gradle/caches/transforms-3/c1a9d072f675a0182d61ba643fe0605b/transformed/versionedparcelable-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.lifecycle:lifecycle-runtime:2.0.0] /home/val/.gradle/caches/transforms-3/e1e2678fabf72a33f79cbc86269cb4b6/transformed/lifecycle-runtime-2.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.lifecycle:lifecycle-runtime:2.0.0] /home/val/.gradle/caches/transforms-3/e1e2678fabf72a33f79cbc86269cb4b6/transformed/lifecycle-runtime-2.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.documentfile:documentfile:1.0.0] /home/val/.gradle/caches/transforms-3/c91ee04b2e3e2b4e3408d247f58d785c/transformed/documentfile-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.documentfile:documentfile:1.0.0] /home/val/.gradle/caches/transforms-3/c91ee04b2e3e2b4e3408d247f58d785c/transformed/documentfile-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /home/val/.gradle/caches/transforms-3/daafd13ed6472e5d90ee94a442cae491/transformed/localbroadcastmanager-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /home/val/.gradle/caches/transforms-3/daafd13ed6472e5d90ee94a442cae491/transformed/localbroadcastmanager-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.print:print:1.0.0] /home/val/.gradle/caches/transforms-3/bd2b858bc6569916fd0b165974e7ef03/transformed/print-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.print:print:1.0.0] /home/val/.gradle/caches/transforms-3/bd2b858bc6569916fd0b165974e7ef03/transformed/print-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.interpolator:interpolator:1.0.0] /home/val/.gradle/caches/transforms-3/f11a2796b54455e05ab8603854e4e469/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.interpolator:interpolator:1.0.0] /home/val/.gradle/caches/transforms-3/f11a2796b54455e05ab8603854e4e469/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /home/val/.gradle/caches/transforms-3/b62f021449e53cd8f85a380c2a59df94/transformed/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /home/val/.gradle/caches/transforms-3/b62f021449e53cd8f85a380c2a59df94/transformed/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.0.0] /home/val/.gradle/caches/transforms-3/204d3d0be73b32d1e471282cc38c7187/transformed/lifecycle-viewmodel-2.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.0.0] /home/val/.gradle/caches/transforms-3/204d3d0be73b32d1e471282cc38c7187/transformed/lifecycle-viewmodel-2.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /home/val/.gradle/caches/transforms-3/50d1210be62fa0ff51eb398d1f0c84bc/transformed/lifecycle-livedata-2.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /home/val/.gradle/caches/transforms-3/50d1210be62fa0ff51eb398d1f0c84bc/transformed/lifecycle-livedata-2.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.0.0] /home/val/.gradle/caches/transforms-3/be65a5e1808a5e2d45730c2d80164a89/transformed/lifecycle-livedata-core-2.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.0.0] /home/val/.gradle/caches/transforms-3/be65a5e1808a5e2d45730c2d80164a89/transformed/lifecycle-livedata-core-2.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.arch.core:core-runtime:2.0.0] /home/val/.gradle/caches/transforms-3/81f39f6b10eaffbd9990198b840796f5/transformed/core-runtime-2.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.arch.core:core-runtime:2.0.0] /home/val/.gradle/caches/transforms-3/81f39f6b10eaffbd9990198b840796f5/transformed/core-runtime-2.0.0/AndroidManifest.xml:20:5-44
-INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:7:5-9:41
-INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:7:5-9:41
+INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
+INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
+MERGED from [androidx.legacy:legacy-support-v4:1.0.0] /home/val/.gradle/caches/transforms-3/2ce9ada1a4f67244c93a999b3e84b24b/transformed/legacy-support-v4-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-v4:1.0.0] /home/val/.gradle/caches/transforms-3/2ce9ada1a4f67244c93a999b3e84b24b/transformed/legacy-support-v4-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media:media:1.0.0] /home/val/.gradle/caches/transforms-3/8e4789385d1dbba8cd6afa20d54cf6bd/transformed/media-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.media:media:1.0.0] /home/val/.gradle/caches/transforms-3/8e4789385d1dbba8cd6afa20d54cf6bd/transformed/media-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.fragment:fragment:1.0.0] /home/val/.gradle/caches/transforms-3/7fd4584e9a8d2c8b549d6200fb41477e/transformed/fragment-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.fragment:fragment:1.0.0] /home/val/.gradle/caches/transforms-3/7fd4584e9a8d2c8b549d6200fb41477e/transformed/fragment-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] /home/val/.gradle/caches/transforms-3/43c683eb5b9310b1ebaf5a5f2c96253f/transformed/legacy-support-core-ui-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-ui:1.0.0] /home/val/.gradle/caches/transforms-3/43c683eb5b9310b1ebaf5a5f2c96253f/transformed/legacy-support-core-ui-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /home/val/.gradle/caches/transforms-3/7e3c8b16b5c0bdb2162b969a3b25b21e/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /home/val/.gradle/caches/transforms-3/7e3c8b16b5c0bdb2162b969a3b25b21e/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.loader:loader:1.0.0] /home/val/.gradle/caches/transforms-3/e8753969253d2876d2822c1816fa0222/transformed/loader-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.loader:loader:1.0.0] /home/val/.gradle/caches/transforms-3/e8753969253d2876d2822c1816fa0222/transformed/loader-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] /home/val/.gradle/caches/transforms-3/e7b30545c7dde1e95f57bd7de9616f2c/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] /home/val/.gradle/caches/transforms-3/e7b30545c7dde1e95f57bd7de9616f2c/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.0.0] /home/val/.gradle/caches/transforms-3/e14ac85f1126e7980db99141db0fde12/transformed/coordinatorlayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.0.0] /home/val/.gradle/caches/transforms-3/e14ac85f1126e7980db99141db0fde12/transformed/coordinatorlayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /home/val/.gradle/caches/transforms-3/1128e9c06345c54c84b461842366e7e2/transformed/drawerlayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /home/val/.gradle/caches/transforms-3/1128e9c06345c54c84b461842366e7e2/transformed/drawerlayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] /home/val/.gradle/caches/transforms-3/02ecd48b576a25fad542457244dca077/transformed/slidingpanelayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.slidingpanelayout:slidingpanelayout:1.0.0] /home/val/.gradle/caches/transforms-3/02ecd48b576a25fad542457244dca077/transformed/slidingpanelayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview:1.0.0] /home/val/.gradle/caches/transforms-3/9132cd4c3ec82969d5da43cdeadd42df/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview:1.0.0] /home/val/.gradle/caches/transforms-3/9132cd4c3ec82969d5da43cdeadd42df/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] /home/val/.gradle/caches/transforms-3/29ad4765520015fe3dfdca66a979c1a8/transformed/swiperefreshlayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.0.0] /home/val/.gradle/caches/transforms-3/29ad4765520015fe3dfdca66a979c1a8/transformed/swiperefreshlayout-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] /home/val/.gradle/caches/transforms-3/52070002d578ee9daa660a1b612de420/transformed/asynclayoutinflater-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.asynclayoutinflater:asynclayoutinflater:1.0.0] /home/val/.gradle/caches/transforms-3/52070002d578ee9daa660a1b612de420/transformed/asynclayoutinflater-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.core:core:1.0.0] /home/val/.gradle/caches/transforms-3/2285b91efe25780c6e7d7713eefa7047/transformed/core-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.core:core:1.0.0] /home/val/.gradle/caches/transforms-3/2285b91efe25780c6e7d7713eefa7047/transformed/core-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.0.0] /home/val/.gradle/caches/transforms-3/e7f2c7063ba88424ded525892326e30e/transformed/versionedparcelable-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.0.0] /home/val/.gradle/caches/transforms-3/e7f2c7063ba88424ded525892326e30e/transformed/versionedparcelable-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.0.0] /home/val/.gradle/caches/transforms-3/7241b8f1ec37af109d4d2a2a19e27f98/transformed/lifecycle-runtime-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.0.0] /home/val/.gradle/caches/transforms-3/7241b8f1ec37af109d4d2a2a19e27f98/transformed/lifecycle-runtime-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.0] /home/val/.gradle/caches/transforms-3/947452df7c2c68665319fec12718535f/transformed/documentfile-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.0] /home/val/.gradle/caches/transforms-3/947452df7c2c68665319fec12718535f/transformed/documentfile-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /home/val/.gradle/caches/transforms-3/be78f20c96fdd8562774ce9c33a112b9/transformed/localbroadcastmanager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /home/val/.gradle/caches/transforms-3/be78f20c96fdd8562774ce9c33a112b9/transformed/localbroadcastmanager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.print:print:1.0.0] /home/val/.gradle/caches/transforms-3/f1c1f6112ea6a1f399972dce89bf2eda/transformed/print-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.print:print:1.0.0] /home/val/.gradle/caches/transforms-3/f1c1f6112ea6a1f399972dce89bf2eda/transformed/print-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] /home/val/.gradle/caches/transforms-3/fd1b545579ee6fe17065c14f79977cf0/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] /home/val/.gradle/caches/transforms-3/fd1b545579ee6fe17065c14f79977cf0/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /home/val/.gradle/caches/transforms-3/6079f7a765a62598ba06a2f5fdead08d/transformed/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /home/val/.gradle/caches/transforms-3/6079f7a765a62598ba06a2f5fdead08d/transformed/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.0.0] /home/val/.gradle/caches/transforms-3/60cfd4d0ce7cf2e64e675fbd60469bb6/transformed/lifecycle-viewmodel-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.0.0] /home/val/.gradle/caches/transforms-3/60cfd4d0ce7cf2e64e675fbd60469bb6/transformed/lifecycle-viewmodel-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /home/val/.gradle/caches/transforms-3/9214917a2328e873e25f2a8df01ef814/transformed/lifecycle-livedata-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.0.0] /home/val/.gradle/caches/transforms-3/9214917a2328e873e25f2a8df01ef814/transformed/lifecycle-livedata-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.0.0] /home/val/.gradle/caches/transforms-3/4db19e27d8dc3c18a0e11d542a3d656e/transformed/lifecycle-livedata-core-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.0.0] /home/val/.gradle/caches/transforms-3/4db19e27d8dc3c18a0e11d542a3d656e/transformed/lifecycle-livedata-core-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.arch.core:core-runtime:2.0.0] /home/val/.gradle/caches/transforms-3/d8a2fa2fab3869b7293d51c10b767260/transformed/core-runtime-2.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.arch.core:core-runtime:2.0.0] /home/val/.gradle/caches/transforms-3/d8a2fa2fab3869b7293d51c10b767260/transformed/core-runtime-2.0.0/AndroidManifest.xml:20:5-44
+INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
+INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
 	android:targetSdkVersion
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:9:9-38
 		INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
 		INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
 	android:minSdkVersion
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:8:9-34
 		INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
+		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
 		INJECTED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml
-uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:11:5-81
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:11:22-78
-uses-permission#android.permission.ACCESS_NETWORK_STATE
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:12:5-79
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:12:22-76
-uses-permission#android.permission.INTERNET
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:13:5-67
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:13:22-64
-application
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:15:5-84:19
-MERGED from [androidx.core:core:1.0.0] /home/val/.gradle/caches/transforms-3/b435c9c9cde5a7559bf6855b099cbe7a/transformed/core-1.0.0/AndroidManifest.xml:22:5-89
-MERGED from [androidx.core:core:1.0.0] /home/val/.gradle/caches/transforms-3/b435c9c9cde5a7559bf6855b099cbe7a/transformed/core-1.0.0/AndroidManifest.xml:22:5-89
-MERGED from [androidx.versionedparcelable:versionedparcelable:1.0.0] /home/val/.gradle/caches/transforms-3/c1a9d072f675a0182d61ba643fe0605b/transformed/versionedparcelable-1.0.0/AndroidManifest.xml:22:5-23:19
-MERGED from [androidx.versionedparcelable:versionedparcelable:1.0.0] /home/val/.gradle/caches/transforms-3/c1a9d072f675a0182d61ba643fe0605b/transformed/versionedparcelable-1.0.0/AndroidManifest.xml:22:5-23:19
-	android:appComponentFactory
-		ADDED from [androidx.core:core:1.0.0] /home/val/.gradle/caches/transforms-3/b435c9c9cde5a7559bf6855b099cbe7a/transformed/core-1.0.0/AndroidManifest.xml:22:18-86
-	android:label
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:17:9-41
-	android:icon
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:16:9-55
-activity#net.bancer.sparkdict.SparkDictActivity
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:18:9-57:20
-	android:label
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:20:13-45
-	android:launchMode
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:21:13-43
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:19:13-46
-intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:22:13-26:29
-action#android.intent.action.MAIN
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:23:17-69
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:23:25-66
-category#android.intent.category.LAUNCHER
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:25:17-77
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:25:27-74
-intent-filter#action:name:android.intent.action.SEARCH+category:name:android.intent.category.DEFAULT
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:29:13-32:29
-action#android.intent.action.SEARCH
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:30:17-71
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:30:25-68
-category#android.intent.category.DEFAULT
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:31:17-76
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:31:27-73
-meta-data#android.app.searchable
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:34:13-36:54
-	android:resource
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:36:17-51
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:35:17-54
-meta-data#android.app.default_searchable
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:41:13-43:54
-	android:value
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:43:17-51
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:42:17-62
-intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.DEFAULT+data:scheme:net.bancer.sparkdict
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:48:13-54:29
-action#android.intent.action.VIEW
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:49:17-69
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:49:25-66
-data
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:53:17-63
-	android:scheme
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:53:23-60
-activity#net.bancer.sparkdict.DictManagerActivity
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:58:9-60:59
-	android:label
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:60:13-56
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:59:13-48
-activity#net.bancer.sparkdict.DirectoryPickerActivity
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:61:9-63:53
-	android:label
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:63:13-50
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:62:13-52
-activity#net.bancer.sparkdict.DictPreferencesActivity
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:64:9-66:57
-	android:label
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:66:13-54
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:65:13-52
-activity#net.bancer.sparkdict.RecentHistoryActivity
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:67:9-73:20
-	android:label
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:69:13-66
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:68:13-70
-meta-data#android.support.PARENT_ACTIVITY
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:70:13-72:74
-	android:value
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:72:17-71
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:71:17-63
-provider#net.bancer.sparkdict.providers.SuggestionsProvider
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:75:9-80:20
-	android:enabled
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:78:13-35
-	android:authorities
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:77:13-85
-	android:exported
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:79:13-36
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:76:13-58
-uses-library#android.test.runner
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:82:9-85
-	android:required
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:82:58-82
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:82:23-57
-uses-library#android.test.base
-ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:83:9-83
-	android:required
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:83:56-80
-	android:name
-		ADDED from /home/val/git/SprintDict/app/src/main/AndroidManifest.xml:83:23-55

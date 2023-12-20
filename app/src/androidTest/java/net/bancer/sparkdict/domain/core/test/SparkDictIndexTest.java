@@ -54,49 +54,6 @@ public class SparkDictIndexTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.core.SparkDictIndex#buildIndex()}.
-	 */
-	public void testBuildIndex() {
-		fail("Not yet implemented");
-	}
-
-	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.core.SparkDictIndex#intToByteArray(int)}.
-	 */
-	public void testIntToByteArray() {
-		//assertTrue(Arrays.equals(new BigInteger("245", 10).toByteArray(), SparkDictIndex.intToByteArray(245)));
-		fail("Not yet implemented");
-	}
-
-	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.core.SparkDictIndex#byteArrayToInt(byte[])}.
-	 */
-	public void testByteArrayToInt() {
-		fail("Not yet implemented");
-	}
-
-	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.core.SparkDictIndex#registerObserver(net.bancer.sparkdict.domain.core.IObserver)}.
-	 */
-	public void testRegisterObserver() {
-		fail("Not yet implemented");
-	}
-
-	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.core.SparkDictIndex#removeObserver(net.bancer.sparkdict.domain.core.IObserver)}.
-	 */
-	public void testRemoveObserver() {
-		fail("Not yet implemented");
-	}
-
-	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.core.SparkDictIndex#notifyObservers()}.
-	 */
-	public void testNotifyObservers() {
-		fail("Not yet implemented");
-	}
-
-	/**
 	 * Test method for {@link net.bancer.sparkdict.domain.core.SparkDictIndex#getSize()}.
 	 * @throws IOException 
 	 * @throws FileNotFoundException 
