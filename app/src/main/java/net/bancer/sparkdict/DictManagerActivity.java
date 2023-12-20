@@ -13,9 +13,12 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.DocumentsContract;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,6 +35,8 @@ import android.widget.ListView;
  *
  */
 public class DictManagerActivity extends BaseActivity {
+
+	public static final int PICK_DIRECTORY = 43522432;
 
 	/**
 	 * Root directory for a directory picker.
@@ -123,26 +128,45 @@ public class DictManagerActivity extends BaseActivity {
         
 	private void startDirPicker() {
 		//Log.d(TAG, "Set dict path!");
-		Intent intent = new Intent(this, DirectoryPickerActivity.class);
-		intent.putExtra(DirectoryPickerActivity.START_DIR, MOUNT_DIR);
-		intent.putExtra(DirectoryPickerActivity.ONLY_DIRS, false);
-		intent.putExtra(DirectoryPickerActivity.SHOW_HIDDEN, false);
-		startActivityForResult(intent, DirectoryPickerActivity.PICK_DIRECTORY);
+		// Choose a directory using the system's file picker.
+		Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+		// Optionally, specify a URI for the directory that should be opened in
+		// the system file picker when it loads.
+		String uriToLoad = "/";
+		intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, uriToLoad);
+		startActivityForResult(intent, this.PICK_DIRECTORY);
 	}
  
     @Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent)	{
 		super.onActivityResult(requestCode, resultCode, intent);
 		// Save the path if DirectoryPicker successfully finished its job. 
-		if(requestCode == DirectoryPickerActivity.PICK_DIRECTORY && resultCode == RESULT_OK) {
-			saveDictPath(intent);
+		if(requestCode == this.PICK_DIRECTORY && resultCode == RESULT_OK) {
+			if (intent != null) {
+				saveDictPath(intent);
+			}
 		}
 	}
 
-	private void saveDictPath(Intent intent) {
+	/**
+	 * Extracts the folder that the user selected from the given intent object.
+	 *
+	 * @param intent
+	 * @return
+	 */
+	private String extractSelectedFolder(Intent intent) {
+		// The result data contains a URI for the document or directory that
+		// the user selected.
+		Uri uri = intent.getData();
+		final String docId = DocumentsContract.getTreeDocumentId(uri);
+		final String[] split = docId.split(":");
+		final String type = split[0];
 		// Get the path that was picked from intent returned by DirectoryPicker
-		Bundle extras = intent.getExtras();
-		String value = (String) extras.get(DirectoryPickerActivity.CHOSEN_DIRECTORY);
+		return Environment.getExternalStorageDirectory().toString() + "/" + split[1];
+	}
+
+	private void saveDictPath(Intent intent) {
+		String value = this.extractSelectedFolder(intent);
 		// Get the key that identifies the path in SharedPreferences
 		String key = getString(R.string.menu_dict_path);
 		// Save the path to SharedPreferences
