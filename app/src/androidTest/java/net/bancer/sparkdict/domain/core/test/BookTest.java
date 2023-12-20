@@ -147,13 +147,6 @@ public class BookTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.core.Book#buildSparkDictIndex(net.bancer.sparkdict.domain.core.IObserver)}.
-	 */
-	public void testBuildSparkDictIndex() {
-		fail("Not yet implemented");
-	}
-
-	/**
 	 * Test method for {@link net.bancer.sparkdict.domain.core.Book#iterator()}.
 	 */
 	public void testIterator() {
