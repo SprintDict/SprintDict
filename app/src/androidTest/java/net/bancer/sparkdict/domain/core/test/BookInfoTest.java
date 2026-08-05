@@ -3,9 +3,6 @@
  */
 package net.bancer.sparkdict.domain.core.test;
 
-import android.os.Environment;
-import android.util.Log;
-
 import java.io.File;
 
 import net.bancer.sparkdict.domain.core.BookInfo;
