@@ -1,5 +1,7 @@
 package net.bancer.sparkdict.mocks;
 
+import android.os.Environment;
+
 import net.bancer.sparkdict.domain.core.IndexEntry;
 
 
@@ -9,7 +11,7 @@ public class Mocks {
 	public static final String IDX_EXT = ".idx";
 	public static final String DICT_EXT = ".dict.dz";
 	
-	public static final String ROOT_PATH = "/mnt/sdcard/dictionaries";
+	public static final String ROOT_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/dictionaries";
 	
 	public static final String MUELLER_DICT_PATH = ROOT_PATH + "/mueller";
 	public static final String MUELLER_BASE_PATH = MUELLER_DICT_PATH + "/Mueller7GPL";
@@ -19,7 +21,7 @@ public class Mocks {
 	public static final String BSE_BASE_PATH = BSE_DICT_PATH + "/rus_bse";
 	public static final String BSE_IFO_PATH = BSE_BASE_PATH + IFO_EXT;
 
-	public static final String WORDNET_IFO_PATH = "/mnt/sdcard/dictionaries/wordnet/wordnet" + IFO_EXT;
+	public static final String WORDNET_IFO_PATH = ROOT_PATH + "/wordnet/wordnet" + IFO_EXT;
 	
 	public static final String CAMBRIDGE_DICT_PATH = ROOT_PATH + "/Cambridge Advanced Learners Dictionary 3th Ed";
 	public static final String CAMBRIDGE_BASE_PATH = CAMBRIDGE_DICT_PATH + "/Cambridge Advanced Learners Dictionary 3th Ed";

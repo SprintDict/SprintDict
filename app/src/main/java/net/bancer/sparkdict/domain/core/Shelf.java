@@ -1,6 +1,8 @@
 package net.bancer.sparkdict.domain.core;
 
 
+import android.util.Log;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,6 +90,8 @@ public class Shelf {
 					}
 				}
 			}
+		} else {
+			Log.e("SprintDict", "Failed to list files in " + dictPath);
 		}
 		return result;
 	}

@@ -169,7 +169,11 @@ public class DictManagerActivity extends BaseActivity {
 		final String[] split = docId.split(":");
 		final String type = split[0];
 		// Get the path that was picked from intent returned by DirectoryPicker
-		return Environment.getExternalStorageDirectory().toString() + "/" + split[1];
+		String path = split.length > 1 ? split[1] : "";
+		if ("primary".equalsIgnoreCase(type)) {
+			return Environment.getExternalStorageDirectory() + "/" + path;
+		}
+		return "/storage/" + type + "/" + path;
 	}
 
 	private void saveDictPath(Intent intent) {

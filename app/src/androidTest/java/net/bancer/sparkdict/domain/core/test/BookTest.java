@@ -13,6 +13,8 @@ import net.bancer.sparkdict.domain.core.IndexEntriesIterator;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.LexicalEntry;
 import net.bancer.sparkdict.domain.utils.DomainException;
+import net.bancer.sparkdict.mocks.Mocks;
+
 import junit.framework.TestCase;
 
 /**
@@ -37,8 +39,8 @@ public class BookTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		book = new Book(new File("/mnt/sdcard/dictionaries/wordnet/wordnet.ifo"));
-		bse = new Book(new File("/mnt/sdcard/dictionaries/bse/rus_bse.ifo"));
+		book = new Book(new File(Mocks.ROOT_PATH + "/wordnet/wordnet.ifo"));
+		bse = new Book(new File(Mocks.ROOT_PATH + "/bse/rus_bse.ifo"));
 	}
 
 	/* (non-Javadoc)
