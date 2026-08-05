@@ -9,12 +9,17 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.Html;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
+import android.text.style.LeadingMarginSpan;
+import android.text.style.QuoteSpan;
 import android.text.style.TextAppearanceSpan;
 import android.util.AttributeSet;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import androidx.core.text.HtmlCompat;
 
 /**
  * DefinitionsView displays definitions of the lexical entry and performs
@@ -24,6 +29,8 @@ import android.widget.TextView;
  *
  */
 public class DefinitionsView extends EditText {
+
+	private static final int BLOCKQUOTE_INDENT = 40;
 
 	/**
 	 * Focused word background colour.
@@ -138,17 +145,70 @@ public class DefinitionsView extends EditText {
 	}
 
 	/**
-	 * Parses the HTML string provided as the parameter and sets it as the text
-	 * for the current view.
-	 * 
+	 * Parses the HTML definitions of the specified lexical entry and sets the
+	 * resulting formatted text as the content of this view.
+	 *
+	 * <p>The HTML content is converted into a {@link Spanned} object using
+	 * {@link Html#fromHtml(String, int, Html.ImageGetter, Html.TagHandler)}.
+	 * Dictionary images are resolved by {@link DictResourceImageGetter}, custom
+	 * tags are handled by {@link UnrecognizedTagsHandler}, and blockquotes are
+	 * adjusted to use indentation instead of Android's default quote styling.</p>
+	 *
 	 * @param lexicalEntry
-	 *            HTML string of the definitions to be set as text.
+	 *            lexical entry containing the HTML definitions to display.
 	 */
 	public void parseHtmlAndSetText(final LexicalEntry lexicalEntry) {
-		setText(Html.fromHtml(lexicalEntry.getDefinitions(),
-				new DictResourceImageGetter(lexicalEntry),
-				new UnrecognizedTagsHandler(lexicalEntry, getContext())),
-				TextView.BufferType.SPANNABLE);
+		String html = lexicalEntry.getDefinitions();
+		int maxImageWidth = computeMaxImageWidth();
+		Html.ImageGetter imageGetter = new DictResourceImageGetter(lexicalEntry, maxImageWidth);
+		Html.TagHandler tagHandler = new UnrecognizedTagsHandler(lexicalEntry, getContext());
+		Spanned parsedHtml = Html.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY, imageGetter, tagHandler);
+		SpannableStringBuilder finalizedHtml = indentBlockquotes(parsedHtml);
+		setText(finalizedHtml, TextView.BufferType.SPANNABLE);
 	}
 
+	/**
+	 * Computes the maximum width available for dictionary images.
+	 *
+	 * <p>The width is limited by both the available screen width and the
+	 * remaining vertical space below the search bar. Additional horizontal
+	 * space is reserved for blockquote indentation to prevent images inside
+	 * nested blockquotes from overflowing.</p>
+	 *
+	 * @return maximum image width in pixels.
+	 */
+	private int computeMaxImageWidth() {
+		int approxSearchBarHeight = 400;
+		int height = getResources().getDisplayMetrics().heightPixels - approxSearchBarHeight;
+		// Reserve space for up to four nested blockquotes.
+		int width = getResources().getDisplayMetrics().widthPixels - BLOCKQUOTE_INDENT * 4;
+		return Math.min(height, width);
+	}
+
+	/**
+	 * Replaces Android's default blockquote rendering with an indented layout.
+	 *
+	 * <p>{@link Html#fromHtml(String, int, Html.ImageGetter, Html.TagHandler)}
+	 * converts {@code <blockquote>} tags into {@link QuoteSpan} instances, which
+	 * render as a vertical line. This method removes those spans and replaces
+	 * them with {@link LeadingMarginSpan.Standard} instances to display
+	 * blockquotes with a left indentation instead.</p>
+	 *
+	 * @param parsedHtml
+	 *            parsed HTML content containing possible blockquote spans.
+	 * @return a modifiable spannable text with blockquotes indented.
+	 */
+	private SpannableStringBuilder indentBlockquotes(Spanned parsedHtml) {
+		SpannableStringBuilder builder = new SpannableStringBuilder(parsedHtml);
+		QuoteSpan[] quotes = builder.getSpans(0, builder.length(), QuoteSpan.class);
+		for (QuoteSpan quote : quotes) {
+			int start = builder.getSpanStart(quote);
+			int end = builder.getSpanEnd(quote);
+			int flags = builder.getSpanFlags(quote);
+			builder.removeSpan(quote);
+			LeadingMarginSpan.Standard blockquoteMargin = new LeadingMarginSpan.Standard(BLOCKQUOTE_INDENT);
+			builder.setSpan(blockquoteMargin, start, end, flags);
+		}
+		return builder;
+	}
 }
