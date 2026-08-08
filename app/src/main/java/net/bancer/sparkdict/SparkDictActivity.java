@@ -143,6 +143,7 @@ public class SparkDictActivity extends BaseActivity
 	@Override
 	protected void onDestroy() {
 		searchExecutor.shutdownNow();
+		getShelf().closeResources();
 		super.onDestroy();
 	}
 	

@@ -35,6 +35,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package net.bancer.sparkdict.domain.core;
 
+import android.util.Log;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -64,13 +66,15 @@ public class DictZipFile {
 	/**
 	 * 
 	 */
-	private RandomAccessFile dzFile;
+	private RandomAccessFile dzFile = null;
 
 	//private static final int FTEXT = 1;
 	private static final int FHCRC = 2;
 	private static final int FEXTRA =4;
 	private static final int FNAME = 8;
 	private static final int FCOMMENT = 16;
+
+	private static final String TAG = "DictZipFile";
 
 	//private static final int READ = 1;
 	//private static final int WRITE = 2;
@@ -84,20 +88,20 @@ public class DictZipFile {
 	private List<Chunk> chunks;
 
 	/**
-	 * Constructor.
+	 * Opens a dictionary .dict.dz file and initializes its decompression state.
 	 * 
-	 * @param dictzipfilename <dictionary name>.dict.dz full file name.
+	 * @param dictzipfilename full path to the <dictionary name>.dict.dz file.
 	 */
 	public DictZipFile(String dictzipfilename) {
 		try {
-			dzFile = new RandomAccessFile(dictzipfilename,"r");
+			dzFile = new RandomAccessFile(dictzipfilename, "r");
 			pos = 0;
 			pointerPosition = 0;
-			chunks = new ArrayList<Chunk> ();
+			chunks = new ArrayList<>();
 			this.readGZipHeader();
-		} catch(Exception e) {
-			//last_error = e.toString();
-			e.printStackTrace();
+		} catch (IOException e) {
+			Log.e(TAG, "Cannot open dictionary file: " + dictzipfilename, e);
+			close();
 		}
 	}
 
@@ -164,12 +168,23 @@ public class DictZipFile {
 	}*/
 
 	/**
-	 * 
-	 * @throws Exception
+	 * Closes the dictionary file and releases its underlying resources.
+	 *
+	 * <p>If the dictionary file is not currently open, this method does nothing.
+	 * After the file is closed, the internal file reference is cleared so that
+	 * the dictionary file can be reopened when it is needed again.</p>
 	 */
-	/*public void close() throws Exception{
-		this.dzFile.close();
-	}*/
+	public void close() {
+		if (dzFile != null) {
+			try {
+				dzFile.close();
+			} catch (IOException e) {
+				Log.e(TAG, "Cannot close dictionary .dict.dz file", e);
+			} finally {
+				dzFile = null;
+			}
+		}
+	}
 
 	/**
 	 * 
