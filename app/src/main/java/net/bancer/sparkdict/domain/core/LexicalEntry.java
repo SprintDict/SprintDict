@@ -1,17 +1,13 @@
 package net.bancer.sparkdict.domain.core;
 
+import android.util.Log;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipInputStream;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
+import java.util.zip.ZipFile;
 
 import net.bancer.sparkdict.domain.parsers.IParser;
 import net.bancer.sparkdict.domain.parsers.ParsingStrategyFactory;
@@ -24,6 +20,8 @@ import net.bancer.sparkdict.domain.parsers.ParsingStrategyFactory;
  *
  */
 public class LexicalEntry {
+
+	private static final String TAG = "LexicalEntry";
 
 	private static ParsingStrategyFactory parsersFactory = ParsingStrategyFactory.getInstance();
 
@@ -147,114 +145,125 @@ public class LexicalEntry {
 	}
 
 	/**
-	 * Retrieves the resource identified by the resource name. The resource is
-	 * read from a file or from a database into the bytes array. The resource
-	 * could be an image or audio.
-	 * 
-	 * @param resourceName
-	 *            resource to be read.
-	 * @return resource in the form of bytes array.
+	 * Retrieves the resource identified by the specified resource name.
+	 *
+	 * <p>If a {@code res.zip} archive exists in the dictionary directory, the
+	 * resource is extracted from the archive. Otherwise, the resource is read
+	 * from the {@code res} directory.</p>
+	 *
+	 * @param resourceName name of the resource to retrieve.
+	 * @return resource contents as a byte array, or an empty byte array if the resource cannot be found or read.
 	 */
 	public byte[] getResource(String resourceName) {
-		byte[] result = null;
-		String path = bookInfo.getDirPath() + File.separator + "res"
-				+ File.separator + resourceName;
+		File zipFile = new File(bookInfo.getDirPath(), "res.zip");
+		if(zipFile.exists()) {
+			return extractResourceFromZipFile(zipFile, resourceName);
+		}
+		String path = bookInfo.getDirPath() + File.separator + "res" + File.separator + resourceName;
 		File file = new File(path);
 		if (file.exists()) {
-			RandomAccessFile raf = null;
-			try {
-				raf = new RandomAccessFile(path, "r");
-				result = new byte[(int) raf.length()];
-				raf.read(result);
-			} catch (IOException e) {
-				result = new byte[0];
-			} finally {
-				if (raf != null) {
-					try {
-						raf.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
+			return readResourceFile(path);
 		} else {
-			System.out.println(file + " does not exist");
-			File f = new File(bookInfo.getDirPath() + File.separator + "res.zip");
-			if(f.exists()) {
-				System.out.println(f + " exists");
-				System.out.println("file size: " + f.length());
-				ZipFile zip = null;
-//				try {
-//					
-//					zip = new ZipFile(f);
-//					
-//					System.out.println("zip encoding: " + zip.getEncoding());
-//					//zip = new ZipFile(bookInfo.getDirPath() + File.separator + "res.zip");
-//					//System.out.println("zip name: " + zip.getName());
-//					//System.out.println("zipfile size: " + zip.size());
-//					//zip.entries();
-//					//ZipEntry zipEntry = zip.getEntry("res/" + resourceName);
-//					ZipArchiveEntry zipEntry = zip.getEntry("res/" + resourceName);
-//					if(zipEntry != null) {
-//						System.out.println("zipentry size: " + zipEntry.getSize());
-//						result = new byte[(int) zipEntry.getSize()];
-//						InputStream is = zip.getInputStream(zipEntry);
-//						int bytesRead = is.read(result);
-//						System.out.println("bytes read: " + bytesRead);
-//					} else {
-//						System.out.println("zipentry is null");
-//						result = new byte[0];
-//					}
-//				} catch (ZipException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				} finally {
-//					if(zip != null) {
-//						try {
-//							zip.close();
-//						} catch (IOException e) {
-//							e.printStackTrace();
-//						}
-//					}
-//				}
-				
-//				try {
-//					ZipInputStream zis = new ZipInputStream(new FileInputStream(f));
-//					System.out.println("zis available: " + zis.available());
-//					int s = 0;
-//					ZipEntry ze;
-//					while((ze = zis.getNextEntry()) != null) {
-//						if(ze.getName().equals("res/" + resourceName)) {
-//							System.out.println("FOUND!");
-//						}
-//						s++;
-//					}
-//					System.out.println("nothing found");
-//					System.out.println("entries: " + s);
-//				} catch (FileNotFoundException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-				
-//				try {
-//					Process process = Runtime.getRuntime().exec("unzip -p res.zip \"res/" +
-//							"z_abacus.wav" +
-//							"\"");
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-			} else {
-				// read resources database
-				result = new byte[0]; // TODO: correct size by getting it from idx
+			Log.e(TAG, file + " does not exist");
+		}
+		return new byte[0];
+	}
+
+	/**
+	 * Reads the contents of the specified resource file.
+	 *
+	 * @param path path to the resource file.
+	 * @return resource contents as a byte array, or an empty byte array if the file cannot be read.
+	 */
+	private byte[] readResourceFile(String path) {
+		byte[] result = new byte[0];
+		RandomAccessFile raf = null;
+		try {
+			raf = new RandomAccessFile(path, "r");
+			result = new byte[(int) raf.length()];
+			raf.read(result);
+		} catch (IOException e) {
+			Log.e(TAG, "Cannot read resource file: " + path);
+		} finally {
+			if (raf != null) {
+				try {
+					raf.close();
+				} catch (IOException e) {
+					Log.e(TAG, "Cannot close resource file: " + path);
+				}
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Extracts the specified resource from a ZIP archive.
+	 *
+	 * <p>The ZIP archive is opened for the duration of this method and closed
+	 * before the method returns. The resource is expected to be located under
+	 * the {@code res/} directory inside the archive.</p>
+	 *
+	 * @param zipFile ZIP archive containing the resource.
+	 * @param resourceName name of the resource to extract.
+	 * @return resource contents as a byte array, or an empty byte array if the
+	 *         archive cannot be opened or the resource cannot be read.
+	 */
+	private byte[] extractResourceFromZipFile(File zipFile, String resourceName) {
+		byte[] result = new byte[0];
+		ZipFile zip = null;
+		try {
+			zip = new ZipFile(zipFile);
+			return getResourceFromZip(zip, resourceName);
+		} catch (IOException e) {
+			Log.e(TAG, "Cannot open resource ZIP: " + zipFile, e);
+		} finally {
+			if(zip != null) {
+				try {
+					zip.close();
+				} catch (IOException e) {
+					Log.e(TAG, "Cannot close resource ZIP", e);
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Retrieves a resource from an already opened ZIP archive.
+	 *
+	 * <p>The resource is expected to be located under the {@code res/} directory
+	 * inside the archive. The returned byte array contains the decompressed
+	 * contents of the ZIP entry.</p>
+	 *
+	 * @param resourceZip open ZIP archive containing the resource.
+	 * @param resourceName name of the resource to retrieve.
+	 * @return resource contents as a byte array, or an empty byte array if the
+	 *         specified entry does not exist or cannot be read.
+	 */
+	private byte[] getResourceFromZip(ZipFile resourceZip, String resourceName) {
+		String entryName = "res/" + resourceName;
+		ZipEntry entry = resourceZip.getEntry(entryName);
+		if (entry == null) {
+			return new byte[0];
+		}
+		try (InputStream input = resourceZip.getInputStream(entry)) {
+			byte[] result = new byte[(int) entry.getSize()];
+			int offset = 0;
+			while (offset < result.length) {
+				int bytesRead = input.read(result, offset, result.length - offset);
+				if (bytesRead == -1) {
+					break;
+				}
+				offset += bytesRead;
+			}
+			if (offset != result.length) {
+				Log.e(TAG, "Unexpected end of ZIP entry: " + entryName);
+				return new byte[0];
+			}
+			return result;
+		} catch (IOException e) {
+			Log.e(TAG, "Cannot read ZIP entry: " + entryName, e);
+			return new byte[0];
+		}
 	}
 }
