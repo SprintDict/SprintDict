@@ -579,6 +579,7 @@ public class SparkDictActivity extends BaseActivity
 			lexicalEntriesListView.add(entry);
 			dismissDialog(DIALOG_SEARCHING);
 			inputTextView.setText("");
+			// display progress spinner in the title bar
 			setProgressBarIndeterminateVisibility(true);
 			setProgressBarVisibility(true);
 		}
