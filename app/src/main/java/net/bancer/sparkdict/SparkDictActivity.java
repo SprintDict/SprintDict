@@ -2,6 +2,8 @@ package net.bancer.sparkdict;
 
 import java.util.ArrayList;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import net.bancer.sparkdict.adapters.IndexEntriesAdapter;
 import net.bancer.sparkdict.domain.core.Book;
@@ -20,6 +22,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -81,6 +85,16 @@ public class SparkDictActivity extends BaseActivity
 			zoomControls.setVisibility(View.GONE);
 		}
 	};
+
+	/**
+	 * Executor used to perform dictionary searches in a background thread.
+	 */
+	private final ExecutorService searchExecutor = Executors.newSingleThreadExecutor();
+
+	/**
+	 * Handler used to execute tasks on the main application thread.
+	 */
+	private final Handler mainHandler = new Handler(Looper.getMainLooper());
 	
 	private String dictPath;
 	private ArrayList<LexicalEntry> articles = new ArrayList<LexicalEntry>();
@@ -125,6 +139,13 @@ public class SparkDictActivity extends BaseActivity
     	super.onPause();
     	saveRecentHistory();
     }
+
+	@Override
+	protected void onDestroy() {
+		searchExecutor.shutdownNow();
+		getShelf().closeResources();
+		super.onDestroy();
+	}
 	
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
@@ -419,10 +440,9 @@ public class SparkDictActivity extends BaseActivity
 	}
 
 	private void doSearch(String searchStr) {
-		//Thread.dumpStack();
 		lexicalEntriesListView.removeAllViews();
 		showDialog(DIALOG_SEARCHING);
-		new SearchWorker().execute(searchStr);
+		searchExecutor.execute(new SearchWorker(searchStr));
 		hideKeyboard(inputTextView);
 	}
 
@@ -469,37 +489,64 @@ public class SparkDictActivity extends BaseActivity
 	
 	/**
 	 * Performs a search in all dictionaries in the background thread and updates
-	 * the view in the UI thread.
-	 * 
-	 * @author Valerij Bancer
-	 *
+	 * the user interface with the search results on the main application thread.
 	 */
-	private class SearchWorker extends AsyncTask<String, LexicalEntry, Boolean> {
-		
-		private String lemma;
+	private class SearchWorker implements Runnable {
+
+		/**
+		 * Search term used to retrieve lexical entries from the enabled dictionaries.
+		 */
+		private final String lemma;
+
+		/**
+		 * Indicates whether the search found at least one lexical entry.
+		 */
+		private Boolean result;
+
+		/**
+		 * Creates a search worker for the specified search term.
+		 *
+		 * @param lemma search term to look up in the enabled dictionaries.
+		 */
+		private SearchWorker(String lemma) {
+			this.lemma = lemma;
+		}
+
+		/**
+		 * Performs the dictionary search in the background thread and posts the
+		 * search completion callback to the main application thread.
+		 */
+		@Override
+		public void run() {
+			result = doInBackground();
+			mainHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					onPostExecute(result);
+				}
+			});
+		}
 
 		/**
 		 * Performs lexical entries search in all dictionaries and publishes
 		 * progress one by one.
 		 */
-		@Override
-		protected Boolean doInBackground(String... lemma) {
-			this.lemma = lemma[0];
-			LexicalEntry entry = null;
+		private Boolean doInBackground() {
 			boolean atLeastOneEntryFound = false;
 			articles.clear();
-			for(Book book : getShelf().getBooks()) {
-				if(book.isEnabled()) {
+			for (Book book : getShelf().getBooks()) {
+				if (book.isEnabled()) {
+					LexicalEntry entry = null;
 					try {
-						entry = book.getLexicalEntry(lemma[0]);
+						entry = book.getLexicalEntry(lemma);
 					} catch (DomainException e) {
-						Log.e(TAG, "Cannot retrieve '" + lemma[0] + "' from " + book.getBookName(), e);
+						Log.e(TAG, "Cannot retrieve '" + lemma + "' from " + book.getBookName(), e);
 					}
-					if(entry != null) {
+					if (entry != null) {
 						articles.add(entry);
 						publishProgress(entry);
-						if(!atLeastOneEntryFound) {
-							SparkDictActivity.this.addToRecentHistory(lemma[0]);
+						if (!atLeastOneEntryFound) {
+							SparkDictActivity.this.addToRecentHistory(lemma);
 							atLeastOneEntryFound = true;
 						}
 					}
@@ -509,33 +556,48 @@ public class SparkDictActivity extends BaseActivity
 		}
 
 		/**
+		 * Posts a search result to the main application thread for display.
+		 *
+		 * @param entry lexical entry found by the background search.
+		 */
+		private void publishProgress(final LexicalEntry entry) {
+			mainHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					onProgressUpdate(entry);
+				}
+			});
+		}
+
+		/**
 		 * Updates view with found lexical entry, dismisses progress spinner
 		 * dialog, initiates progress spinner in the title bar.
+		 *
+		 * @param entry Lexical entry to be added to the view.
 		 */
-		@Override
-		protected void onProgressUpdate(LexicalEntry... entry) {
-			lexicalEntriesListView.add(entry[0]);
+		private void onProgressUpdate(LexicalEntry entry) {
+			lexicalEntriesListView.add(entry);
 			dismissDialog(DIALOG_SEARCHING);
 			inputTextView.setText("");
 			// display progress spinner in the title bar
 			setProgressBarIndeterminateVisibility(true);
-		    setProgressBarVisibility(true);
+			setProgressBarVisibility(true);
 		}
-		
+
 		/**
 		 * Terminates progress spinner in the title bar, displays a toast if
 		 * no lexical entries were found.
+		 *
+		 * @param atLeastOneEntryFound `true` if at least one entry was found.
 		 */
-		@Override
-		protected void onPostExecute(Boolean atLeastOneEntryFound) {
-			if(!atLeastOneEntryFound) {
+		private void onPostExecute(Boolean atLeastOneEntryFound) {
+			if (!atLeastOneEntryFound) {
 				dismissDialog(DIALOG_SEARCHING);
 				showLongToast(getString(R.string.nothing_found));
 			}
 			// hide progress spinner in the title bar
 			setProgressBarIndeterminateVisibility(false);
-		    setProgressBarVisibility(false);
+			setProgressBarVisibility(false);
 		}
 	}
-
 }

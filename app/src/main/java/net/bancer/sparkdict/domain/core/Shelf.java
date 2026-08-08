@@ -173,4 +173,16 @@ public class Shelf {
 	public void setDictPath(String dictPath) {
 		this.dictPath = dictPath;
 	}
+
+	/**
+	 * Closes the resources held by all books in the shelf.
+	 *
+	 * <p>If a book has no open resources, its resource cleanup method does
+	 * nothing.</p>
+	 */
+	public void closeResources() {
+		for (Book book : getBooks()) {
+			book.closeResources();
+		}
+	}
 }

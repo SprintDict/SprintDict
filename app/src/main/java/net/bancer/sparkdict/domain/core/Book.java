@@ -293,4 +293,17 @@ public class Book implements Iterable<IndexEntry> {
 		}
 		return true;
 	}
+
+	/**
+	 * Closes the dictionary file and releases its resources.
+	 *
+	 * <p>If the dictionary file is not currently open, this method does nothing.
+	 * The dictionary file can be reopened automatically when it is needed again.</p>
+	 */
+	public void closeResources() {
+		if (dzFile != null) {
+			dzFile.close();
+			dzFile = null;
+		}
+	}
 }
