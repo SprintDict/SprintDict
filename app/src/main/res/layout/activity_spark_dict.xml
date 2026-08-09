@@ -82,13 +82,4 @@
        	</net.bancer.sparkdict.views.LexicalEntriesListView>
     </ScrollView>
 
-    <ZoomControls
-        android:id="@+id/zoom_controls"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/find_on_page_layout"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="10dp" />
-
 </RelativeLayout>

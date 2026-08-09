@@ -8,6 +8,8 @@ import net.bancer.sparkdict.SparkDictActivity;
 import net.bancer.sparkdict.domain.core.LexicalEntry;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -24,6 +26,12 @@ public class LexicalEntriesListView extends LinearLayout {
 	 * Word that is focused when user searches a specific word on the screen.
 	 */
 	private WordFocused wordFocused;
+
+	/**
+	 * Detects pinch gestures used to change the font size of all lexical
+	 * entries displayed by this view.
+	 */
+	private ScaleGestureDetector scaleGestureDetector;
 
 	/**
 	 * Constructor.
@@ -47,10 +55,103 @@ public class LexicalEntriesListView extends LinearLayout {
 	}
 
 	/**
-	 * Initialisation steps shared amongst all constructors.
+	 * Initializes the view's state and pinch gesture detector.
+	 *
+	 * <p>The gesture detector accumulates scale changes during a pinch and
+	 * changes the font size when the accumulated scale exceeds the configured
+	 * threshold.</p>
 	 */
 	private void init() {
 		wordFocused = new WordFocused();
+		scaleGestureDetector = new ScaleGestureDetector(
+			getContext(),
+			new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+
+				private float accumulatedScale = 1.0f;
+
+				@Override
+				public boolean onScale(ScaleGestureDetector detector) {
+					accumulatedScale *= detector.getScaleFactor();
+					if (accumulatedScale > 1.10f) {
+						zoomIn();
+						accumulatedScale = 1.0f;
+					} else if (accumulatedScale < 0.90f) {
+						zoomOut();
+						accumulatedScale = 1.0f;
+					}
+					return true;
+				}
+			}
+		);
+	}
+
+	/**
+	 * Handles touch events and pinch-to-zoom gestures.
+	 *
+	 * <p>Single-finger clicks are delegated to {@link #performClick()}, while
+	 * multi-finger gestures are handled by the scale gesture detector.</p>
+	 *
+	 * @param event touch event to process.
+	 * @return {@code true} to indicate that the event has been handled.
+	 */
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		scaleGestureDetector.onTouchEvent(event);
+		if (
+			event.getActionMasked() == MotionEvent.ACTION_UP &&
+			!scaleGestureDetector.isInProgress()
+		) {
+			performClick();
+		}
+		return true;
+	}
+
+	/**
+	 * Performs the click action for this view.
+	 *
+	 * <p>This method is overridden to comply with Android's custom view
+	 * touch-handling contract when {@link #onTouchEvent(MotionEvent)} is
+	 * overridden.</p>
+	 *
+	 * @return {@code true} if the click was handled.
+	 */
+	@Override
+	public boolean performClick() {
+		return super.performClick();
+	}
+
+	/**
+	 * Intercepts touch events when a pinch-to-zoom gesture is detected.
+	 *
+	 * <p>When a second pointer is placed on the screen, interception by the
+	 * parent view is disabled so that vertical pinch gestures are not
+	 * intercepted by the surrounding {@code ScrollView}. Once the scale
+	 * gesture is in progress, subsequent events are intercepted by this
+	 * view.</p>
+	 *
+	 * @param event touch event to process.
+	 * @return {@code true} if the event should be intercepted by this view,
+	 *         otherwise the result of the superclass implementation.
+	 */
+	@Override
+	public boolean onInterceptTouchEvent(MotionEvent event) {
+		scaleGestureDetector.onTouchEvent(event);
+		switch (event.getActionMasked()) {
+			case MotionEvent.ACTION_POINTER_DOWN:
+				if (event.getPointerCount() == 2) {
+					getParent().requestDisallowInterceptTouchEvent(true);
+					return true;
+				}
+				break;
+			case MotionEvent.ACTION_UP:
+			case MotionEvent.ACTION_CANCEL:
+				getParent().requestDisallowInterceptTouchEvent(false);
+				break;
+		}
+		if (scaleGestureDetector.isInProgress()) {
+			return true;
+		}
+		return super.onInterceptTouchEvent(event);
 	}
 
 	/**
@@ -71,39 +172,25 @@ public class LexicalEntriesListView extends LinearLayout {
 		}
 		addView(lexicalEntryView);
 	}
-	
+
 	/**
-	 * ZoomInClickListener getter.
-	 * 
-	 * @return	OnClickListener that increases font size of all lexical entries.
+	 * Increases the font size of all lexical entries displayed by this view.
 	 */
-	public OnClickListener getZoomInClickListener() {
-		return new OnClickListener() {	
-			@Override
-			public void onClick(View v) {
-				for (int i = 0; i < getChildCount(); i++) {                	
-			    	((LexicalEntryView) getChildAt(i)).zoomIn();
-				}
-			}
-		};
+	private void zoomIn() {
+		for (int i = 0; i < getChildCount(); i++) {
+			((LexicalEntryView) getChildAt(i)).zoomIn();
+		}
 	}
-	
+
 	/**
-	 * ZoomOutClickListener getter.
-	 * 
-	 * @return	OnClickListener that decreases font size of all lexical entries.
+	 * Decreases the font size of all lexical entries displayed by this view.
 	 */
-	public OnClickListener getZoomOutClickListener() {
-		return new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				for (int i = 0; i < getChildCount(); i++) {                	
-			    	((LexicalEntryView) getChildAt(i)).zoomOut();
-				}
-			}
-		};
+	private void zoomOut() {
+		for (int i = 0; i < getChildCount(); i++) {
+			((LexicalEntryView) getChildAt(i)).zoomOut();
+		}
 	}
-	
+
 	/**
 	 * Restores the highlighting and focus after the application was paused
 	 * while searching a word on the screen.

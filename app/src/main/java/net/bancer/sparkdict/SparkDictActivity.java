@@ -39,10 +39,8 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.ZoomControls;
 
 /**
  * SparkDictActivity is the main activity.
@@ -74,16 +72,8 @@ public class SparkDictActivity extends BaseActivity
 	private ImageButton searchButton;
 	private ScrollView scrollView;
 	private LexicalEntriesListView lexicalEntriesListView;
-	private ZoomControls zoomControls;
 	private EditText findOnPageInput;
 	private LinearLayout findOnPageView;
-	
-	private Runnable zoomHider = new Runnable() {
-		@Override
-		public void run() {
-			zoomControls.setVisibility(View.GONE);
-		}
-	};
 
 	/**
 	 * Executor used to perform dictionary searches in a background thread.
@@ -226,12 +216,7 @@ public class SparkDictActivity extends BaseActivity
         
         lexicalEntriesListView = (LexicalEntriesListView) findViewById(R.id.articles_list);
         lexicalEntriesListView.setOnClickListener(this);
-        
-        zoomControls = (ZoomControls) findViewById(R.id.zoom_controls);
-		zoomControls.setOnZoomInClickListener(lexicalEntriesListView.getZoomInClickListener());
-		zoomControls.setOnZoomOutClickListener(lexicalEntriesListView.getZoomOutClickListener());
-        zoomControls.setVisibility(View.GONE);
-        
+
         //findOnPageBar = new FindOnPageBar(this);
 
 		findOnPageInput = (EditText) findViewById(R.id.find_on_page_edit_text);
@@ -412,11 +397,6 @@ public class SparkDictActivity extends BaseActivity
 			case R.id.searchButton:
 				doSearch(inputTextView.getText().toString());
 				break;
-			case R.id.definitions_body:
-				zoomControls.setVisibility(View.VISIBLE);
-				zoomControls.postDelayed(zoomHider, 2000);
-				hideKeyboard(v);
-				break;
 			default:
 				break;
 		}
@@ -463,17 +443,11 @@ public class SparkDictActivity extends BaseActivity
 		findOnPageView.setVisibility(View.VISIBLE);
 		findOnPageInput.setText("");
 		findOnPageInput.requestFocus();
-		RelativeLayout.LayoutParams params = (android.widget.RelativeLayout.LayoutParams) zoomControls.getLayoutParams();
-		params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
-		zoomControls.setLayoutParams(params);
 	}
 	
 	public void onCloseFindOnPageBarButtonClick(View v) {
 		findOnPageInput.setText("");
 		findOnPageView.setVisibility(View.GONE);
-		RelativeLayout.LayoutParams params = (android.widget.RelativeLayout.LayoutParams) zoomControls.getLayoutParams();
-		params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 1);
-		zoomControls.setLayoutParams(params);
 		hideKeyboard(v);
 		lexicalEntriesListView.clearSearchOnScreenResults();
 	}
