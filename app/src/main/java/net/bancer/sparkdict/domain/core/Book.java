@@ -24,6 +24,11 @@ public class Book implements Iterable<IndexEntry> {
 	private static final String DICT_FILE_EXTENSION = ".dict.dz";
 
 	/**
+	 * ZIP archive containing dictionary resources such as audio files and pictures.
+	 */
+	private static final String RES_ZIP_NAME = "res.zip";
+
+	/**
 	 * BookInfo object.
 	 */
 	private BookInfo bookInfo;
@@ -37,6 +42,11 @@ public class Book implements Iterable<IndexEntry> {
 	 * DictZipFile object.
 	 */
 	private DictZipFile dzFile = null;
+
+	/**
+	 * ZIP archive containing the resource.
+	 */
+	private ResourcesZipFile resZipFile = null;
 
 	/**
 	 * Index entries iterator.
@@ -90,21 +100,23 @@ public class Book implements Iterable<IndexEntry> {
 	 * @return			LexicalEntry object or `null`.
 	 */
 	private LexicalEntry getLexicalEntry(IndexEntry idxEntry) {
-		LexicalEntry result = null;
 		if(dzFile == null){
 			dzFile = new DictZipFile(bookInfo.getFileBaseName() + DICT_FILE_EXTENSION);
 		}
-		byte[] buffer = new byte[idxEntry.getWordDataSize()];
+		if (resZipFile == null) {
+			File zipFile = new File(bookInfo.getDirPath(), RES_ZIP_NAME);
+			if (zipFile.exists()) {
+				resZipFile = new ResourcesZipFile(zipFile);
+			}
+		}
 		try {
-			buffer = dzFile.read(idxEntry.getWordDataOffset(), idxEntry.getWordDataSize());
+			byte[] buffer = dzFile.read(idxEntry.getWordDataOffset(), idxEntry.getWordDataSize());
 			String lemma = idxEntry.getLemma();
-			result = new LexicalEntry(lemma, buffer, bookInfo);
+			return new LexicalEntry(lemma, buffer, bookInfo, resZipFile);
 		} catch (IOException e) {
 			Log.e(this.getClass().getName(), e.getMessage());
-		} finally {
-			buffer = null;
+			return null;
 		}
-		return result;
 	}
 
 	/**
@@ -295,15 +307,19 @@ public class Book implements Iterable<IndexEntry> {
 	}
 
 	/**
-	 * Closes the dictionary file and releases its resources.
+	 * Closes the dictionary and resource files and releases their resources.
 	 *
-	 * <p>If the dictionary file is not currently open, this method does nothing.
-	 * The dictionary file can be reopened automatically when it is needed again.</p>
+	 * <p>If either resource is not currently open, it is ignored. The resources
+	 * can be reopened automatically when they are needed again.</p>
 	 */
 	public void closeResources() {
 		if (dzFile != null) {
 			dzFile.close();
 			dzFile = null;
+		}
+		if (resZipFile != null) {
+			resZipFile.close();
+			resZipFile = null;
 		}
 	}
 }
