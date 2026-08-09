@@ -31,6 +31,10 @@ public class LexicalEntryView extends LinearLayout implements
 	 */
 	private static final float TEXT_SCALE_FACTOR = 1.1f;
 
+	private static final int MIN_TEXT_SIZE = 12;
+
+	private static final int MAX_TEXT_SIZE = 60;
+
 	/**
 	 * Lexical entry.
 	 */
@@ -201,11 +205,16 @@ public class LexicalEntryView extends LinearLayout implements
 	 * @param articleTitleSize		font size of the article title.
 	 * @param bodyTextSize			font size of the article body.
 	 */
-	private void setTextSizes(int dictionaryTitleSize, int articleTitleSize,
-			int bodyTextSize) {
-		dictTitleView.setTextSize(TypedValue.COMPLEX_UNIT_PX, dictionaryTitleSize);
-		lemmaView.setTextSize(TypedValue.COMPLEX_UNIT_PX, articleTitleSize);
-		definitionsView.setTextSize(TypedValue.COMPLEX_UNIT_PX, bodyTextSize);
+	private void setTextSizes(int dictionaryTitleSize, int articleTitleSize, int bodyTextSize) {
+		if (MIN_TEXT_SIZE <= dictionaryTitleSize && dictionaryTitleSize <= MAX_TEXT_SIZE) {
+			dictTitleView.setTextSize(TypedValue.COMPLEX_UNIT_PX, dictionaryTitleSize);
+		}
+		if (MIN_TEXT_SIZE <= articleTitleSize && articleTitleSize <= MAX_TEXT_SIZE) {
+			lemmaView.setTextSize(TypedValue.COMPLEX_UNIT_PX, articleTitleSize);
+		}
+		if (MIN_TEXT_SIZE <= bodyTextSize && bodyTextSize <= MAX_TEXT_SIZE) {
+			definitionsView.setTextSize(TypedValue.COMPLEX_UNIT_PX, bodyTextSize);
+		}
 	}
 
 	/**
