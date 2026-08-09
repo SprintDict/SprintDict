@@ -4,10 +4,7 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import net.bancer.sparkdict.domain.parsers.IParser;
 import net.bancer.sparkdict.domain.parsers.ParsingStrategyFactory;
@@ -34,6 +31,11 @@ public class LexicalEntry {
 	private BookInfo bookInfo;
 
 	/**
+	 * ZIP archive containing dictionary resources such as audio files and images.
+	 */
+	private ResourcesZipFile resZipFile = null;
+
+	/**
 	 * Constructor.
 	 * 
 	 * @param lemma			lemma of the lexical entry.
@@ -56,6 +58,20 @@ public class LexicalEntry {
 		} else if(dataType.length == 1) {
 			setDefinitions(dataBlocks, dataType[0]);
 		}
+	}
+
+	/**
+	 * Creates a lexical entry from the specified dictionary data.
+	 *
+	 * @param lemma lemma of the lexical entry.
+	 * @param buffer dictionary data containing the lexical entry.
+	 * @param bookInfo information about the dictionary containing the entry.
+	 * @param resZipFile ZIP archive containing the dictionary resources, or {@code null}
+	 * 	 *               if resources are stored as individual files.
+	 */
+	public LexicalEntry(String lemma, byte[] buffer, BookInfo bookInfo, ResourcesZipFile resZipFile) {
+		this(lemma, buffer, bookInfo);
+		this.resZipFile = resZipFile;
 	}
 
 	private void setDefinitions(byte[] dataBlocks) {
@@ -147,17 +163,16 @@ public class LexicalEntry {
 	/**
 	 * Retrieves the resource identified by the specified resource name.
 	 *
-	 * <p>If a {@code res.zip} archive exists in the dictionary directory, the
-	 * resource is extracted from the archive. Otherwise, the resource is read
-	 * from the {@code res} directory.</p>
+	 * <p>If a resource ZIP archive is available, the resource is extracted from
+	 * the archive. Otherwise, the resource is read from the {@code res}
+	 * directory.</p>
 	 *
 	 * @param resourceName name of the resource to retrieve.
 	 * @return resource contents as a byte array, or an empty byte array if the resource cannot be found or read.
 	 */
 	public byte[] getResource(String resourceName) {
-		File zipFile = new File(bookInfo.getDirPath(), "res.zip");
-		if(zipFile.exists()) {
-			return extractResourceFromZipFile(zipFile, resourceName);
+		if(resZipFile != null) {
+			return resZipFile.getResourceFromZip(resourceName);
 		}
 		String path = bookInfo.getDirPath() + File.separator + "res" + File.separator + resourceName;
 		File file = new File(path);
@@ -194,76 +209,5 @@ public class LexicalEntry {
 			}
 		}
 		return result;
-	}
-
-	/**
-	 * Extracts the specified resource from a ZIP archive.
-	 *
-	 * <p>The ZIP archive is opened for the duration of this method and closed
-	 * before the method returns. The resource is expected to be located under
-	 * the {@code res/} directory inside the archive.</p>
-	 *
-	 * @param zipFile ZIP archive containing the resource.
-	 * @param resourceName name of the resource to extract.
-	 * @return resource contents as a byte array, or an empty byte array if the
-	 *         archive cannot be opened or the resource cannot be read.
-	 */
-	private byte[] extractResourceFromZipFile(File zipFile, String resourceName) {
-		byte[] result = new byte[0];
-		ZipFile zip = null;
-		try {
-			zip = new ZipFile(zipFile);
-			return getResourceFromZip(zip, resourceName);
-		} catch (IOException e) {
-			Log.e(TAG, "Cannot open resource ZIP: " + zipFile, e);
-		} finally {
-			if(zip != null) {
-				try {
-					zip.close();
-				} catch (IOException e) {
-					Log.e(TAG, "Cannot close resource ZIP", e);
-				}
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Retrieves a resource from an already opened ZIP archive.
-	 *
-	 * <p>The resource is expected to be located under the {@code res/} directory
-	 * inside the archive. The returned byte array contains the decompressed
-	 * contents of the ZIP entry.</p>
-	 *
-	 * @param resourceZip open ZIP archive containing the resource.
-	 * @param resourceName name of the resource to retrieve.
-	 * @return resource contents as a byte array, or an empty byte array if the
-	 *         specified entry does not exist or cannot be read.
-	 */
-	private byte[] getResourceFromZip(ZipFile resourceZip, String resourceName) {
-		String entryName = "res/" + resourceName;
-		ZipEntry entry = resourceZip.getEntry(entryName);
-		if (entry == null) {
-			return new byte[0];
-		}
-		try (InputStream input = resourceZip.getInputStream(entry)) {
-			byte[] result = new byte[(int) entry.getSize()];
-			int offset = 0;
-			while (offset < result.length) {
-				int bytesRead = input.read(result, offset, result.length - offset);
-				if (bytesRead == -1) {
-					break;
-				}
-				offset += bytesRead;
-			}
-			if (offset != result.length) {
-				Log.e(TAG, "Unexpected end of ZIP entry: " + entryName);
-				return new byte[0];
-			}
-			return result;
-		} catch (IOException e) {
-			Log.e(TAG, "Cannot read ZIP entry: " + entryName, e);
-			return new byte[0];
-		}
 	}
 }
