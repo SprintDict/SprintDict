@@ -57,15 +57,19 @@ public class XParser extends MParser {
 	private static final String TRANSCRIPTION_CLOSE = SQUARE_BRACKET_CLOSE + TT_TAG_CLOSE;
 
 	private static final String COLOR_GREY 	= "#808080";
-	
-	private static final Map<String, String> HTML_COLORS = new HashMap<String, String>();
+
+	private static final Map<String, String> HTML_COLORS = new HashMap<>();
+
 	static {
-		HTML_COLORS.put("darkcyan", 		"#008B8B");
-		HTML_COLORS.put("darkslategray", 	"#2F4F4F");
-		HTML_COLORS.put("gray", 			"#808080");
-		HTML_COLORS.put("orange", 			"#FFA500");
-		HTML_COLORS.put("orangered", 		"#FF4500");
-		HTML_COLORS.put("rosybrown", 		"#BC8F8F");
+		HTML_COLORS.put("blue", "#0096FF");
+		HTML_COLORS.put("darkcyan", "#008B8B");
+		HTML_COLORS.put("darkgray", "#848884");
+		HTML_COLORS.put("darkslategray", "#2F4F4F");
+		HTML_COLORS.put("gray", "#808080");
+		HTML_COLORS.put("maroon", "#D2042D");
+		HTML_COLORS.put("orange", "#FFA500");
+		HTML_COLORS.put("orangered", "#FF4500");
+		HTML_COLORS.put("rosybrown", "#BC8F8F");
 	}
 
 	/*
