@@ -56,8 +56,14 @@ freeline_project_description.json
 # User-specific stuff:
 .idea/**/workspace.xml
 .idea/**/tasks.xml
+.idea/AndroidProjectSystem.xml
+.idea/androidTestResultsUserPreferences.xml
+.idea/caches/
 .idea/deploymentTargetDropDown.xml
+.idea/deploymentTargetSelector.xml
 .idea/dictionaries
+.idea/migrations.xml
+.idea/runConfigurations.xml
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
