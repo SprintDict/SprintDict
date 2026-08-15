@@ -61,6 +61,7 @@ freeline_project_description.json
 .idea/caches/
 .idea/deploymentTargetDropDown.xml
 .idea/deploymentTargetSelector.xml
+.idea/deviceManager.xml
 .idea/dictionaries
 .idea/migrations.xml
 .idea/runConfigurations.xml
