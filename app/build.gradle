@@ -20,6 +20,9 @@ android {
         }
     }
     namespace 'net.bancer.sparkdict'
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 dependencies {
