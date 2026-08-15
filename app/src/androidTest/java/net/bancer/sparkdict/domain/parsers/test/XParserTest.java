@@ -1,47 +1,23 @@
-/**
- * 
- */
 package net.bancer.sparkdict.domain.parsers.test;
 
-import net.bancer.sparkdict.domain.parsers.IParser;
-import net.bancer.sparkdict.domain.parsers.NParser;
-import net.bancer.sparkdict.domain.parsers.XParser;
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 
-/**
- * @author valera
- *
- */
-public class XParserTest extends TestCase {
-	
+import net.bancer.sparkdict.domain.parsers.IParser;
+import net.bancer.sparkdict.domain.parsers.XParser;
+
+import org.junit.Before;
+import org.junit.Test;
+
+public class XParserTest {
+
 	private IParser parser;
 
-	/**
-	 * @param name
-	 */
-	public XParserTest(String name) {
-		super(name);
-	}
-
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() throws Exception {
-		super.setUp();
+	@Before
+	public void setUp() {
 		parser = new XParser();
 	}
 
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		parser = null;
-	}
-
-	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.parsers.XParser#parse(byte[])}.
-	 */
+	@Test
 	public void testParse() {
 		String raw = "<k>abacus</k>" +
 				"<b>abacus</b> " +
@@ -91,5 +67,4 @@ public class XParserTest extends TestCase {
 				"</blockquote></blockquote></blockquote>";
 		assertEquals(parsed, parser.parse(raw.getBytes()));
 	}
-
 }
