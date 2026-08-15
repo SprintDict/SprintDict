@@ -1,45 +1,31 @@
-/**
- * 
- */
 package net.bancer.sparkdict.domain.core.test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import java.io.File;
 
 import net.bancer.sparkdict.domain.core.BookInfo;
 import net.bancer.sparkdict.mocks.Mocks;
-import junit.framework.TestCase;
 
-/**
- * @author valera
- *
- */
-public class BookInfoTest extends TestCase {
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(AndroidJUnit4.class)
+public class BookInfoTest {
 
 	private BookInfo muellerBookInfo;
-	private BookInfo bseBookInfo;
 
-	/**
-	 * @param name
-	 */
-	public BookInfoTest(String name) {
-		super(name);
-	}
-
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() throws Exception {
-		super.setUp();
+	@Before
+	public void setUp() {
 		muellerBookInfo = new BookInfo(new File(Mocks.MUELLER_IFO_PATH));
 	}
 
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
-	
+	@Test
 	public void testPreConditions() {
 		File dir = new File(Mocks.ROOT_PATH);
 		assertTrue(Mocks.ROOT_PATH + " does not exists", dir.exists());
@@ -67,11 +53,9 @@ public class BookInfoTest extends TestCase {
 		assertTrue(bseIfo + " is not readable", bseIfo.canRead());
 	}
 
-	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.core.BookInfo#BookInfo(java.lang.String)}.
-	 */
+	@Test
 	public void testBookInfoString() {
-		bseBookInfo = new BookInfo(Mocks.BSE_IFO_PATH);
+		BookInfo bseBookInfo = new BookInfo(Mocks.BSE_IFO_PATH);
 		assertNotNull(bseBookInfo);
 		assertEquals("2.4.2", bseBookInfo.getVersion());
 		assertEquals(95058, bseBookInfo.getWordCount());
@@ -82,9 +66,7 @@ public class BookInfoTest extends TestCase {
 		assertEquals("Copyright: Converted by swaj under GNU Public License; Version: 1.0", bseBookInfo.getDescription());
 	}
 
-	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.core.BookInfo#BookInfo(java.io.File)}.
-	 */
+	@Test
 	public void testBookInfoFile() {
 		assertNotNull(muellerBookInfo);
 		assertEquals("2.4.2", muellerBookInfo.getVersion());
@@ -95,25 +77,18 @@ public class BookInfoTest extends TestCase {
 		assertEquals("tm", muellerBookInfo.getSameTypeSequence());
 	}
 
-	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.core.BookInfo#toString()}.
-	 */
+	@Test
 	public void testToString() {
 		assertTrue(muellerBookInfo.toString().contains("Dictionary name: Mueller7GPL"));
 	}
 
-	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.core.BookInfo#getFileBaseName()}.
-	 */
+	@Test
 	public void testGetFileBaseName() {
 		assertEquals(Mocks.MUELLER_BASE_PATH, muellerBookInfo.getFileBaseName());
 	}
 
-	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.core.BookInfo#getPathToDictFile()}.
-	 */
+	@Test
 	public void testGetPathToDictFile() {
 		assertEquals(Mocks.MUELLER_BASE_PATH + Mocks.DICT_EXT, muellerBookInfo.getPathToDictFile());
 	}
-
 }

@@ -1,68 +1,72 @@
 package net.bancer.sparkdict.test;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
+import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import net.bancer.sparkdict.R;
 import net.bancer.sparkdict.SparkDictActivity;
 import net.bancer.sparkdict.domain.core.Shelf;
 import net.bancer.sparkdict.views.SearchInputField;
-import android.test.ActivityInstrumentationTestCase2;
-import android.view.KeyEvent;
+
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
-public class SparkDictActivityTest extends
-		ActivityInstrumentationTestCase2<SparkDictActivity> {
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(AndroidJUnit4.class)
+public class SparkDictActivityTest {
 	
 	private static final String SEARCH_STRING = "interface";
 
 	public static final int INIT_ARTICLES_COUNT = 0;
 
-	private SparkDictActivity mActivity;
+	@Rule
+	public ActivityScenarioRule<SparkDictActivity> mActivity = new ActivityScenarioRule<>(SparkDictActivity.class);
 	private SearchInputField mInputTextView;
 	private ImageButton mSearchButton;
 	private LinearLayout mArticlesList;
 	private Shelf mShelf;
 
-	private String mIntputText;
-
-	public SparkDictActivityTest() {
-		super("net.bancer.sparkdict", SparkDictActivity.class);
+	@Before
+	public void setUp() {
+		mActivity.getScenario().onActivity(activity -> {
+			this.mInputTextView = activity.findViewById(R.id.searchTextView);
+			this.mSearchButton = activity.findViewById(R.id.searchButton);
+			this.mArticlesList = activity.findViewById(R.id.articles_list);
+			this.mShelf = activity.getShelf();
+		});
 	}
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		
-		setActivityInitialTouchMode(false);
-		
-		mActivity = getActivity();
-		
-		mInputTextView = (SearchInputField) mActivity.findViewById(R.id.searchTextView);
-		mSearchButton = (ImageButton) mActivity.findViewById(R.id.searchButton);
-		mArticlesList = (LinearLayout) mActivity.findViewById(R.id.articles_list);
-		
-		mShelf = (Shelf) mActivity.getShelf();
-	}
-	
+	@Test
 	public void testPreConditions() {
-		assertTrue(mInputTextView.getAdapter() != null);
-		assertTrue(mSearchButton != null);
-		assertTrue(mArticlesList != null);
-		assertTrue(mArticlesList.getChildCount() == INIT_ARTICLES_COUNT);
-		assertTrue(mShelf != null);
+		assertNotNull(mInputTextView.getAdapter());
+		assertNotNull(mSearchButton);
+		assertNotNull(mArticlesList);
+		assertEquals(INIT_ARTICLES_COUNT, mArticlesList.getChildCount());
+		assertNotNull(mShelf);
 	}
-	
+
+	@Test
 	public void testInputTextByPressingEnterKey() {
-		new Runnable() {		
-			@Override
-			public void run() {
-				mInputTextView.requestFocus();
-				mInputTextView.setText(SEARCH_STRING);
-				assertTrue(mIntputText.equals(SEARCH_STRING));
-				SparkDictActivityTest.this.sendKeys(KeyEvent.KEYCODE_ENTER);
-				mIntputText = mInputTextView.getText().toString();
-				assertTrue(mIntputText.equals(""));
-				assertTrue(mArticlesList.getChildCount() > INIT_ARTICLES_COUNT);
-			}
-		};
+		onView(withId(R.id.searchTextView))
+			.perform(typeText(SEARCH_STRING));
+		onView(withId(R.id.searchTextView))
+			.check(matches(withText(SEARCH_STRING)));
+		onView(withId(R.id.searchTextView))
+			.perform(pressImeActionButton());
+		onView(withId(R.id.searchTextView))
+			.check(matches(withText("")));
 	}
 }

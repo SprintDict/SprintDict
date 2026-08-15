@@ -1,46 +1,23 @@
-/**
- * 
- */
 package net.bancer.sparkdict.domain.parsers.test;
+
+import static org.junit.Assert.assertEquals;
 
 import net.bancer.sparkdict.domain.parsers.IParser;
 import net.bancer.sparkdict.domain.parsers.NParser;
-import junit.framework.TestCase;
 
-/**
- * @author valera
- *
- */
-public class NParserTest extends TestCase {
-	
+import org.junit.Before;
+import org.junit.Test;
+
+public class NParserTest {
+
 	private IParser parser;
 
-	/**
-	 * @param name
-	 */
-	public NParserTest(String name) {
-		super(name);
-	}
-
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() throws Exception {
-		super.setUp();
+	@Before
+	public void setUp() {
 		parser = new NParser();
 	}
 
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		parser = null;
-	}
-
-	/**
-	 * Test method for {@link net.bancer.sparkdict.domain.parsers.NParser#parse(byte[])}.
-	 */
+	@Test
 	public void testParse() {
 		String rawEntry = "<type>a</type>" +
 				"<wordgroup>" +
@@ -64,5 +41,4 @@ public class NParserTest extends TestCase {
 				"in diameter; &quot;a .22 caliber pistol&quot;</gloss>";
 		assertEquals(parsedEntry, parser.parse(rawEntry.getBytes()));
 	}
-
 }
