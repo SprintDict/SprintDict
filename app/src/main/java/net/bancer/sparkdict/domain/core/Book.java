@@ -100,16 +100,16 @@ public class Book implements Iterable<IndexEntry> {
 	 * @return			LexicalEntry object or `null`.
 	 */
 	private LexicalEntry getLexicalEntry(IndexEntry idxEntry) {
-		if(dzFile == null){
-			dzFile = new DictZipFile(bookInfo.getFileBaseName() + DICT_FILE_EXTENSION);
-		}
-		if (resZipFile == null) {
-			File zipFile = new File(bookInfo.getDirPath(), RES_ZIP_NAME);
-			if (zipFile.exists()) {
-				resZipFile = new ResourcesZipFile(zipFile);
-			}
-		}
 		try {
+			if(dzFile == null){
+				dzFile = new DictZipFile(bookInfo.getFileBaseName() + DICT_FILE_EXTENSION);
+			}
+			if (resZipFile == null) {
+				File zipFile = new File(bookInfo.getDirPath(), RES_ZIP_NAME);
+				if (zipFile.exists()) {
+					resZipFile = new ResourcesZipFile(zipFile);
+				}
+			}
 			byte[] buffer = dzFile.read(idxEntry.getWordDataOffset(), idxEntry.getWordDataSize());
 			String lemma = idxEntry.getLemma();
 			return new LexicalEntry(lemma, buffer, bookInfo, resZipFile);

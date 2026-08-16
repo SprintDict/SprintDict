@@ -1,41 +1,4 @@
-/*
-Copyright 2009 http://code.google.com/p/toolkits/. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-  * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-  * Redistributions in binary form must reproduce the above
-    copyright notice, this list of conditions and the following
-    disclaimer in the documentation and/or other materials provided
-    with the distribution.
-  * Neither the name of http://code.google.com/p/toolkits/ nor the names of its
-    contributors may be used to endorse or promote products derived
-    from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/*
- * depends on Java 1.6
- * 
- * 11.12.12 - thrown Exceptions are replaced by IOExceptions
- */
-
 package net.bancer.sparkdict.domain.core;
-
-import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,279 +6,423 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.Inflater;
-//import java.util.zip.InflaterOutputStream;
 
+/**
+ * Represents a chunk of data in a dictionary file.
+ */
 class Chunk {
 
-	public int offset;
+    /**
+     * Offset of the chunk in the dictionary file.
+     */
+    public int offset;
 
-	public int size;
+    /**
+     * Size of the chunk in bytes.
+     */
+    public int size;
 
-	public Chunk(int o, int s) {
-		offset = o;
-		size = s;
-	}
+    /**
+     * Creates a chunk.
+     *
+     * @param o Offset of the chunk in the dictionary file.
+     * @param s Size of the chunk in bytes.
+     */
+    public Chunk(int o, int s) {
+        offset = o;
+        size = s;
+    }
 }
 
 /**
  * DictZipFile is an abstraction of <dictionary name>.dict.dz file.
- *
  */
 public class DictZipFile {
 
-	/**
-	 * 
-	 */
-	private RandomAccessFile dzFile = null;
+    private static final int FHCRC = 2;
 
-	//private static final int FTEXT = 1;
-	private static final int FHCRC = 2;
-	private static final int FEXTRA =4;
-	private static final int FNAME = 8;
-	private static final int FCOMMENT = 16;
+    private static final int FEXTRA = 4;
 
-	private static final String TAG = "DictZipFile";
+    private static final int FNAME = 8;
 
-	//private static final int READ = 1;
-	//private static final int WRITE = 2;
+    private static final int FCOMMENT = 16;
 
-	private int pos = 0;
-	private int chlen = 0;
-	private int pointerPosition = 0;
+    /**
+     * First byte of the gzip file magic number.
+     *
+     * <p>The hexadecimal value {@code 0x1F} is represented as {@code 31}
+     * when stored in Java's signed {@code byte} type.</p>
+     */
+    private static final byte GZIP_MAGIC_1 = 31;
 
-	//private String last_error = "";
+    /**
+     * Second byte of the gzip file magic number.
+     *
+     * <p>The hexadecimal value {@code 0x8B} is represented as {@code -117}
+     * when stored in Java's signed {@code byte} type.</p>
+     */
+    private static final byte GZIP_MAGIC_2 = -117;
 
-	private List<Chunk> chunks;
+    /**
+     * Gzip compression method identifier for DEFLATE.
+     * In the gzip header, the byte immediately after the two-byte magic number
+     * is the CM (Compression Method) field:
+     * Offset  Size  Field
+     * 0       1     ID1 = 0x1F
+     * 1       1     ID2 = 0x8B
+     * 2       1     CM  = 8 (DEFLATE)
+     * 3       1     FLG
+     */
+    private static final byte GZIP_DEFLATE_METHOD = 8;
 
-	/**
-	 * Opens a dictionary .dict.dz file and initializes its decompression state.
-	 * 
-	 * @param dictzipfilename full path to the <dictionary name>.dict.dz file.
-	 */
-	public DictZipFile(String dictzipfilename) {
-		try {
-			dzFile = new RandomAccessFile(dictzipfilename, "r");
-			pos = 0;
-			pointerPosition = 0;
-			chunks = new ArrayList<>();
-			this.readGZipHeader();
-		} catch (IOException e) {
-			Log.e(TAG, "Cannot open dictionary file: " + dictzipfilename, e);
-			close();
-		}
-	}
+    /**
+     * Offset of the chunk length field within the dictzip extra field.
+     */
+    private static final int DICTZIP_CHUNK_LENGTH_OFFSET = 6;
 
-	/**
-	 * 
-	 * @param buff
-	 * @param size
-	 * @return
-	 * @throws IOException 
-	 */
-	private int read(byte[] buff, int size) throws IOException {
-		if(size<=0) {
-			return 0;
-		}
-		int firstchunk = this.pos/this.chlen;
-		int offset = this.pos - firstchunk*this.chlen;
-		int lastchunk = (this.pos+size)/this.chlen;
-		/*
-		 * int finish = 0;
-		 * int npos = 0;
-		 * finish = offset+size;
-		 * npos = this.pos+size;
-		 */
-		ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-		for(int i=firstchunk;i<=lastchunk;i++) {
-			byteStream.write(this.readChunk(i));
-		}
-		byte [] buf = byteStream.toByteArray();
-		for(int i=0;i<size;i++) {
-			buff[i]=buf[offset+i];
-		}
-		return 0;
-	}
+    /**
+     * Offset of the chunk count field within the dictzip extra field.
+     */
+    private static final int DICTZIP_CHUNK_COUNT_OFFSET = 8;
 
-	/**
-	 * 
-	 * @param pos
-	 * @param where
-	 */
-	private void seek(int pos, int where) {
-		if (where == 0) {
-			this.pos=pos;
-		} else if (where==1) {
-			this.pos+=pos;
-		} else {
-			this.pos=pos;
-		}
-	}
+    /**
+     * Offset of the first chunk size within the dictzip extra field.
+     */
+    private static final int DICTZIP_CHUNK_SIZES_OFFSET = 10;
 
-	/**
-	 * 
-	 * @param pos
-	 */
-	private void seek(int pos) {
-		this.seek(pos,0);
-	}
+    /**
+     * First byte of the dictzip extra-field identifier.
+     */
+    private static final byte DICTZIP_EXTENSION_ID_1 = 'R';
 
-	/**
-	 * 
-	 * @return
-	 */
-	/*private int tell() {
-		return this.pos;
-	}*/
+    /**
+     * Second byte of the dictzip extra-field identifier.
+     */
+    private static final byte DICTZIP_EXTENSION_ID_2 = 'A';
 
-	/**
-	 * Closes the dictionary file and releases its underlying resources.
-	 *
-	 * <p>If the dictionary file is not currently open, this method does nothing.
-	 * After the file is closed, the internal file reference is cleared so that
-	 * the dictionary file can be reopened when it is needed again.</p>
-	 */
-	public void close() {
-		if (dzFile != null) {
-			try {
-				dzFile.close();
-			} catch (IOException e) {
-				Log.e(TAG, "Cannot close dictionary .dict.dz file", e);
-			} finally {
-				dzFile = null;
-			}
-		}
-	}
+    private final List<Chunk> chunks;
 
-	/**
-	 * 
-	 * @throws IOException 
-	 * @throws Exception
-	 */
-	private void readGZipHeader() throws IOException {
-		byte [] buffer = new byte[2];
-		dzFile.read(buffer);
-		this.pointerPosition+=2;
-		if (buffer[0]!= 31 || buffer[1] != -117) {
-			throw new IOException("Not a gzipped file");
-		}
-		byte compressionMethod = dzFile.readByte();
-		this.pointerPosition+=1;
-		if(compressionMethod != 8) {
-			throw new IOException("Unknown compression method");
-		}
-		byte flag = dzFile.readByte();
-		//System.out.println("flag = "+flag);
-		this.pointerPosition+=1;
-		dzFile.readInt();
-		dzFile.readByte();
-		dzFile.readByte();
-		this.pointerPosition+=6;
-		int xlen = 0;
-		if((flag & FEXTRA)!=0) {
-			xlen = dzFile.readUnsignedByte();
-			xlen +=  256*dzFile.readUnsignedByte();
-			byte [] extra = new byte[xlen];
-			dzFile.read(extra);
-			this.pointerPosition+=2+xlen;
-			int ext = 0;
-			while(true) {
-				int l = ((int)extra[ext+2]&0xff)+(256*((int)extra[ext+3]&0xff));
-				if (extra[ext+0]!='R' || extra[ext+1]!='A') {
-					ext=4+l;
-					if(ext>xlen) {
-						throw new IOException("Missing dictzip extension");
-					}
-				} else {
-					break;
-				}
-			}
-			this.chlen = ((int)extra[ext+6]&0xff) + (256*((int)extra[ext+7]&0xff));
-			int chcnt = ((int)extra[ext+8]&0xff) + (256*((int)extra[ext+9]&0xff));
-			int p = 10;
-			List <Integer> lens = new ArrayList<Integer>(); 
-			for(int i=0;i<chcnt;i++) {
-				int thischlen = ((int)extra[ext+p]&0xff) + (256*((int)extra[ext+p+1]&0xff));
-				p+=2;
-				lens.add(thischlen);
-			}
-			int chpos = 0;
-			for(Integer i : lens) {
-				this.chunks.add(new Chunk(chpos,i));
-				chpos += i;
-			}
-		} else {
-			throw new IOException("Missing dictzip extension");
-		}
-		if((flag & FNAME)!=0) {
-			//Read and discard a null-terminated string containing the filename
-			byte s = 0;
-			while(true) {
-				s = dzFile.readByte();
-				this.pointerPosition+=1;
-				if(s==0)
-					break;
-			}
-		}
-		if((flag & FCOMMENT)!=0) {
-			//Read and discard a null-terminated string containing a comment
-			byte s = 0;
-			while(true) {
-				s = dzFile.readByte();
-				this.pointerPosition+=1;
-				if(s==0)
-					break;
-			}
-		}
-		if((flag & FHCRC)!=0) {
-			//Read & discard the 16-bit header CRC
-			dzFile.readByte();
-			dzFile.readByte();
-			this.pointerPosition+=2;
-		}
-	}
+    private RandomAccessFile dzFile;
 
-	/**
-	 * 
-	 * @param n
-	 * @return
-	 * @throws IOException 
-	 * @throws Exception
-	 */
-	private byte [] readChunk(int n) throws IOException {
-		if(n>=this.chunks.size()) {
-			return null;
-		}
-		this.dzFile.seek(this.pointerPosition+this.chunks.get(n).offset);
-		int size = this.chunks.get(n).size;
-		byte [] buff = new byte[size];
-		this.dzFile.read(buff);
-		ByteArrayOutputStream bos = new ByteArrayOutputStream ();
-		InflaterOutputStream  gz = new InflaterOutputStream(bos, new Inflater(true));
-		gz.write(buff);
-		return bos.toByteArray(); 
-	}
+    private int pos;
 
-	/*public void runtest() {
-		System.out.println("chunklen="+this.chlen);
-		System.out.println("_firstpos="+this.pointerPosition);
-	}
+    private int chlen = 0;
 
-	public String test() {
-		return ("chunklen="+this.chlen);
-	}*/
+    private int pointerPosition;
 
-	/**
-	 * Reads part of the compressed dictionary file.
-	 * 
-	 * @param offset	uncompressed file offset where to start reading.
-	 * @param size		uncompressed size to be read.
-	 * @return			byte array of the specified size.
-	 * @throws IOException	if there was problem with reading the file.
-	 */
-	public byte[] read(int offset, int size) throws IOException {
-		byte[] result = new byte[size];
-		seek(offset);
-		read(result, size);
-		return result;
-	}
+    /**
+     * Opens a dictionary .dict.dz file and initializes its decompression state.
+     *
+     * @param dictzipfilename full path to the <dictionary name>.dict.dz file.
+     */
+    public DictZipFile(String dictzipfilename) throws IOException {
+        dzFile = new RandomAccessFile(dictzipfilename, "r");
+        pos = 0;
+        pointerPosition = 0;
+        chunks = new ArrayList<>();
+        this.readGZipHeader();
+    }
+
+    /**
+     * Reads data from the current position into the specified buffer.
+     *
+     * <p>The requested data may span multiple compressed chunks. The required
+     * chunks are decompressed and combined before the requested range is copied
+     * into the destination buffer.</p>
+     *
+     * @param buff Buffer into which the data is read.
+     * @param size Number of bytes to read.
+     * @throws IOException If an error occurs while reading or decompressing a chunk.
+     */
+    private void read(byte[] buff, int size) throws IOException {
+        if (size <= 0) {
+            return;
+        }
+        int firstChunk = this.pos / this.chlen;
+        int offset = this.pos - firstChunk * this.chlen;
+        int lastChunk = (this.pos + size) / this.chlen;
+        /*
+         * int finish = 0;
+         * int npos = 0;
+         * finish = offset+size;
+         * npos = this.pos+size;
+         */
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        for (int i = firstChunk; i <= lastChunk; i++) {
+            byteStream.write(this.readChunk(i));
+        }
+        byte[] buf = byteStream.toByteArray();
+        System.arraycopy(buf, offset, buff, 0, size);
+    }
+
+    /**
+     * Sets the current read position.
+     *
+     * @param pos Absolute position in the dictionary file.
+     */
+    private void seek(int pos) {
+        this.pos = pos;
+    }
+
+    /**
+     * Closes the dictionary file and releases its underlying resources.
+     *
+     * <p>If the dictionary file is not currently open, this method does nothing.
+     * After the file is closed, the internal file reference is cleared so that
+     * the dictionary file can be reopened when it is needed again.</p>
+     */
+    public void close() {
+        if (dzFile != null) {
+            try {
+                dzFile.close();
+            } catch (IOException e) {
+                //TODO: Log "Cannot close dictionary .dict.dz file"
+            } finally {
+                dzFile = null;
+            }
+        }
+    }
+
+    /**
+     * Reads and validates the gzip header and extracts dictzip chunk metadata.
+     *
+     * <p>The gzip header is validated for the expected magic number and
+     * compression method. The dictzip extension is then parsed to determine
+     * the uncompressed chunk length and the compressed size and offset of
+     * each chunk. Optional filename, comment, and header CRC fields are
+     * read and discarded when present.</p>
+     *
+     * @throws IOException If the gzip header is invalid, the compression
+     *                     method is unsupported, the dictzip extension is missing or invalid,
+     *                     or an error occurs while reading the header.
+     */
+    private void readGZipHeader() throws IOException {
+        readGZipMagic();
+        readCompressionMethod();
+        byte flags = readHeaderFlags();
+        readGZipHeaderFields();
+        if ((flags & FEXTRA) == 0) {
+            throw new IOException("Missing dictzip extension");
+        }
+        readDictZipExtension();
+        if ((flags & FNAME) != 0) {
+            //Read and discard a null-terminated string containing the filename
+            readNullTerminatedHeaderField();
+        }
+        if ((flags & FCOMMENT) != 0) {
+            //Read and discard a null-terminated string containing a comment
+            readNullTerminatedHeaderField();
+        }
+        if ((flags & FHCRC) != 0) {
+            readHeaderCrc();
+        }
+    }
+
+    /**
+     * Reads and validates the gzip magic number.
+     *
+     * @throws IOException If the file does not contain a valid gzip magic number.
+     */
+    private void readGZipMagic() throws IOException {
+        byte[] buffer = new byte[2];
+        dzFile.read(buffer);
+        pointerPosition += 2;
+        if (buffer[0] != GZIP_MAGIC_1 || buffer[1] != GZIP_MAGIC_2) {
+            throw new IOException("Not a gzipped file");
+        }
+    }
+
+    /**
+     * Reads and validates the gzip compression method.
+     *
+     * @throws IOException If the compression method is not supported.
+     */
+    private void readCompressionMethod() throws IOException {
+        byte compressionMethod = dzFile.readByte();
+        pointerPosition += 1;
+        if (compressionMethod != GZIP_DEFLATE_METHOD) {
+            throw new IOException("Unknown compression method");
+        }
+    }
+
+    /**
+     * Reads the gzip header flags.
+     *
+     * @return Gzip header flags.
+     * @throws IOException If the flags cannot be read.
+     */
+    private byte readHeaderFlags() throws IOException {
+        byte flags = dzFile.readByte();
+        pointerPosition += 1;
+        return flags;
+    }
+
+    /**
+     * Reads and discards the fixed gzip header fields following the flags.
+     *
+     * <p>These fields contain the modification time, extra flags, and operating
+     * system identifier. They are not required by this class.</p>
+     *
+     * @throws IOException If the header fields cannot be read.
+     */
+    private void readGZipHeaderFields() throws IOException {
+        dzFile.readInt();
+        dzFile.readByte();
+        dzFile.readByte();
+        pointerPosition += 6;
+    }
+
+    /**
+     * Reads the gzip extra field from the dictionary file.
+     *
+     * <p>The extra field length is read from the two-byte {@code XLEN} header
+     * field, followed by the extra field data itself.</p>
+     *
+     * @return The contents of the gzip extra field.
+     * @throws IOException If an error occurs while reading the extra field.
+     */
+    private byte[] readExtraField() throws IOException {
+        int xlen = readUnsignedShort();
+        byte[] extra = new byte[xlen];
+        dzFile.read(extra);
+        pointerPosition += 2 + xlen;
+        return extra;
+    }
+
+    /**
+     * Reads and parses the dictzip extra field.
+     *
+     * <p>The dictzip extension contains the uncompressed chunk length and
+     * the compressed size of each chunk. The resulting chunks are added to
+     * {@link #chunks}.</p>
+     *
+     * @throws IOException If the dictzip extension is missing or cannot be
+     *                     parsed.
+     */
+    private void readDictZipExtension() throws IOException {
+        byte[] extra = readExtraField();
+        int extensionOffset = findDictZipExtension(extra, extra.length);
+        chlen = readUnsignedShort(extra, extensionOffset + DICTZIP_CHUNK_LENGTH_OFFSET);
+        int chunkCount = readUnsignedShort(extra, extensionOffset + DICTZIP_CHUNK_COUNT_OFFSET);
+        int chunkOffset = DICTZIP_CHUNK_SIZES_OFFSET;
+        int position = 0;
+        for (int i = 0; i < chunkCount; i++) {
+            int chunkSize = readUnsignedShort(extra, extensionOffset + chunkOffset);
+            chunks.add(new Chunk(position, chunkSize));
+            position += chunkSize;
+            chunkOffset += 2;
+        }
+    }
+
+    /**
+     * Finds the dictzip extension within the gzip extra field.
+     *
+     * @param extra Gzip extra field data.
+     * @param xlen  Length of the extra field.
+     * @return Offset of the dictzip extension within {@code extra}.
+     * @throws IOException If the dictzip extension cannot be found.
+     */
+    private int findDictZipExtension(byte[] extra, int xlen) throws IOException {
+        int offset = 0;
+        while (true) {
+            int length = readUnsignedShort(extra, offset + 2);
+            if (
+                extra[offset] == DICTZIP_EXTENSION_ID_1 &&
+                extra[offset + 1] == DICTZIP_EXTENSION_ID_2
+            ) {
+                return offset;
+            }
+            offset = 4 + length;
+            if (offset > xlen) {
+                throw new IOException("Missing dictzip extension");
+            }
+        }
+    }
+
+    /**
+     * Reads an unsigned 16-bit little-endian value from the dictionary file.
+     *
+     * @return Unsigned 16-bit value.
+     * @throws IOException If an error occurs while reading the value.
+     */
+    private int readUnsignedShort() throws IOException {
+        int low = dzFile.readUnsignedByte();
+        int high = dzFile.readUnsignedByte();
+        return low + 256 * high;
+    }
+
+    /**
+     * Reads an unsigned 16-bit little-endian value from a byte array.
+     *
+     * @param buffer Byte array containing the value.
+     * @param offset Offset of the value in the byte array.
+     * @return Unsigned 16-bit value.
+     */
+    private int readUnsignedShort(byte[] buffer, int offset) {
+        int low = (buffer[offset] & 0xff);
+        int high = (buffer[offset + 1] & 0xff);
+        return low + 256 * high;
+    }
+
+    /**
+     * Reads and discards a null-terminated gzip header field.
+     *
+     * @throws IOException If the field cannot be read.
+     */
+    private void readNullTerminatedHeaderField() throws IOException {
+        byte value;
+        do {
+            value = dzFile.readByte();
+            pointerPosition += 1;
+        } while (value != 0);
+    }
+
+    /**
+     * Reads and discards the gzip header CRC (16-bit).
+     *
+     * @throws IOException If the CRC cannot be read.
+     */
+    private void readHeaderCrc() throws IOException {
+        dzFile.readByte();
+        dzFile.readByte();
+        pointerPosition += 2;
+    }
+
+    /**
+     * Reads and decompresses a dictionary data chunk.
+     *
+     * @param n Zero-based index of the chunk to read.
+     * @return Decompressed chunk data, or {@code null} if the specified chunk
+     * index is outside the available chunks.
+     * @throws IOException If an error occurs while seeking to or reading the
+     *                     compressed chunk data.
+     */
+    private byte[] readChunk(int n) throws IOException {
+        if (n >= this.chunks.size()) {
+            return null;
+        }
+        this.dzFile.seek(this.pointerPosition + this.chunks.get(n).offset);
+        int size = this.chunks.get(n).size;
+        byte[] buff = new byte[size];
+        this.dzFile.read(buff);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        InflaterOutputStream gz = new InflaterOutputStream(bos, new Inflater(true));
+        gz.write(buff);
+        return bos.toByteArray();
+    }
+
+    /**
+     * Reads part of the compressed dictionary file.
+     *
+     * @param offset uncompressed file offset where to start reading.
+     * @param size   uncompressed size to be read.
+     * @return byte array of the specified size.
+     * @throws IOException if there was problem with reading the file.
+     */
+    public byte[] read(int offset, int size) throws IOException {
+        byte[] result = new byte[size];
+        seek(offset);
+        read(result, size);
+        return result;
+    }
 }
