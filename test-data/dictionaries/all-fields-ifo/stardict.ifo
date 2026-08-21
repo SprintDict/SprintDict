@@ -1,0 +1,15 @@
+StarDict's dict ifo file
+version=2.4.2
+bookname=Test Dictionary
+synwordcount=123
+wordcount=456
+idxfilesize=789
+idxoffsetbits=64
+author=Test Author
+email=test@example.com
+website=https://example.com
+description=Test description
+date=2026-08-15
+sametypesequence=gm
+dicttype=idxoffsetbits64
+unknown=value
