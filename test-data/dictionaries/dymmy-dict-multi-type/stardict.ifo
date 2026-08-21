@@ -1,0 +1,10 @@
+StarDict's dict ifo file
+version=2.4.2
+bookname=Test Multitype Dictionary
+wordcount=28
+idxfilesize=503
+author=Claude
+email=test@example.com
+website=https://example.com
+description=A test/dummy dictionary generated for StarDict format testing. sametypesequence is intentionally NOT set, so every field in every entry carries its own explicit type identifier. Each of the 28 entries below contains one row for every documented StarDict type identifier (m, t, g, x, y, k, w, h, n, l, r, W, P, X), to exercise all possible per-field data types.<br><br>Lemmas: <br>aplander<br>bickterna<br>blorptastic<br>cranthil<br>crendofil<br>drenswick<br>emberloop<br>flimwarden<br>glorbane<br>hextillow<br>ingrovate<br>jindleform<br>klathmoor<br>lumbrestir<br>mizzlecraft<br>noffigan<br>oblenter<br>plenchwood<br>quindarel<br>rethimble<br>snorquil<br>tavelong<br>unglimpse<br>vorntangle<br>wrenpath<br>xemblor<br>yondrift<br>zephyrnote
+date=2026-08-21

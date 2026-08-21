@@ -1,0 +1,11 @@
+StarDict's dict ifo file
+version=2.4.2
+bookname=Test Dummy Dictionary
+wordcount=28
+idxfilesize=503
+author=Claude
+email=test@example.com
+website=https://example.com
+description=A test/dummy dictionary generated for StarDict format testing. Contains 28 invented lemmas: aplander, bickterna, blorptastic, cranthil, crendofil, drenswick, emberloop, flimwarden, glorbane, hextillow, ingrovate, jindleform, klathmoor, lumbrestir, mizzlecraft, noffigan, oblenter, plenchwood, quindarel, rethimble, snorquil, tavelong, unglimpse, vorntangle, wrenpath, xemblor, yondrift, zephyrnote
+date=2026-08-20
+sametypesequence=tm
