@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 32
+    compileSdk 32
 
     defaultConfig {
         applicationId "net.bancer.sparkdict"
         minSdkVersion 30
-        targetSdkVersion 30
+        targetSdk 31
         versionCode 7
         versionName "1.2.0"
         testApplicationId "net.bancer.sparkdict.test"

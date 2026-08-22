@@ -289,18 +289,16 @@ public class DictManagerActivity extends BaseActivity {
 	};
 
 	/**
-	 * Sends notification about indexing error to the status bar.
-	 * 
-	 * @param message
-	 *            message to be displayed.
-	 * 
-	 * @see http://developer.android.com/guide/topics/ui/notifiers/notifications.html#SimpleNotification
-	 */
+     * Sends notification about indexing error to the status bar.
+     *
+     * @param message message to be displayed.
+     * @see <a href="http://developer.android.com/guide/topics/ui/notifiers/notifications.html#SimpleNotification">...</a>
+     */
 	private void sendNotification(String message) {
 		NotificationManager mgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		Intent notificationIntent = new Intent(this, DictManagerActivity.class);
-		PendingIntent pi = PendingIntent.getActivity(this, 0,
-				notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		int flags = PendingIntent.FLAG_UPDATE_CURRENT| PendingIntent.FLAG_IMMUTABLE;
+        PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, flags);
 		Notification note = new Notification(
 				android.R.drawable.stat_sys_warning, message,
 				System.currentTimeMillis());
