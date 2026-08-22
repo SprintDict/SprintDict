@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "net.bancer.sparkdict"
         minSdkVersion 30
-        targetSdkVersion 30
+        targetSdk 33
         versionCode 7
         versionName "1.2.0"
         testApplicationId "net.bancer.sparkdict.test"
@@ -19,12 +19,20 @@ android {
         }
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
         }
     }
     namespace 'net.bancer.sparkdict'
     buildFeatures {
         buildConfig true
+    }
+    testOptions {
+        unitTests.all {
+            testLogging {
+                events "passed", "skipped", "failed"
+                showStandardStreams = true
+            }
+        }
     }
 }
 
