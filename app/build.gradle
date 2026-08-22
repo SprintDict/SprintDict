@@ -26,6 +26,14 @@ android {
     buildFeatures {
         buildConfig true
     }
+    testOptions {
+        unitTests.all {
+            testLogging {
+                events "passed", "skipped", "failed"
+                showStandardStreams = true
+            }
+        }
+    }
 }
 
 dependencies {
