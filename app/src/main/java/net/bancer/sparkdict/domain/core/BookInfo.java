@@ -11,6 +11,8 @@ import java.util.Scanner;
  */
 public class BookInfo {
 
+    public static String INFO_FILE_EXTENTION = ".ifo";
+
     private final String filePath;
 
     /**
@@ -71,7 +73,7 @@ public class BookInfo {
     /**
      * If the sametypesequence option is set, it tells StarDict that each
      * word's data in the .dict file will have the same sequence of datatypes.
-     * In this case, we expect a .dict file that's been optimized in two
+     * In this case, we expect a .dict file that's been optimised in two
      * ways: the type identifiers should be omitted, and the size marker for
      * the last data entry of each word should be omitted.
      * <p>
@@ -101,7 +103,7 @@ public class BookInfo {
         if (infoFile == null) {
             throw new IllegalArgumentException("infoFile must not be null or empty");
         }
-        if (!infoFile.getName().toLowerCase().endsWith(".ifo")) {
+        if (!infoFile.getName().toLowerCase().endsWith(INFO_FILE_EXTENTION)) {
             throw new IllegalArgumentException("infoFile must have .ifo extension");
         }
         filePath = infoFile.toString();
