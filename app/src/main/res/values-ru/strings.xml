@@ -15,7 +15,9 @@
     <string name="set_dict_path">SprintDict - Указать путь к словарям</string>
     <string name="prompt_to_set_path">Месторасположение словарей неизвестно.\nВы хотите указать его сейчас?</string>
     <string name="yes">Да</string>
+    <string name="set_path">Выбрать папку</string>
     <string name="no">Нет</string>
+    <string name="exit">Выход</string>
     <string name="save">Сохранить</string>
     <string name="select_all">Подключить все</string>
     <string name="unselect_all">Отключить все</string>
@@ -43,6 +45,6 @@
     <string name="menu_collapse_all">Свернуть все</string>
     <string name="search_description">Слова и фразы</string>
     <string name="updating_view">Обновление экрана&#8230;</string>
-	<string name="dict_cannot_be_indexed">%s словарь не проиндексирован. Пожалуйста, проинформируйте разработчиков.</string>
-	<string name="sprint_dict_indexing_error">SprintDict - Ошибка Индексирования</string>
+    <string name="dict_cannot_be_indexed">%s словарь не проиндексирован. Пожалуйста, проинформируйте разработчиков.</string>
+    <string name="sprint_dict_indexing_error">SprintDict - Ошибка Индексирования</string>
 </resources>

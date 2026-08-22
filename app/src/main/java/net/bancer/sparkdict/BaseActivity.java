@@ -33,7 +33,7 @@ public abstract class BaseActivity extends Activity {
 	/**
 	 * The name of SparkDict shared preferences.
 	 */
-	protected static final String PREFS_NAME = "SparkDict";
+	public static final String PREFS_NAME = "SparkDict";
 	
 	private static Shelf shelf;
 	private static LinkedList<String> recentHistory;

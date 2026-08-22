@@ -1,7 +1,6 @@
 package net.bancer.sparkdict;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -49,8 +48,6 @@ public class SparkDictActivity extends BaseActivity
     implements OnClickListener, OnKeyListener, OnItemClickListener {
 
     public static final String SEARCH_INTENT = "net.bancer.sparkdict.SEARCH";
-
-    private static final int DIALOG_NO_PATH_SET = 434354331;
 
     private static final String KEY_SEARCH_STR = "SEARCH_STR";
 
@@ -214,7 +211,7 @@ public class SparkDictActivity extends BaseActivity
         searchButton = findViewById(R.id.searchButton);
         searchButton.setOnClickListener(this);
 
-        searchProgress = (ProgressBar) findViewById(R.id.search_progress);
+        searchProgress = findViewById(R.id.search_progress);
 
         scrollView = findViewById(R.id.articles_scroll_view);
 
@@ -229,8 +226,8 @@ public class SparkDictActivity extends BaseActivity
 
     private void checkDictPath() {
         dictPath = getDictPathFromPrefs();
-        if (dictPath.trim().equals("")) {
-            showDialog(DIALOG_NO_PATH_SET);
+        if (dictPath.trim().isEmpty()) {
+            showNoPathSetDialog();
         }
     }
 
@@ -353,36 +350,27 @@ public class SparkDictActivity extends BaseActivity
         startActivity(intent);
     }
 
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        Dialog dialog;
-        switch (id) {
-            case DIALOG_NO_PATH_SET:
-                dialog = buildSetDictPathDialog();
-                break;
-            default:
-                dialog = null;
-        }
-        return dialog;
-    }
-
-    private Dialog buildSetDictPathDialog() {
+    /**
+     * Displays a non-cancelable dialog asking the user whether to set the dictionary path.
+     *
+     * <p>If the user chooses "Set Path", the directory picker is started. If the user chooses
+     * "Exit", the activity is closed.</p>
+     */
+    private void showNoPathSetDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(getString(R.string.prompt_to_set_path))
+        builder.setMessage(R.string.prompt_to_set_path)
             .setCancelable(false)
-            .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    startDictManager(DictManagerActivity.START_DIR_PICKER);
-                }
-            })
-            .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    SparkDictActivity.this.finish();
-                }
-            });
-        return builder.create();
+            .setPositiveButton(
+                R.string.set_path,
+                // If user chooses "Yes" to set path then start directory picker.
+                (dialog, which) -> startDictManager(DictManagerActivity.START_DIR_PICKER)
+            )
+            .setNegativeButton(
+                R.string.exit,
+                // If user chooses "Exit" to set path then close the application.
+                (dialog, which) -> finish()
+            )
+            .show();
     }
 
     @Override
