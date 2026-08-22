@@ -30,7 +30,7 @@ public class BookInfoTest {
     public void constructorHandlesMissingFile() {
         String path = Fixtures.TEST_DATA_PATH + "missing/missing.ifo";
         BookInfo bookInfo = new BookInfo(path);
-        assertEquals(path, bookInfo.getFileBaseName() + ".ifo");
+        assertEquals(path, bookInfo.getFileBaseName() + BookInfo.INFO_FILE_EXTENTION);
         assertEquals(
             Fixtures.TEST_DATA_PATH + "missing",
             bookInfo.getDirPath()
