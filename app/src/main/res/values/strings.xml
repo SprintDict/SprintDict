@@ -13,9 +13,11 @@
     <string name="menu_dict_path">Path To Dictionaries</string>
     <string name="menu_rebuild_index">Rebuild index</string>
     <string name="set_dict_path">SprintDict - Set Dictionaries Path</string>
-    <string name="prompt_to_set_path">No dictionaries path is set.\nDo you want to set it now?</string>
+    <string name="prompt_to_set_path">No dictionaries path is set.\nWould you like to select one now?</string>
     <string name="yes">Yes</string>
+    <string name="set_path">Set Path</string>
     <string name="no">No</string>
+    <string name="exit">Exit</string>
     <string name="save">Save</string>
     <string name="select_all">Select All</string>
     <string name="unselect_all">Unselect All</string>
@@ -43,6 +45,6 @@
     <string name="menu_collapse_all">Collapse All</string>
     <string name="search_description">Words and phrases</string>
     <string name="updating_view">Updating View&#8230;</string>
-	<string name="dict_cannot_be_indexed">%s dictionary cannot be indexed. Please, report to developers.</string>
-	<string name="sprint_dict_indexing_error">SprintDict Indexing Error</string>
+    <string name="dict_cannot_be_indexed">%s dictionary cannot be indexed. Please, report to developers.</string>
+    <string name="sprint_dict_indexing_error">SprintDict Indexing Error</string>
 </resources>

@@ -51,7 +51,7 @@ public class DictManagerActivity extends BaseActivity {
 	 * must be started. This another activity could be started by selecting menu
 	 * item from DictManagerActivity activity.
 	 */
-	protected static final String SUB_ACTIVITY = "SubActivityToStart";
+	public static final String SUB_ACTIVITY = "SubActivityToStart";
 	
 	/**
 	 * Flag used in Bundle extras to indicate that no subactivity to be started.
@@ -64,7 +64,7 @@ public class DictManagerActivity extends BaseActivity {
 	 * must be started.
 	 * @see net.bancer.sparkdict.DictManagerActivity#SUB_ACTIVITY
 	 */
-	protected static final int START_DIR_PICKER = 1;
+	public static final int START_DIR_PICKER = 1;
 	private ListView listView;
 	private DictManagerItemsAdapter adapter;
 	
