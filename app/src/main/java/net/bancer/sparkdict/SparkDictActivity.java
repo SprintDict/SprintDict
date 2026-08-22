@@ -2,7 +2,6 @@ package net.bancer.sparkdict;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,7 +18,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -27,6 +25,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -52,8 +51,6 @@ public class SparkDictActivity extends BaseActivity
     public static final String SEARCH_INTENT = "net.bancer.sparkdict.SEARCH";
 
     private static final int DIALOG_NO_PATH_SET = 434354331;
-
-    private static final int DIALOG_SEARCHING = 434354332;
 
     private static final String KEY_SEARCH_STR = "SEARCH_STR";
 
@@ -95,6 +92,8 @@ public class SparkDictActivity extends BaseActivity
     private String dictPath;
 
     private ArrayList<LexicalEntry> articles = new ArrayList<LexicalEntry>();
+
+    private ProgressBar searchProgress;
 
     /**
      * Called when the activity is first created.
@@ -199,11 +198,6 @@ public class SparkDictActivity extends BaseActivity
     }
 
     private void initLayout() {
-
-        // enable progress spinner in the title bar
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        requestWindowFeature(Window.FEATURE_PROGRESS);
-
         setContentView(R.layout.activity_spark_dict);
 
         inputTextView = findViewById(R.id.searchTextView);
@@ -219,6 +213,8 @@ public class SparkDictActivity extends BaseActivity
 
         searchButton = findViewById(R.id.searchButton);
         searchButton.setOnClickListener(this);
+
+        searchProgress = (ProgressBar) findViewById(R.id.search_progress);
 
         scrollView = findViewById(R.id.articles_scroll_view);
 
@@ -364,21 +360,10 @@ public class SparkDictActivity extends BaseActivity
             case DIALOG_NO_PATH_SET:
                 dialog = buildSetDictPathDialog();
                 break;
-            case DIALOG_SEARCHING:
-                dialog = buildProgressDialog();
-                break;
             default:
                 dialog = null;
         }
         return dialog;
-    }
-
-    private ProgressDialog buildProgressDialog() {
-        ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.setMessage(getString(R.string.searching));
-        progressDialog.setIndeterminate(true);
-        return progressDialog;
     }
 
     private Dialog buildSetDictPathDialog() {
@@ -429,7 +414,7 @@ public class SparkDictActivity extends BaseActivity
 
     private void doSearch(String searchStr) {
         lexicalEntriesListView.removeAllViews();
-        showDialog(DIALOG_SEARCHING);
+        searchProgress.setVisibility(View.VISIBLE);
         searchExecutor.execute(new SearchWorker(searchStr));
         hideKeyboard(inputTextView);
     }
@@ -553,33 +538,27 @@ public class SparkDictActivity extends BaseActivity
 
         /**
          * Updates view with found lexical entry, dismisses progress spinner
-         * dialog, initiates progress spinner in the title bar.
+         * dialog, initiates progress spinner.
          *
          * @param entry Lexical entry to be added to the view.
          */
         private void onProgressUpdate(LexicalEntry entry) {
             lexicalEntriesListView.add(entry);
-            dismissDialog(DIALOG_SEARCHING);
             inputTextView.setText("");
-            // display progress spinner in the title bar
-            setProgressBarIndeterminateVisibility(true);
-            setProgressBarVisibility(true);
         }
 
         /**
-         * Terminates progress spinner in the title bar, displays a toast if
+         * Terminates progress spinner, displays a toast if
          * no lexical entries were found.
          *
          * @param atLeastOneEntryFound `true` if at least one entry was found.
          */
         private void onPostExecute(Boolean atLeastOneEntryFound) {
             if (!atLeastOneEntryFound) {
-                dismissDialog(DIALOG_SEARCHING);
                 showLongToast(getString(R.string.nothing_found));
             }
-            // hide progress spinner in the title bar
-            setProgressBarIndeterminateVisibility(false);
-            setProgressBarVisibility(false);
+            // hide progress spinner
+            searchProgress.setVisibility(View.GONE);
         }
     }
 }
