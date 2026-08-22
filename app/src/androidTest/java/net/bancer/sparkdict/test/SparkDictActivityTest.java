@@ -5,11 +5,15 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.intent.Intents.intended;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasExtra;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static net.bancer.sparkdict.BaseActivity.PREFS_NAME;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -22,19 +26,23 @@ import android.widget.ProgressBar;
 import androidx.annotation.NonNull;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import net.bancer.sparkdict.DictManagerActivity;
 import net.bancer.sparkdict.R;
 import net.bancer.sparkdict.SparkDictActivity;
 import net.bancer.sparkdict.domain.core.Shelf;
 import net.bancer.sparkdict.views.SearchInputField;
 
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import static org.junit.Assert.assertTrue;
 
@@ -43,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 
 @RunWith(AndroidJUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SparkDictActivityTest {
 
     public static final int INIT_ARTICLES_COUNT = 0;
@@ -85,6 +94,8 @@ public class SparkDictActivityTest {
 
     @Test
     public void testInputTextByPressingEnterKey() {
+        onView(withId(R.id.searchTextView))
+            .check(matches(withText("")));
         // Assert that the progress bar is not visible before the search.
         onView(withId(R.id.search_progress))
             .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.GONE)));
@@ -102,7 +113,7 @@ public class SparkDictActivityTest {
     }
 
     @Test
-    public void testNoPathSetDialogNoFinishesActivity() {
+    public void testNoPathSetDialogExitFinishesActivity() {
         Map<String, ?> originalPreferences = backupPreferencesAndRemoveDictionariesPath();
         try (ActivityScenario<SparkDictActivity> scenario = ActivityScenario.launch(SparkDictActivity.class)) {
             onView(withText(R.string.prompt_to_set_path))
@@ -117,6 +128,26 @@ public class SparkDictActivityTest {
                 assertTrue(activity.isFinishing())
             );
         } finally {
+            restorePreferences(originalPreferences);
+        }
+    }
+
+    @Test
+    public void testNoPathSetDialogSetPathStartsDirectoryPicker() {
+        Map<String, ?> originalPreferences = backupPreferencesAndRemoveDictionariesPath();
+        Intents.init();
+        try (ActivityScenario<SparkDictActivity> ignored = ActivityScenario.launch(SparkDictActivity.class)) {
+            onView(withText(R.string.set_path))
+                .perform(click());
+            intended(allOf(
+                hasComponent(DictManagerActivity.class.getName()),
+                hasExtra(
+                    DictManagerActivity.SUB_ACTIVITY,
+                    DictManagerActivity.START_DIR_PICKER
+                )
+            ));
+        } finally {
+            Intents.release();
             restorePreferences(originalPreferences);
         }
     }

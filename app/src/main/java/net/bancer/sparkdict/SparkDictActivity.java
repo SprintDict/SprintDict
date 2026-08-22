@@ -3,7 +3,6 @@ package net.bancer.sparkdict;
 import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -85,8 +84,6 @@ public class SparkDictActivity extends BaseActivity
     private EditText findOnPageInput;
 
     private LinearLayout findOnPageView;
-
-    private String dictPath;
 
     private ArrayList<LexicalEntry> articles = new ArrayList<LexicalEntry>();
 
@@ -224,8 +221,14 @@ public class SparkDictActivity extends BaseActivity
         findOnPageView = findViewById(R.id.find_on_page_layout);
     }
 
+    /**
+     * Checks whether a dictionary path is configured in the preferences.
+     *
+     * <p>If no path is configured, displays a dialog prompting the user to
+     * select a dictionary path.</p>
+     */
     private void checkDictPath() {
-        dictPath = getDictPathFromPrefs();
+        String dictPath = getDictPathFromPrefs();
         if (dictPath.trim().isEmpty()) {
             showNoPathSetDialog();
         }
@@ -278,7 +281,7 @@ public class SparkDictActivity extends BaseActivity
     }
 
     /**
-     * http://eliasbland.wordpress.com/2011/07/28/how-to-save-the-position-of-a-scrollview-when-the-orientation-changes-in-android/
+     * <a href="http://eliasbland.wordpress.com/2011/07/28/how-to-save-the-position-of-a-scrollview-when-the-orientation-changes-in-android/">...</a>
      *
      * @param savedInstanceState
      */
