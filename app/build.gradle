@@ -6,7 +6,7 @@ android {
     defaultConfig {
         applicationId "net.bancer.sparkdict"
         minSdkVersion 30
-        targetSdk 31
+        targetSdk 33
         versionCode 7
         versionName "1.2.0"
         testApplicationId "net.bancer.sparkdict.test"
