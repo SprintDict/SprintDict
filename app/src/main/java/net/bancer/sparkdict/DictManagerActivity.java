@@ -1,10 +1,8 @@
 package net.bancer.sparkdict;
 
-import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,7 +16,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import net.bancer.sparkdict.adapters.DictManagerItemsAdapter;
 import net.bancer.sparkdict.domain.core.Book;
@@ -32,9 +33,6 @@ import java.util.ArrayList;
  * DictManagerActivity displays a list of all dictionaries, allows the user
  * to enable/disable the dictionaries, to change their order, to set the path to
  * the dictionaries, to build the additional index files for all dictionaries.
- *
- * @author Valerij Bancer
- *
  */
 public class DictManagerActivity extends BaseActivity {
 
@@ -60,22 +58,32 @@ public class DictManagerActivity extends BaseActivity {
      * @see net.bancer.sparkdict.DictManagerActivity#SUB_ACTIVITY
      */
     protected static final int DO_NOT_START_SUB_ACTIVITY = 0;
-    static final int PROGRESS_DIALOG = 3;
 
     IndexBuilder progressThread;
-    ProgressDialog progressDialog;
+
+    private LinearLayout rebuildProgressLayout;
+
+    private TextView rebuildProgressText;
+
+    private ProgressBar rebuildProgress;
+
+
     final Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             int indexed = msg.arg1;
             int total = msg.arg2;
-            progressDialog.setProgress(indexed);
+            rebuildProgress.setMax(total);
+            rebuildProgress.setProgress(indexed);
+            rebuildProgressText.setText(
+                getString(R.string.rebuilding_index, indexed, total)
+            );
             if (indexed >= total) {
-                dismissDialog(PROGRESS_DIALOG);
+                rebuildProgressLayout.setVisibility(View.GONE);
             }
         }
     };
-    private ListView listView;
+
     private DictManagerItemsAdapter adapter;
 
     @Override
@@ -105,9 +113,13 @@ public class DictManagerActivity extends BaseActivity {
         ArrayList<Book> books = getBooks();
         adapter = new DictManagerItemsAdapter(this, books);
 
-        listView = findViewById(R.id.dict_list);
+        ListView listView = findViewById(R.id.dict_list);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(adapter);
+
+        rebuildProgressLayout = findViewById(R.id.rebuild_progress_layout);
+        rebuildProgressText = findViewById(R.id.rebuild_progress_text);
+        rebuildProgress = findViewById(R.id.rebuild_progress);
     }
 
     @Override
@@ -120,22 +132,16 @@ public class DictManagerActivity extends BaseActivity {
 
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_set_dict_path:
-                startDirPicker();
-                return true;
-            case R.id.menu_rebuild_index:
-                showDialog(PROGRESS_DIALOG);
-    			/*ProgressDialog progressDialog;
-    			progressDialog = new ProgressDialog(this);
-    			progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-    			progressDialog.setMessage("Loading...");
-    			progressDialog.setCancelable(false);
-    			progressDialog.show();*/
-                return true;
-            default:
-                return super.onMenuItemSelected(featureId, item);
+        int itemId = item.getItemId();
+        if (itemId == R.id.menu_set_dict_path) {
+            startDirPicker();
+            return true;
         }
+        if (itemId == R.id.menu_rebuild_index) {
+            startIndexRebuild();
+            return true;
+        }
+        return super.onMenuItemSelected(featureId, item);
     }
 
     private void startDirPicker() {
@@ -257,27 +263,14 @@ public class DictManagerActivity extends BaseActivity {
         }
     }
 
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-            case PROGRESS_DIALOG:
-                progressDialog = new ProgressDialog(DictManagerActivity.this);
-                progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                progressDialog.setMessage(getString(R.string.rebuilding_index));
-                progressDialog.setCancelable(false);
-                return progressDialog;
-            default:
-                return null;
-        }
-    }
-
-    @Override
-    protected void onPrepareDialog(int id, Dialog dialog) {
-        switch (id) {
-            case PROGRESS_DIALOG:
-                progressThread = new IndexBuilder(handler, getShelf(), progressDialog);
-                progressThread.start();
-        }
+    private void startIndexRebuild() {
+        rebuildProgressLayout.setVisibility(View.VISIBLE);
+        rebuildProgress.setProgress(0);
+        rebuildProgressText.setText(
+            getString(R.string.rebuilding_index, 0, 0)
+        );
+        progressThread = new IndexBuilder(handler, getShelf());
+        progressThread.start();
     }
 
     /**
@@ -305,24 +298,24 @@ public class DictManagerActivity extends BaseActivity {
 
         private static final int MESSAGES_TIME_STEP = 100;
         private final Handler mHandler;
-        private final ProgressDialog mProgressDialog;
         private int articlesIndexed = 0;
         private int totalArticles = 0;
         private long previousMessageTime = 0;
 
         private final Shelf shelf;
 
-        public IndexBuilder(Handler h, Shelf shelf, ProgressDialog dialog) {
+        public IndexBuilder(Handler h, Shelf shelf) {
             mHandler = h;
             this.shelf = shelf;
-            mProgressDialog = dialog;
         }
 
         @Override
         public void run() {
             totalArticles = shelf.getTotalLexicalEntriesQuantity();
-            mProgressDialog.setProgress(0);
-            mProgressDialog.setMax(totalArticles);
+            Message msg = mHandler.obtainMessage();
+            msg.arg1 = 0;
+            msg.arg2 = totalArticles;
+            mHandler.sendMessage(msg);
             int count = shelf.getBooks().size();
             for (int i = 0; i < count; i++) {
                 try {

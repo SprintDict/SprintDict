@@ -20,7 +20,28 @@
         android:layout_height="0dip"
         android:layout_weight="1"
         android:choiceMode="multipleChoice"
-        android:footerDividersEnabled="true"></ListView>
+        android:footerDividersEnabled="true" />
+
+    <LinearLayout
+        android:id="@+id/rebuild_progress_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/rebuild_progress_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal" />
+
+        <ProgressBar
+            android:id="@+id/rebuild_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/dict_manager_btns_layout"
@@ -42,13 +63,6 @@
             android:layout_height="wrap_content"
             android:onClick="onUnselectAllDicts"
             android:text="@string/unselect_all" />
-
-        <!-- <Button
-            android:id="@+id/btn_enable_dicts"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/save"
-            android:onClick="onEnableDicts" />-->
 
     </LinearLayout>
 
