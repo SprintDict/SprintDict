@@ -1,13 +1,17 @@
 package net.bancer.sparkdict;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.provider.DocumentsContract;
 import android.provider.Settings;
@@ -21,12 +25,15 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import net.bancer.sparkdict.adapters.DictManagerItemsAdapter;
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.IObserver;
 import net.bancer.sparkdict.domain.core.Shelf;
 import net.bancer.sparkdict.domain.utils.DomainException;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 /**
@@ -38,6 +45,9 @@ public class DictManagerActivity extends BaseActivity {
 
     public static final int FILE_PERMISSIONS_ACCESS_REQUEST = 34232131;
     public static final int PICK_DIRECTORY = 43522432;
+
+    private static final String INDEX_BUILD_CHANNEL_ID = "index_build";
+
     /**
      * Tag (key) used in Bundle extras to indicate that it contains a value
      * indicating that another activity that is a child of DictManagerActivity
@@ -45,6 +55,7 @@ public class DictManagerActivity extends BaseActivity {
      * item from DictManagerActivity activity.
      */
     public static final String SUB_ACTIVITY = "SubActivityToStart";
+
     /**
      * Flag used in Bundle extras to indicate that DirectoryPicker subactivity
      * must be started.
@@ -52,6 +63,7 @@ public class DictManagerActivity extends BaseActivity {
      * @see net.bancer.sparkdict.DictManagerActivity#SUB_ACTIVITY
      */
     public static final int START_DIR_PICKER = 1;
+
     /**
      * Flag used in Bundle extras to indicate that no subactivity to be started.
      *
@@ -67,22 +79,42 @@ public class DictManagerActivity extends BaseActivity {
 
     private ProgressBar rebuildProgress;
 
+    /**
+     * Handles index rebuild progress messages on the main thread.
+     */
+    final Handler handler = new RebuildProgressHandler(this);
 
-    final Handler handler = new Handler() {
+    /**
+     * Handles index rebuild progress messages and updates the activity UI.
+     *
+     * <p>A weak reference is used to avoid retaining the activity while messages are pending.</p>
+     */
+    private static class RebuildProgressHandler extends Handler {
+        private final WeakReference<DictManagerActivity> activityRef;
+
+        RebuildProgressHandler(DictManagerActivity activity) {
+            super(Looper.getMainLooper());
+            activityRef = new WeakReference<>(activity);
+        }
+
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(@NonNull Message msg) {
+            DictManagerActivity activity = activityRef.get();
+            if (activity == null) {
+                return;
+            }
             int indexed = msg.arg1;
             int total = msg.arg2;
-            rebuildProgress.setMax(total);
-            rebuildProgress.setProgress(indexed);
-            rebuildProgressText.setText(
-                getString(R.string.rebuilding_index, indexed, total)
+            activity.rebuildProgress.setMax(total);
+            activity.rebuildProgress.setProgress(indexed);
+            activity.rebuildProgressText.setText(
+                activity.getString(R.string.rebuilding_index_progress, indexed, total)
             );
             if (indexed >= total) {
-                rebuildProgressLayout.setVisibility(View.GONE);
+                activity.rebuildProgressLayout.setVisibility(View.GONE);
             }
         }
-    };
+    }
 
     private DictManagerItemsAdapter adapter;
 
@@ -99,6 +131,28 @@ public class DictManagerActivity extends BaseActivity {
             startDirPicker();
         }
         initLayout();
+        createNotificationChannel();
+    }
+
+    /**
+     * Creates the notification channel used for dictionary index building notifications.
+     *
+     * <p>The channel is configured with the default notification sound and
+     * notification importance.</p>
+     */
+    private void createNotificationChannel() {
+        Uri sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+            .build();
+        NotificationChannel channel = new NotificationChannel(
+            INDEX_BUILD_CHANNEL_ID,
+            getString(R.string.sprint_dict_indexing_notification),
+            NotificationManager.IMPORTANCE_DEFAULT
+        );
+        channel.setSound(sound, audioAttributes);
+        NotificationManager mgr =(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mgr.createNotificationChannel(channel);
     }
 
     @Override
@@ -167,14 +221,18 @@ public class DictManagerActivity extends BaseActivity {
     }
 
     /**
-     * Extracts the folder that the user selected from the given intent object.
+     * Extracts the filesystem path of the folder selected by the user.
      *
-     * @param intent
-     * @return
+     * <p>The selected folder is obtained from the tree URI returned in the
+     * {@link Intent} data. The URI's document ID is split into the storage
+     * volume type and the relative path, which are then combined into the
+     * corresponding filesystem path.</p>
+     *
+     * @param intent the intent returned by the directory picker
+     * @return the filesystem path of the selected folder
      */
     private String extractSelectedFolder(Intent intent) {
-        // The result data contains a URI for the document or directory that
-        // the user selected.
+        // The result data contains a URI for the document or directory that the user selected.
         Uri uri = intent.getData();
         final String docId = DocumentsContract.getTreeDocumentId(uri);
         final String[] split = docId.split(":");
@@ -212,27 +270,30 @@ public class DictManagerActivity extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        String enabledDicts = "";
+        StringBuilder enabledDicts = new StringBuilder();
         int count = adapter.getCount();
         for (int i = 0; i < count; i++) {
             Book book = (Book) adapter.getItem(i);
             if (book.isEnabled()) {
-                if (enabledDicts.length() > 1) {
-                    enabledDicts += "||";
+                if (enabledDicts.length() > 0) {
+                    enabledDicts.append("||");
                 }
-                enabledDicts += book.getBookName();
+                enabledDicts.append(book.getBookName());
             }
         }
-        boolean isSaved = saveSharedPreference(getString(R.string.enabled_dicts), enabledDicts);
+        boolean isSaved = saveSharedPreference(
+            getString(R.string.enabled_dicts),
+            enabledDicts.toString()
+        );
         if (isSaved) {
             refreshShelf();
         }
     }
 
     /**
-     * "Select All" button handler. Checks all dictionaries.
+     * Selects all dictionaries in the dictionary list.
      *
-     * @param v
+     * @param v the view that triggered the action
      */
     public void onSelectAllDicts(View v) {
         adapter.setCheckedAll(true);
@@ -241,7 +302,7 @@ public class DictManagerActivity extends BaseActivity {
     /**
      * "Unselect All" button handler. Un-checks all dictionaries.
      *
-     * @param v
+     * @param v the view that triggered the action
      */
     public void onUnselectAllDicts(View v) {
         adapter.setCheckedAll(false);
@@ -250,7 +311,7 @@ public class DictManagerActivity extends BaseActivity {
     /**
      * "Move Up" arrow image button handler. Moves the dictionary up the list.
      *
-     * @param v
+     * @param v  the view that triggered the action
      */
     public void onMoveUp(View v) {
         int position = Integer.parseInt((String) v.getTag());
@@ -263,37 +324,47 @@ public class DictManagerActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Starts rebuilding the dictionary indexes and displays the rebuild progress UI.
+     *
+     * <p>The progress indicators are reset before starting the index-building
+     * thread.</p>
+     */
     private void startIndexRebuild() {
         rebuildProgressLayout.setVisibility(View.VISIBLE);
         rebuildProgress.setProgress(0);
         rebuildProgressText.setText(
-            getString(R.string.rebuilding_index, 0, 0)
+            getString(R.string.rebuilding_index_progress, 0, 0)
         );
         progressThread = new IndexBuilder(handler, getShelf());
         progressThread.start();
     }
 
     /**
-     * Sends notification about indexing error to the status bar.
+     * Sends a notification about the dictionary index building process.
      *
-     * @param message message to be displayed.
-     * @see <a href="http://developer.android.com/guide/topics/ui/notifiers/notifications.html#SimpleNotification">...</a>
+     * @param message the message to display in the notification
      */
     private void sendNotification(String message) {
         NotificationManager mgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         Intent notificationIntent = new Intent(this, DictManagerActivity.class);
         int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
         PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, flags);
-        Notification note = new Notification(
-            android.R.drawable.stat_sys_warning, message,
-            System.currentTimeMillis());
-        //TODO: migrate from deprecated setLatestEventInfo to Notification.Builder
-        //note.setLatestEventInfo(this, getString(R.string.sprint_dict_indexing_error), message, pi);
-        note.defaults |= Notification.DEFAULT_SOUND;
-        note.flags |= Notification.FLAG_AUTO_CANCEL;
+        Notification note = new Notification.Builder(this, INDEX_BUILD_CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.stat_sys_warning)
+            .setContentTitle(getString(R.string.sprint_dict_indexing_notification))
+            .setContentText(message)
+            .setContentIntent(pi)
+            .setWhen(System.currentTimeMillis())
+            .setAutoCancel(true)
+            .build();
         mgr.notify(message.hashCode(), note);
     }
 
+    /**
+     * Builds dictionary indexes in a background thread and reports progress
+     * through the {@link IObserver} interface.
+     */
     private class IndexBuilder extends Thread implements IObserver {
 
         private static final int MESSAGES_TIME_STEP = 100;
@@ -309,19 +380,24 @@ public class DictManagerActivity extends BaseActivity {
             this.shelf = shelf;
         }
 
+        private void updateProgressMessage() {
+            Message msg = mHandler.obtainMessage();
+            msg.arg1 = articlesIndexed;
+            msg.arg2 = totalArticles;
+            mHandler.sendMessage(msg);
+        }
+
         @Override
         public void run() {
             totalArticles = shelf.getTotalLexicalEntriesQuantity();
-            Message msg = mHandler.obtainMessage();
-            msg.arg1 = 0;
-            msg.arg2 = totalArticles;
-            mHandler.sendMessage(msg);
+            updateProgressMessage();
             int count = shelf.getBooks().size();
             for (int i = 0; i < count; i++) {
                 try {
                     shelf.getBooks().get(i).buildSparkDictIndex(this);
                 } catch (DomainException e) {
-                    String message = getString(R.string.dict_cannot_be_indexed, shelf.getBooks().get(i).getBookName());
+                    String dictionaryName = shelf.getBooks().get(i).getBookName();
+                    String message = getString(R.string.dict_cannot_be_indexed, dictionaryName);
                     Log.e(TAG, message, e);
                     sendNotification(message);
                 }
@@ -333,11 +409,11 @@ public class DictManagerActivity extends BaseActivity {
             articlesIndexed++;
             long currentTime = System.currentTimeMillis();
             if (currentTime - previousMessageTime > MESSAGES_TIME_STEP || articlesIndexed >= totalArticles) {
-                Message msg = mHandler.obtainMessage();
-                msg.arg1 = articlesIndexed;
-                msg.arg2 = totalArticles;
-                mHandler.sendMessage(msg);
+                updateProgressMessage();
                 previousMessageTime = currentTime;
+            }
+            if (articlesIndexed >= totalArticles) {
+                sendNotification(getString(R.string.rebuilding_index_success));
             }
         }
     }

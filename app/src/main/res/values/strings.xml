@@ -27,7 +27,8 @@
     <string name="enabled_dicts_saved">SUCCESS. Selected dictionaries are enabled.</string>
     <string name="enabled_dicsts_not_saved">FAILURE. Selected dictionaries are not enabled. Try again.</string>
     <string name="enabled_dicts">Enabled Dictionaries</string>
-    <string name="rebuilding_index">Rebuilding index&#8230;%1$d/%2$d</string>
+    <string name="rebuilding_index_progress">Rebuilding index&#8230;%1$d/%2$d</string>
+    <string name="rebuilding_index_success">Finished building dictionary indexes</string>
     <string name="dictionary_title">Dictionary Title</string>
     <string name="article_title">Article Title</string>
     <string name="definitions_body">Definitions Body</string>
@@ -46,5 +47,5 @@
     <string name="search_description">Words and phrases</string>
     <string name="updating_view">Updating View&#8230;</string>
     <string name="dict_cannot_be_indexed">%s dictionary cannot be indexed. Please, report to developers.</string>
-    <string name="sprint_dict_indexing_error">SprintDict Indexing Error</string>
+    <string name="sprint_dict_indexing_notification">Indexing dictionaries</string>
 </resources>
