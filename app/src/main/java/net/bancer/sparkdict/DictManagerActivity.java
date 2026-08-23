@@ -28,9 +28,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import net.bancer.sparkdict.adapters.DictManagerItemsAdapter;
+import net.bancer.sparkdict.domain.IndexBuilder;
 import net.bancer.sparkdict.domain.core.Book;
-import net.bancer.sparkdict.domain.core.IObserver;
-import net.bancer.sparkdict.domain.core.Shelf;
 import net.bancer.sparkdict.domain.utils.DomainException;
 
 import java.lang.ref.WeakReference;
@@ -336,7 +335,7 @@ public class DictManagerActivity extends BaseActivity {
         rebuildProgressText.setText(
             getString(R.string.rebuilding_index_progress, 0, 0)
         );
-        progressThread = new IndexBuilder(handler, getShelf());
+        progressThread = new IndexBuilder(new IndexBuilderProgressUIUpdater(), getShelf());
         progressThread.start();
     }
 
@@ -361,60 +360,25 @@ public class DictManagerActivity extends BaseActivity {
         mgr.notify(message.hashCode(), note);
     }
 
-    /**
-     * Builds dictionary indexes in a background thread and reports progress
-     * through the {@link IObserver} interface.
-     */
-    private class IndexBuilder extends Thread implements IObserver {
-
-        private static final int MESSAGES_TIME_STEP = 100;
-        private final Handler mHandler;
-        private int articlesIndexed = 0;
-        private int totalArticles = 0;
-        private long previousMessageTime = 0;
-
-        private final Shelf shelf;
-
-        public IndexBuilder(Handler h, Shelf shelf) {
-            mHandler = h;
-            this.shelf = shelf;
-        }
-
-        private void updateProgressMessage() {
-            Message msg = mHandler.obtainMessage();
-            msg.arg1 = articlesIndexed;
-            msg.arg2 = totalArticles;
-            mHandler.sendMessage(msg);
+    private class IndexBuilderProgressUIUpdater implements IndexBuilder.Listener {
+        @Override
+        public void onProgress(int indexed, int total) {
+            Message msg = handler.obtainMessage();
+            msg.arg1 = indexed;
+            msg.arg2 = total;
+            handler.sendMessage(msg);
         }
 
         @Override
-        public void run() {
-            totalArticles = shelf.getTotalLexicalEntriesQuantity();
-            updateProgressMessage();
-            int count = shelf.getBooks().size();
-            for (int i = 0; i < count; i++) {
-                try {
-                    shelf.getBooks().get(i).buildSparkDictIndex(this);
-                } catch (DomainException e) {
-                    String dictionaryName = shelf.getBooks().get(i).getBookName();
-                    String message = getString(R.string.dict_cannot_be_indexed, dictionaryName);
-                    Log.e(TAG, message, e);
-                    sendNotification(message);
-                }
-            }
+        public void onIndexingError(String dictionaryName, DomainException e) {
+            String message = getString(R.string.dict_cannot_be_indexed, dictionaryName);
+            Log.e(TAG, message, e);
+            sendNotification(message);
         }
 
         @Override
-        public void update(Object field, int value) {
-            articlesIndexed++;
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - previousMessageTime > MESSAGES_TIME_STEP || articlesIndexed >= totalArticles) {
-                updateProgressMessage();
-                previousMessageTime = currentTime;
-            }
-            if (articlesIndexed >= totalArticles) {
-                sendNotification(getString(R.string.rebuilding_index_success));
-            }
+        public void onIndexingComplete() {
+            sendNotification(getString(R.string.rebuilding_index_success));
         }
     }
 }
