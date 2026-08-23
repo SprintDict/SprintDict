@@ -2,8 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="horizontal"
-    android:descendantFocusability="blocksDescendants" >
+    android:descendantFocusability="blocksDescendants"
+    android:orientation="horizontal">
 
     <CheckBox
         android:id="@+id/dict_manager_checkbox"
@@ -12,7 +12,7 @@
         android:clickable="false"
         android:focusable="false"
         android:focusableInTouchMode="false" />
-    
+
     <ImageView
         android:id="@+id/dict_manager_move_up"
         android:layout_width="wrap_content"

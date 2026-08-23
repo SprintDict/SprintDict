@@ -2,19 +2,19 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <Preference
         android:key="@string/pref_dict_path"
-        android:title="@string/pref_dict_path"
+        android:persistent="true"
         android:selectable="false"
-        android:persistent="true"/>
+        android:title="@string/pref_dict_path" />
     <EditTextPreference
         android:key="@string/pref_dict_title_font_size"
-        android:title="@string/pref_dict_title_font_size"
-        android:persistent="true"/>
+        android:persistent="true"
+        android:title="@string/pref_dict_title_font_size" />
     <EditTextPreference
         android:key="@string/pref_article_title_font_size"
-        android:title="@string/pref_article_title_font_size"
-        android:persistent="true"/>
+        android:persistent="true"
+        android:title="@string/pref_article_title_font_size" />
     <EditTextPreference
         android:key="@string/pref_definitions_font_size"
-        android:title="@string/pref_definitions_font_size"
-        android:persistent="true"/>
+        android:persistent="true"
+        android:title="@string/pref_definitions_font_size" />
 </PreferenceScreen>

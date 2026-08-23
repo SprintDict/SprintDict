@@ -24,9 +24,6 @@ import java.util.zip.ZipException;
  * @since   1.6
  * @author  David R Tribble (david@tribble.com)
  *
- * @see InflaterInputStream
- * @see DeflaterInputStream
- * @see DeflaterOutputStream
  */
  
 public class InflaterOutputStream extends FilterOutputStream {
