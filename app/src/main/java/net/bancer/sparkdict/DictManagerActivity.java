@@ -294,6 +294,25 @@ public class DictManagerActivity extends BaseActivity {
     }
 
     /**
+     * Updates the index rebuilding progress bar and progress text.
+     *
+     * <p>Hides the progress layout when all entries have been indexed.</p>
+     *
+     * @param indexed number of entries indexed so far
+     * @param total total number of entries to be indexed
+     */
+    private void updateIndexRebuildProgressBar(int indexed, int total) {
+        rebuildProgress.setMax(total);
+        rebuildProgress.setProgress(indexed);
+        rebuildProgressText.setText(
+            getString(R.string.rebuilding_index_progress, indexed, total)
+        );
+        if (indexed >= total) {
+            rebuildProgressLayout.setVisibility(View.GONE);
+        }
+    }
+
+    /**
      * Receives index-building progress notifications and updates the
      * {@link DictManagerActivity} UI accordingly.
      *
@@ -334,16 +353,7 @@ public class DictManagerActivity extends BaseActivity {
             if (activity == null) {
                 return; // no screen to update — fine to skip
             }
-            activity.runOnUiThread(() -> {
-                activity.rebuildProgress.setMax(total);
-                activity.rebuildProgress.setProgress(indexed);
-                activity.rebuildProgressText.setText(
-                    activity.getString(R.string.rebuilding_index_progress, indexed, total)
-                );
-                if (indexed >= total) {
-                    activity.rebuildProgressLayout.setVisibility(View.GONE);
-                }
-            });
+            activity.runOnUiThread(() -> activity.updateIndexRebuildProgressBar(indexed, total));
         }
 
         /**
