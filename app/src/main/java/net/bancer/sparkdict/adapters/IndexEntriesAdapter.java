@@ -35,7 +35,6 @@ public class IndexEntriesAdapter extends ArrayAdapter<IndexEntry>
 	 * Constructor.
 	 * 
 	 * @param context	caller context.
-	 * @param shelf		shelf containing all the Books.
 	 * @param entries	empty container for IndexEntries.
 	 */
 	public IndexEntriesAdapter(Context context, Vector<IndexEntry> entries) {
