@@ -17,11 +17,21 @@ public class IndexBuilder extends Thread implements IObserver {
     private int totalArticles = 0;
     private long previousMessageTime = 0;
 
+    /**
+     * Creates an index builder for the specified shelf.
+     *
+     * @param listener listener that receives indexing progress, errors and * completion notifications
+     * @param shelf    shelf containing the dictionaries whose indexes are to be built
+     */
     public IndexBuilder(Listener listener, Shelf shelf) {
         this.listener = listener;
         this.shelf = shelf;
     }
 
+    /**
+     * Builds indexes for all dictionaries in the shelf and reports progress and
+     * errors through the listener.
+     */
     @Override
     public void run() {
         totalArticles = shelf.getTotalLexicalEntriesQuantity();
@@ -37,6 +47,13 @@ public class IndexBuilder extends Thread implements IObserver {
         }
     }
 
+    /**
+     * Receives a progress update from the index building process and forwards
+     * progress notifications to the listener at regular intervals.
+     *
+     * @param field field associated with the update
+     * @param value value associated with the update
+     */
     @Override
     public void update(Object field, int value) {
         articlesIndexed++;
@@ -56,10 +73,26 @@ public class IndexBuilder extends Thread implements IObserver {
      * has no knowledge of Android UI.
      */
     public interface Listener {
+
+        /**
+         * Receives an indexing progress update.
+         *
+         * @param indexed number of articles indexed so far
+         * @param total   total number of articles to be indexed
+         */
         void onProgress(int indexed, int total);
 
+        /**
+         * Reports an error that occurred while indexing a dictionary.
+         *
+         * @param dictionaryName name of the dictionary that could not be indexed
+         * @param e              exception that caused the indexing failure
+         */
         void onIndexingError(String dictionaryName, DomainException e);
 
+        /**
+         * Reports that indexing has completed.
+         */
         void onIndexingComplete();
     }
 }
