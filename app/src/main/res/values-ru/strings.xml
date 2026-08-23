@@ -27,7 +27,7 @@
     <string name="enabled_dicts_saved">Выбранные словари подключены.</string>
     <string name="enabled_dicsts_not_saved">Выбранные словари НЕ подключены. Попробуйте ещё раз.</string>
     <string name="enabled_dicts">Подключенные словари</string>
-    <string name="rebuilding_index">Индексирование&#8230;</string>
+    <string name="rebuilding_index">Индексирование&#8230;%1$d/%2$d</string>
     <string name="dictionary_title">Название словаря</string>
     <string name="article_title">Название статьи</string>
     <string name="definitions_body">Текст статьи</string>

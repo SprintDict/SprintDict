@@ -27,7 +27,7 @@
     <string name="enabled_dicts_saved">SUCCESS. Selected dictionaries are enabled.</string>
     <string name="enabled_dicsts_not_saved">FAILURE. Selected dictionaries are not enabled. Try again.</string>
     <string name="enabled_dicts">Enabled Dictionaries</string>
-    <string name="rebuilding_index">Rebuilding index&#8230;</string>
+    <string name="rebuilding_index">Rebuilding index&#8230;%1$d/%2$d</string>
     <string name="dictionary_title">Dictionary Title</string>
     <string name="article_title">Article Title</string>
     <string name="definitions_body">Definitions Body</string>
