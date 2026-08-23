@@ -16,6 +16,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -27,9 +29,10 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import net.bancer.sparkdict.adapters.IndexEntriesAdapter;
 import net.bancer.sparkdict.domain.core.Book;
-import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.LexicalEntry;
 import net.bancer.sparkdict.domain.utils.DomainException;
 import net.bancer.sparkdict.views.LexicalEntriesListView;
@@ -55,12 +58,12 @@ public class SparkDictActivity extends BaseActivity
     private static final String KEY_FOCUSED_WORD = "FOCUSED_WORD";
 
     private static final String KEY_FIND_ON_PAGE_STR = "KEY_FIND_ON_PAGE_STR";
+
     /**
      * Key to identify the array of definitions visibility field values of
      * all lexical entry views in order to restore their state after screen
      * orientation change.
      */
-
     private static final String KEY_DEFINITIONS_VISIBILITY = "KEY_EXPANDED_DEFINITIONS_POSITIONS";
 
     /**
@@ -75,8 +78,6 @@ public class SparkDictActivity extends BaseActivity
 
     private SearchInputField inputTextView;
 
-    private ImageButton searchButton;
-
     private ScrollView scrollView;
 
     private LexicalEntriesListView lexicalEntriesListView;
@@ -85,7 +86,7 @@ public class SparkDictActivity extends BaseActivity
 
     private LinearLayout findOnPageView;
 
-    private ArrayList<LexicalEntry> articles = new ArrayList<LexicalEntry>();
+    private ArrayList<LexicalEntry> articles = new ArrayList<>();
 
     private ProgressBar searchProgress;
 
@@ -114,7 +115,6 @@ public class SparkDictActivity extends BaseActivity
             processIntent(getIntent());
         }
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-        //System.out.println("onCreate");
     }
 
     @Override
@@ -137,14 +137,13 @@ public class SparkDictActivity extends BaseActivity
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         saveDefinitionsViewsState(outState);
         saveScrollPosition(outState);
         if (findOnPageView.getVisibility() == View.VISIBLE) {
             saveFindOnPageBarState(outState);
         }
-        //System.out.println("onSaveInstanceState");
     }
 
     @Override
@@ -154,10 +153,8 @@ public class SparkDictActivity extends BaseActivity
     }
 
     private void processIntent(Intent intent) {
-        //System.out.println("intent action: " + intent.getAction());
         // Handle search action
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            //System.out.println("uri: " + intent.getData().toString());
 
 //			String query1 = intent.getStringExtra(SearchManager.QUERY);
 //			Cursor cursor = managedQuery(SuggestionsProvider.CONTENT_URI, null, null,
@@ -167,20 +164,17 @@ public class SparkDictActivity extends BaseActivity
 //			}
 
             String query = intent.getStringExtra(SearchManager.QUERY);
-            //System.out.println("query: " + query);
             doSearch(query);
         }
         // Handle lexical entry hyperlink click
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-            //System.out.println("uri: " + intent.getData().toString());
             Uri data = intent.getData();
             if (data != null) {
                 String query = data.getSchemeSpecificPart().substring(2);
-                System.out.println("query: " + query);
                 doSearch(query);
             }
         }
-        // Handle searchable dialog suggestion click
+        // Handle searchable dialogue suggestion click
         if (SparkDictActivity.SEARCH_INTENT.equals(intent.getAction())) {
             Uri data = intent.getData();
             if (data != null) {
@@ -196,15 +190,14 @@ public class SparkDictActivity extends BaseActivity
         inputTextView = findViewById(R.id.searchTextView);
         inputTextView.setOnKeyListener(this);
 
-        IndexEntriesAdapter adapter = new IndexEntriesAdapter(this, new Vector<IndexEntry>());
-        //Log.d("SparkDictActivity", "shelf: " + getShelf());
+        IndexEntriesAdapter adapter = new IndexEntriesAdapter(this, new Vector<>());
         inputTextView.setAdapter(adapter);
         inputTextView.addTextChangedListener(adapter);
         // Start to display a list of suggestions after 1 letter typed
         inputTextView.setThreshold(1);
         inputTextView.setOnItemClickListener(this);
 
-        searchButton = findViewById(R.id.searchButton);
+        ImageButton searchButton = findViewById(R.id.searchButton);
         searchButton.setOnClickListener(this);
 
         searchProgress = findViewById(R.id.search_progress);
@@ -214,8 +207,6 @@ public class SparkDictActivity extends BaseActivity
         lexicalEntriesListView = findViewById(R.id.articles_list);
         lexicalEntriesListView.setOnClickListener(this);
 
-        //findOnPageBar = new FindOnPageBar(this);
-
         findOnPageInput = findViewById(R.id.find_on_page_edit_text);
         findOnPageView = findViewById(R.id.find_on_page_layout);
     }
@@ -223,7 +214,7 @@ public class SparkDictActivity extends BaseActivity
     /**
      * Checks whether a dictionary path is configured in the preferences.
      *
-     * <p>If no path is configured, displays a dialog prompting the user to
+     * <p>If no path is configured, displays a dialogue prompting the user to
      * select a dictionary path.</p>
      */
     private void checkDictPath() {
@@ -235,8 +226,7 @@ public class SparkDictActivity extends BaseActivity
 
     @Override
     public Object onRetainNonConfigurationInstance() {
-        final ArrayList<LexicalEntry> data = articles;
-        return data;
+        return articles;
     }
 
     /**
@@ -282,17 +272,14 @@ public class SparkDictActivity extends BaseActivity
     /**
      * <a href="http://eliasbland.wordpress.com/2011/07/28/how-to-save-the-position-of-a-scrollview-when-the-orientation-changes-in-android/">...</a>
      *
-     * @param savedInstanceState
+     * @param savedInstanceState As the activity is being re-initialised after previously being shut
+     *                           down then this Bundle contains the data it most recently supplied
+     *                           in onSaveInstanceState(Bundle).
      */
     private void restoreScrollPosition(Bundle savedInstanceState) {
         final int[] coordinates = savedInstanceState.getIntArray(KEY_ARTICLES_SCROLL_POSITION);
         if (coordinates != null) {
-            scrollView.post(new Runnable() {
-                @Override
-                public void run() {
-                    scrollView.scrollTo(coordinates[0], coordinates[1]);
-                }
-            });
+            scrollView.post(() -> scrollView.scrollTo(coordinates[0], coordinates[1]));
         }
     }
 
@@ -318,32 +305,36 @@ public class SparkDictActivity extends BaseActivity
 
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_recent_history:
-                startActivity(new Intent(this, RecentHistoryActivity.class));
-                return true;
-            case R.id.menu_find_on_page:
-                openFindOnPageBar();
-                //showKeyboard(findOnPageEditText);
-                return true;
-            case R.id.menu_manage_dictionaries:
-                startDictManager(DictManagerActivity.DO_NOT_START_SUB_ACTIVITY);
-                return true;
-            case R.id.menu_settings:
-                startActivity(new Intent(this, DictPreferencesActivity.class));
-                return true;
-            case R.id.search_dialog:
-                onSearchRequested();
-                return true;
-            case R.id.menu_expand_all:
-                lexicalEntriesListView.expandAll();
-                return true;
-            case R.id.menu_collapse_all:
-                lexicalEntriesListView.collapseAll();
-                return true;
-            default:
-                return super.onMenuItemSelected(featureId, item);
+        int itemId = item.getItemId();
+        if (itemId == R.id.menu_recent_history) {
+            startActivity(new Intent(this, RecentHistoryActivity.class));
+            return true;
         }
+        if (itemId == R.id.menu_find_on_page) {
+            openFindOnPageBar();
+            return true;
+        }
+        if (itemId == R.id.menu_manage_dictionaries) {
+            startDictManager(DictManagerActivity.DO_NOT_START_SUB_ACTIVITY);
+            return true;
+        }
+        if (itemId == R.id.menu_settings) {
+            startActivity(new Intent(this, DictPreferencesActivity.class));
+            return true;
+        }
+        if (itemId == R.id.search_dialog) {
+            onSearchRequested();
+            return true;
+        }
+        if (itemId == R.id.menu_expand_all) {
+            lexicalEntriesListView.expandAll();
+            return true;
+        }
+        if (itemId == R.id.menu_collapse_all) {
+            lexicalEntriesListView.collapseAll();
+            return true;
+        }
+        return super.onMenuItemSelected(featureId, item);
     }
 
     private void startDictManager(int subactivity) {
@@ -353,7 +344,7 @@ public class SparkDictActivity extends BaseActivity
     }
 
     /**
-     * Displays a non-cancelable dialog asking the user whether to set the dictionary path.
+     * Displays a non-cancelable dialogue asking the user whether to set the dictionary path.
      *
      * <p>If the user chooses "Set Path", the directory picker is started. If the user chooses
      * "Exit", the activity is closed.</p>
@@ -377,12 +368,8 @@ public class SparkDictActivity extends BaseActivity
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.searchButton:
-                doSearch(inputTextView.getText().toString());
-                break;
-            default:
-                break;
+        if (v.getId() == R.id.searchButton) {
+            doSearch(inputTextView.getText().toString());
         }
     }
 
@@ -409,26 +396,45 @@ public class SparkDictActivity extends BaseActivity
         hideKeyboard(inputTextView);
     }
 
+    /**
+     * Hides the soft keyboard associated with the specified view.
+     *
+     * @param v The view whose window token is used to hide the keyboard.
+     */
     public void hideKeyboard(View v) {
-        InputMethodManager imm = (InputMethodManager)
-            getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
     }
 
-    private void showKeyboard(View v) {
-        //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-        InputMethodManager imm = (InputMethodManager)
-            getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(v, 0);
-        //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+    /**
+     * Requests focus for the specified view and displays the soft keyboard.
+     *
+     * @param view The view that should receive keyboard input.
+     */
+    private void showKeyboard(View view) {
+        view.requestFocus();
+        WindowInsetsController controller = view.getWindowInsetsController();
+        if (controller != null) {
+            controller.show(WindowInsets.Type.ime());
+        }
     }
 
+    /**
+     * Displays the find-on-page bar, clears its input field, and opens the
+     * soft keyboard for entering a search term.
+     */
     private void openFindOnPageBar() {
         findOnPageView.setVisibility(View.VISIBLE);
         findOnPageInput.setText("");
-        findOnPageInput.requestFocus();
+        findOnPageInput.post(() -> showKeyboard(findOnPageInput));
     }
 
+    /**
+     * Closes the find-on-page bar, clears the search input, hides the soft
+     * keyboard, and removes the current on-screen search results.
+     *
+     * @param v The view that triggered the action.
+     */
     public void onCloseFindOnPageBarButtonClick(View v) {
         findOnPageInput.setText("");
         findOnPageView.setVisibility(View.GONE);
@@ -436,10 +442,20 @@ public class SparkDictActivity extends BaseActivity
         lexicalEntriesListView.clearSearchOnScreenResults();
     }
 
+    /**
+     * Finds and displays the next occurrence of the entered word on the page.
+     *
+     * @param v The view that triggered the action.
+     */
     public void onFindNextWordOnPageButtonClick(View v) {
         lexicalEntriesListView.findNextOnScreen(findOnPageInput.getText().toString());
     }
 
+    /**
+     * Finds and displays the previous occurrence of the entered word on the page.
+     *
+     * @param v The view that triggered the action.
+     */
     public void onFindPreviousWordOnPageButtonClick(View v) {
         lexicalEntriesListView.findPreviousOnScreen(findOnPageInput.getText().toString());
     }
@@ -476,12 +492,7 @@ public class SparkDictActivity extends BaseActivity
         @Override
         public void run() {
             result = doInBackground();
-            mainHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    onPostExecute(result);
-                }
-            });
+            mainHandler.post(() -> onPostExecute(result));
         }
 
         /**
@@ -518,17 +529,12 @@ public class SparkDictActivity extends BaseActivity
          * @param entry lexical entry found by the background search.
          */
         private void publishProgress(final LexicalEntry entry) {
-            mainHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    onProgressUpdate(entry);
-                }
-            });
+            mainHandler.post(() -> onProgressUpdate(entry));
         }
 
         /**
          * Updates view with found lexical entry, dismisses progress spinner
-         * dialog, initiates progress spinner.
+         * dialogue, initiates progress spinner.
          *
          * @param entry Lexical entry to be added to the view.
          */
