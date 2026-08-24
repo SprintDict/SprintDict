@@ -63,7 +63,7 @@ public class DictManagerItemsAdapter extends BaseAdapter implements
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             LayoutInflater vi = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = vi.inflate(R.layout.dict_manager_item, null);
+            convertView = vi.inflate(R.layout.dict_manager_item, parent, false);
         }
         Book book = items.get(position);
 
