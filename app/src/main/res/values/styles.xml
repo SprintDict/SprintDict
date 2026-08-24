@@ -2,4 +2,6 @@
 <resources>
 
     <style name="AppTheme" parent="android:Theme.Material"></style>
+
+    <style name="DictPreferencesTheme" parent="Theme.AppCompat"></style>
 </resources>
