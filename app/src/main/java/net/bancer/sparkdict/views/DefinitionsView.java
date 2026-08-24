@@ -4,6 +4,8 @@ import net.bancer.sparkdict.R;
 import net.bancer.sparkdict.domain.core.LexicalEntry;
 import net.bancer.sparkdict.views.helpers.DictResourceImageGetter;
 import net.bancer.sparkdict.views.helpers.UnrecognizedTagsHandler;
+
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -28,6 +30,7 @@ import androidx.core.text.HtmlCompat;
  * @author Valerij Bancer
  *
  */
+@SuppressLint("AppCompatCustomView")
 public class DefinitionsView extends EditText {
 
 	private static final int BLOCKQUOTE_INDENT = 40;

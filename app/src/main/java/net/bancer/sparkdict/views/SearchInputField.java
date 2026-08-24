@@ -1,5 +1,6 @@
 package net.bancer.sparkdict.views;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
@@ -13,6 +14,7 @@ import android.widget.AutoCompleteTextView;
  * @author Valerij Bancer
  *
  */
+@SuppressLint("AppCompatCustomView")
 public class SearchInputField extends AutoCompleteTextView {
 
 	public SearchInputField(Context context) {

@@ -15,7 +15,6 @@
         <activity
             android:name=".SparkDictActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -58,7 +57,9 @@
             android:label="@string/manage_dictionaries" />
         <activity
             android:name=".DictPreferencesActivity"
-            android:label="@string/activity_settings" />
+            android:label="@string/activity_settings"
+            android:theme="@style/DictPreferencesTheme" />
+
         <activity
             android:name="net.bancer.sparkdict.RecentHistoryActivity"
             android:label="@string/title_activity_recent_history">
@@ -71,7 +72,7 @@
             android:name=".providers.SuggestionsProvider"
             android:authorities="net.bancer.sparkdict.providers.SuggestionsProvider"
             android:enabled="true"
-            android:exported="true"></provider>
+            android:exported="true" />
 
         <uses-library
             android:name="android.test.runner"
