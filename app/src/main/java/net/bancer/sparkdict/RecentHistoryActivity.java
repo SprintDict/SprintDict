@@ -17,9 +17,6 @@ import androidx.core.app.NavUtils;
  * Recent History activity displays the list of recently searched words or
  * phrases as a scrollable list. If the menu is invoked Clear History option
  * is available.
- *
- * @author Valerij Bancer
- *
  */
 public class RecentHistoryActivity extends BaseActivity implements OnItemClickListener {
 
@@ -27,6 +24,8 @@ public class RecentHistoryActivity extends BaseActivity implements OnItemClickLi
      * List of all recently searched items.
      */
     private ListView listView;
+
+    private ArrayAdapter<String> adapter;
 
     /**
      * Creates the activity, retrieves history items and populates the view with
@@ -37,8 +36,10 @@ public class RecentHistoryActivity extends BaseActivity implements OnItemClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recent_history);
         //getActionBar().setDisplayHomeAsUpEnabled(true);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-            this, android.R.layout.simple_list_item_1, getRecentHistory()
+        adapter = new ArrayAdapter<>(
+            this,
+            android.R.layout.simple_list_item_1,
+            getRecentHistory()
         );
         listView = findViewById(R.id.history_list);
         listView.setAdapter(adapter);
@@ -59,18 +60,16 @@ public class RecentHistoryActivity extends BaseActivity implements OnItemClickLi
      * Handles selection of "Clear History" menu options. Deletes all items
      * from the history and starts SparkDictActivity.
      */
-    @SuppressWarnings("unchecked")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_clear_recent_history:
-                getRecentHistory().clear();
-                ((ArrayAdapter<String>) listView.getAdapter()).notifyDataSetChanged();
-                NavUtils.navigateUpFromSameTask(this);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        int itemId = item.getItemId();
+        if (itemId == R.id.menu_clear_recent_history) {
+            getRecentHistory().clear();
+            adapter.notifyDataSetChanged();
+            NavUtils.navigateUpFromSameTask(this);
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     /**
