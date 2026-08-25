@@ -76,6 +76,8 @@ public class SparkDictActivity extends BaseActivity
      */
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
+    private IndexEntriesAdapter indexEntriesAdapter;
+
     private SearchInputField inputTextView;
 
     private ScrollView scrollView;
@@ -132,6 +134,7 @@ public class SparkDictActivity extends BaseActivity
     @Override
     protected void onDestroy() {
         searchExecutor.shutdownNow();
+        indexEntriesAdapter.shutdown();
         getShelf().closeResources();
         super.onDestroy();
     }
@@ -190,9 +193,9 @@ public class SparkDictActivity extends BaseActivity
         inputTextView = findViewById(R.id.searchTextView);
         inputTextView.setOnKeyListener(this);
 
-        IndexEntriesAdapter adapter = new IndexEntriesAdapter(this, new Vector<>());
-        inputTextView.setAdapter(adapter);
-        inputTextView.addTextChangedListener(adapter);
+        indexEntriesAdapter = new IndexEntriesAdapter(this, new Vector<>());
+        inputTextView.setAdapter(indexEntriesAdapter);
+        inputTextView.addTextChangedListener(indexEntriesAdapter);
         // Start to display a list of suggestions after 1 letter typed
         inputTextView.setThreshold(1);
         inputTextView.setOnItemClickListener(this);
