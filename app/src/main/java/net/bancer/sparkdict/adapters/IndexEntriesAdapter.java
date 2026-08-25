@@ -12,6 +12,7 @@ import net.bancer.sparkdict.R;
 import net.bancer.sparkdict.SparkDictActivity;
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.IndexEntry;
+import net.bancer.sparkdict.domain.core.Shelf;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -90,7 +91,9 @@ public class IndexEntriesAdapter extends ArrayAdapter<IndexEntry>
                 currentTask.cancel(true);
             }
             if (!searchStr.isEmpty()) {
-                currentTask = searchExecutor.submit(new IndexEntriesRetriever(s.toString()));
+                Shelf shelf = ((SparkDictActivity) getContext()).getShelf();
+                IndexEntriesRetriever retriever = new IndexEntriesRetriever(shelf, s.toString());
+                currentTask = searchExecutor.submit(retriever);
             }
         }
     }
@@ -152,9 +155,11 @@ public class IndexEntriesAdapter extends ArrayAdapter<IndexEntry>
      */
     private class IndexEntriesRetriever implements Runnable {
 
+        private final Shelf shelf;
         private final String search;
 
-        private IndexEntriesRetriever(String search) {
+        private IndexEntriesRetriever(Shelf shelf, String search) {
+            this.shelf = shelf;
             this.search = search;
         }
 
@@ -164,8 +169,7 @@ public class IndexEntriesAdapter extends ArrayAdapter<IndexEntry>
          */
         @Override
         public void run() {
-            SparkDictActivity activity = ((SparkDictActivity) IndexEntriesAdapter.this.getContext());
-            ArrayList<Book> books = activity.getShelf().getBooks();
+            ArrayList<Book> books = shelf.getBooks();
             for (int i = 0; i < books.size(); i++) {
                 Book book = books.get(i);
                 if (book.isEnabled() && !Thread.currentThread().isInterrupted()) {
