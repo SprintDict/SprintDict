@@ -8,6 +8,7 @@ import net.bancer.sparkdict.views.helpers.UnrecognizedTagsHandler;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.Html;
@@ -163,7 +164,8 @@ public class DefinitionsView extends EditText {
 	public void parseHtmlAndSetText(final LexicalEntry lexicalEntry) {
 		String html = lexicalEntry.getDefinitions();
 		int maxImageWidth = computeMaxImageWidth();
-		Html.ImageGetter imageGetter = new DictResourceImageGetter(lexicalEntry, maxImageWidth);
+		Resources resources = getContext().getResources();
+		Html.ImageGetter imageGetter = new DictResourceImageGetter(lexicalEntry, maxImageWidth, resources);
 		Html.TagHandler tagHandler = new UnrecognizedTagsHandler(lexicalEntry, getContext());
 		Spanned parsedHtml = Html.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY, imageGetter, tagHandler);
 		SpannableStringBuilder finalizedHtml = indentBlockquotes(parsedHtml);
