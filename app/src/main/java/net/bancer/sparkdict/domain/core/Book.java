@@ -1,8 +1,8 @@
 package net.bancer.sparkdict.domain.core;
 
-import android.util.Log;
-
 import net.bancer.sparkdict.domain.utils.DomainException;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,9 +12,6 @@ import java.util.Vector;
 /**
  * Book is an abstraction of a dictionary containing lexical entries and index
  * entries.
- *
- * @author Valerij Bancer
- *
  */
 public class Book implements Iterable<IndexEntry> {
 
@@ -71,7 +68,7 @@ public class Book implements Iterable<IndexEntry> {
      * if some of the letters would be in upper case.
      *
      * @param prefix string to be matched.
-     * @return            strings array of different variations of the prefix.
+     * @return strings array of different variations of the prefix.
      */
     private static String[] getPrefixVariations(String prefix) {
         String[] result = new String[4];
@@ -91,7 +88,7 @@ public class Book implements Iterable<IndexEntry> {
      * Converts the first letter of every word in the provided string to upper case.
      *
      * @param prefix string to be capitalized.
-     * @return            capitalized string.
+     * @return capitalized string.
      */
     private static String capitalizeString(String prefix) {
         char[] chars = prefix.toLowerCase().toCharArray();
@@ -113,7 +110,7 @@ public class Book implements Iterable<IndexEntry> {
      * Checks if the string contains only ASCII characters.
      *
      * @param str string to be verified.
-     * @return        `true` if the string contains only ASCII characters, else `false`.
+     * @return `true` if the string contains only ASCII characters, else `false`.
      */
     private static boolean isAsciiString(String str) {
         int length = str.length();
@@ -129,7 +126,7 @@ public class Book implements Iterable<IndexEntry> {
     /**
      * BookInfo getter.
      *
-     * @return    bookInfo object.
+     * @return bookInfo object.
      */
     public BookInfo getInfo() {
         return bookInfo;
@@ -138,7 +135,7 @@ public class Book implements Iterable<IndexEntry> {
     /**
      * Enabled flag field getter.
      *
-     * @return    `true` if the book is enabled, else `false`.
+     * @return `true` if the book is enabled, else `false`.
      */
     public boolean isEnabled() {
         return enabled;
@@ -158,7 +155,7 @@ public class Book implements Iterable<IndexEntry> {
      * corresponding to the index entry provided as the parameter.
      *
      * @param idxEntry index entry for what the lexical entry is requested.
-     * @return            LexicalEntry object or `null`.
+     * @return LexicalEntry object or `null`.
      */
     private LexicalEntry getLexicalEntry(IndexEntry idxEntry) {
         try {
@@ -175,7 +172,7 @@ public class Book implements Iterable<IndexEntry> {
             String lemma = idxEntry.getLemma();
             return new LexicalEntry(lemma, buffer, bookInfo, resZipFile);
         } catch (IOException e) {
-            Log.e(this.getClass().getName(), e.getMessage());
+            // TODO: log error
             return null;
         }
     }
@@ -183,7 +180,7 @@ public class Book implements Iterable<IndexEntry> {
     /**
      * Book name getter.
      *
-     * @return    the book title.
+     * @return the book title.
      */
     public String getBookName() {
         return bookInfo.getBookName();
@@ -193,14 +190,15 @@ public class Book implements Iterable<IndexEntry> {
      * String representation of the book.
      */
     @Override
+    @NotNull
     public String toString() {
-        return bookInfo.toString() + "Enabled: " + enabled + "\n";
+        return bookInfo + "Enabled: " + enabled + "\n";
     }
 
     /**
      * Getter of the quantity of lexical entries.
      *
-     * @return    the quantity of lexical entries in this dictionary.
+     * @return the quantity of lexical entries in this dictionary.
      */
     public int getLexicalEntriesQuantity() {
         return bookInfo.getWordCount();
@@ -211,15 +209,15 @@ public class Book implements Iterable<IndexEntry> {
      * that matches the string provided as the parameter.
      *
      * @param lemma lemma of the lexical entry to be retrieved.
-     * @throws DomainException
-     * @return            LexicalEntry if the match is found, else `null`.
+     * @return LexicalEntry if the match is found, else `null`.
+     * @throws DomainException when errored while retrieving the data.
      */
     public LexicalEntry getLexicalEntry(String lemma) throws DomainException {
         LexicalEntry result = null;
         IndexEntriesIterator iterator = (IndexEntriesIterator) iterator();
-        if (iterator == null) {
+        if (!iterator.hasNext()) {
             //TODO: send notification - probably index file is missing.
-            return result;
+            return null;
         }
         IndexEntry indexEntry = iterator.findIndexEntry(lemma);
         while (indexEntry != null && indexEntry.getLemma().equals(lemma)) {
@@ -227,7 +225,10 @@ public class Book implements Iterable<IndexEntry> {
             if (result == null) {
                 result = lexicalEntry;
             } else {
-                String definitions = result.getDefinitions() + "<br><br>" + lexicalEntry.getDefinitions();
+                String definitions = result.getDefinitions();
+                if (lexicalEntry != null) {
+                    definitions += "<br><br>" + lexicalEntry.getDefinitions();
+                }
                 result.setDefinitions(definitions);
             }
             indexEntry = iterator.next();
@@ -239,7 +240,7 @@ public class Book implements Iterable<IndexEntry> {
      * Constructs SparkDictIndex.
      *
      * @param observer observer to be attached to SparkDictIndex object.
-     * @throws DomainException
+     * @throws DomainException when failed to build an index.
      */
     public void buildSparkDictIndex(IObserver observer) throws DomainException {
         SparkDictIndex sparkDictIndex = new SparkDictIndex(bookInfo);
@@ -247,8 +248,8 @@ public class Book implements Iterable<IndexEntry> {
         try {
             sparkDictIndex.buildIndex();
         } catch (IOException e) {
-            throw new DomainException("Cannot build index for `"
-                + bookInfo.getBookName() + "` dictionary.", e);
+            String message = "Cannot build index for `" + bookInfo.getBookName() + "` dictionary.";
+            throw new DomainException(message, e);
         }
     }
 
@@ -256,13 +257,13 @@ public class Book implements Iterable<IndexEntry> {
      * Returns an Iterator for index entries.
      */
     @Override
+    @NotNull
     public Iterator<IndexEntry> iterator() {
         if (indexEntriesIterator == null) {
             try {
                 indexEntriesIterator = new IndexEntriesIterator(bookInfo);
             } catch (DomainException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                // TODO log error
             }
         }
         return indexEntriesIterator;
@@ -272,12 +273,12 @@ public class Book implements Iterable<IndexEntry> {
      * Retrieves a list of index entries which lemmas starts with provided prefix.
      *
      * @param prefix prefix to be matched.
-     * @return            a collection of index entries.
+     * @return a collection of index entries.
      */
     public Vector<IndexEntry> getSuggestions(String prefix) {
-        Vector<IndexEntry> result = new Vector<IndexEntry>(IndexEntriesIterator.MAX);
+        Vector<IndexEntry> result = new Vector<>(IndexEntriesIterator.MAX);
         IndexEntriesIterator iterator = (IndexEntriesIterator) iterator();
-        if (iterator == null) {
+        if (!iterator.hasNext()) {
             //TODO: send notification - probably index file is missing.
             return result;
         }
@@ -288,18 +289,16 @@ public class Book implements Iterable<IndexEntry> {
         } else { // get suggestions for all variations of the prefix (aspROvided, lowercase, UPPERCASE, Capitalized)
             prefixVariations = getPrefixVariations(prefix);
         }
-        for (int i = 0; i < prefixVariations.length; i++) {
-            if (prefixVariations[i] != null) {
+        for (String prefixVariation : prefixVariations) {
+            if (prefixVariation != null) {
                 try {
-                    IndexEntry entry = iterator
-                        .nextSuggestion(prefixVariations[i]);
+                    IndexEntry entry = iterator.nextSuggestion(prefixVariation);
                     while (entry != null) {
                         result.add(entry);
-                        entry = iterator.nextSuggestion(prefixVariations[i]);
+                        entry = iterator.nextSuggestion(prefixVariation);
                     }
                 } catch (DomainException e) {
-                    // TODO: handle exception
-                    e.printStackTrace();
+                    // TODO: log error
                 }
             }
         }
