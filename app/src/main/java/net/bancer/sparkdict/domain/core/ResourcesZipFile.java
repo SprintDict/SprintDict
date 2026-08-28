@@ -25,7 +25,7 @@ public class ResourcesZipFile {
     private ZipFile zipFile = null;
 
     /**
-     * Opens a dictionary's res.zip file and initializes its decompression state.
+     * Opens a dictionary's res.zip file and initialises its decompression state.
      *
      * @param file full path to the res.zip file.
      */

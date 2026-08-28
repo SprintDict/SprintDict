@@ -23,10 +23,12 @@ public abstract class BaseActivity extends Activity {
      * The name of SparkDict shared preferences.
      */
     public static final String PREFS_NAME = "SparkDict";
+
     /**
      * Tag to identify SparkDict (for debug).
      */
     protected static final String TAG = "SparkDict";
+
     private static final String RECENT_HISTORY_PREF_KEY = "recent.history";
     private static final String RECENT_HISTORY_WORDS_SEPARATOR = "::";
     private static final int RECENT_HISTORY_MAX_SIZE = 100;
@@ -80,7 +82,7 @@ public abstract class BaseActivity extends Activity {
      * Get string value from shared preferences identified by key.
      *
      * @param key shared preference key.
-     * @return        string value of the shared preference.
+     * @return string value of the shared preference.
      */
     protected String getStrSharedPreference(String key) {
         SharedPreferences settings = getSharedPreferences();
@@ -91,7 +93,7 @@ public abstract class BaseActivity extends Activity {
      * Get float value from shared preferences identified by key.
      *
      * @param key shared preference key.
-     * @return        float value of the shared preference.
+     * @return float value of the shared preference.
      */
     public float getFloatSharedPreference(String key) {
         SharedPreferences settings = getSharedPreferences();
@@ -103,7 +105,7 @@ public abstract class BaseActivity extends Activity {
      *
      * @param key   key of the shared preference to be saved.
      * @param value string value to be saved.
-     * @return            `true` if the value was saved, else `false`.
+     * @return `true` if the value was saved, else `false`.
      */
     protected boolean saveSharedPreference(String key, String value) {
         SharedPreferences settings = getSharedPreferences();
@@ -117,7 +119,7 @@ public abstract class BaseActivity extends Activity {
      *
      * @param key   key of the shared preference to be saved.
      * @param value float value to be saved.
-     * @return            `true` if the value was saved, else `false`.
+     * @return `true` if the value was saved, else `false`.
      */
     public boolean saveSharedPreference(String key, float value) {
         SharedPreferences settings = getSharedPreferences();
@@ -183,8 +185,8 @@ public abstract class BaseActivity extends Activity {
             String history = getStrSharedPreference(RECENT_HISTORY_PREF_KEY);
             if (!history.isEmpty()) {
                 String[] historyArr = history.split(RECENT_HISTORY_WORDS_SEPARATOR);
-                for (int i = 0; i < historyArr.length; i++) {
-                    recentHistory.offer(historyArr[i]);
+                for (String s : historyArr) {
+                    recentHistory.offer(s);
                 }
             }
 
@@ -198,13 +200,13 @@ public abstract class BaseActivity extends Activity {
      * @return boolean `true` if the recent history was saved, else `false`
      */
     protected boolean saveRecentHistory() {
-        String historyStr = "";
+        StringBuilder historyStr = new StringBuilder();
         for (int i = 0; i < getRecentHistory().size(); i++) {
             if (i != 0) {
-                historyStr += RECENT_HISTORY_WORDS_SEPARATOR;
+                historyStr.append(RECENT_HISTORY_WORDS_SEPARATOR);
             }
-            historyStr += recentHistory.get(i);
+            historyStr.append(recentHistory.get(i));
         }
-        return saveSharedPreference(RECENT_HISTORY_PREF_KEY, historyStr);
+        return saveSharedPreference(RECENT_HISTORY_PREF_KEY, historyStr.toString());
     }
 }

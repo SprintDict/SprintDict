@@ -1,15 +1,9 @@
 package net.bancer.sparkdict.domain.parsers;
 
-import android.util.Log;
-
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**
  * Parser for 'n' data type.
- *
- * @author Valerij Bancer
- *
  */
 public class NParser extends MParser {
 
@@ -59,11 +53,9 @@ public class NParser extends MParser {
      * @param buffer buffer with article's text.
      */
     private void parseTypeTags(StringBuffer buffer) {
-        String openTagReplacement = I_OPEN_TAG
-            + String.format(FONT_TAG_OPEN, ABBREVIATION_COLOR);
+        String openTagReplacement = I_OPEN_TAG  + String.format(FONT_TAG_OPEN, ABBREVIATION_COLOR);
         String closeTagReplacement = FONT_TAG_CLOSE + I_CLOSE_TAG + BR_TAG;
-        parseHTMLTagPair(buffer, TYPE_OPEN_TAG, TYPE_CLOSE_TAG,
-            openTagReplacement, closeTagReplacement);
+        parseHTMLTagPair(buffer, TYPE_OPEN_TAG, TYPE_CLOSE_TAG, openTagReplacement, closeTagReplacement);
     }
 
     /**
@@ -84,7 +76,6 @@ public class NParser extends MParser {
     private void parseWordTags(StringBuffer strBuffer) {
         String openTagReplacement = B_OPEN_TAG + BULLET;
         String closeTagReplacement = B_CLOSE_TAG + BR_TAG;
-        parseHTMLTagPair(strBuffer, WORD_OPEN_TAG, WORD_CLOSE_TAG,
-            openTagReplacement, closeTagReplacement);
+        parseHTMLTagPair(strBuffer, WORD_OPEN_TAG, WORD_CLOSE_TAG, openTagReplacement, closeTagReplacement);
     }
 }

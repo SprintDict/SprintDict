@@ -1,15 +1,9 @@
 /**
  * Word's pure text meaning.
  * The data should be a utf-8 string ending with '\0'.
- *
- * @author Valera
- *
  */
 package net.bancer.sparkdict.domain.parsers;
 
-import android.util.Log;
-
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -25,17 +19,21 @@ public class MParser implements IParser {
      * HTML `br` tag.
      */
     protected static final String BR_TAG = "<br>";
+
     /**
      * Abbreviation text colour.
      */
     protected static final String ABBREVIATION_COLOR = "#006600";
+
     /**
      * Opening HTML `font` tag for a coloured text.
      */
     protected static final String FONT_TAG_OPEN = "<font color=\"%s\">";
+
     /**
      * Closing HTML `font` tag for a coloured text.
      */
+
     protected static final String FONT_TAG_CLOSE = "</font>";
     private static final String QUADRUPLE_NBSP = "&nbsp;&nbsp;&nbsp;&nbsp;";
     private static final String QUADRUPLE_SPACE = "    ";
@@ -111,20 +109,19 @@ public class MParser implements IParser {
      * Scans the provided buffer and replaces all occurrences of tag pair with a
      * replacement tag pair.
      *
-     * @param buffer
-     *            string buffer to be scanned.
-     * @param openTag
-     *            HTML opening tag to be replaced.
-     * @param closeTag
-     *            HTML closing tag to be replaced.
-     * @param openTagReplacement
-     *            replacement for HTML opening tag.
-     * @param closeTagReplacement
-     *            replacement for HTML closing tag.
+     * @param buffer              string buffer to be scanned.
+     * @param openTag             HTML opening tag to be replaced.
+     * @param closeTag            HTML closing tag to be replaced.
+     * @param openTagReplacement  replacement for HTML opening tag.
+     * @param closeTagReplacement replacement for HTML closing tag.
      */
-    protected void parseHTMLTagPair(StringBuffer buffer, String openTag,
-                                    String closeTag, String openTagReplacement,
-                                    String closeTagReplacement) {
+    protected void parseHTMLTagPair(
+        StringBuffer buffer,
+        String openTag,
+        String closeTag,
+        String openTagReplacement,
+        String closeTagReplacement
+    ) {
         int openTagLength = openTag.length();
         int closeTagLength = closeTag.length();
         int openTagPosition = buffer.indexOf(openTag);
@@ -137,8 +134,7 @@ public class MParser implements IParser {
         }
     }
 
-    protected void parseHTMLTag(StringBuffer buffer, String tag,
-                                String replacement) {
+    protected void parseHTMLTag(StringBuffer buffer, String tag, String replacement) {
         int length = tag.length();
         int position = buffer.indexOf(tag);
         while (position > -1) {
@@ -146,5 +142,4 @@ public class MParser implements IParser {
             position = buffer.indexOf(tag);
         }
     }
-
 }

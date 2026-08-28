@@ -3,9 +3,6 @@ package net.bancer.sparkdict.domain.parsers;
 /**
  * ParsingStrategyFactory is a factory that creates parsers for different
  * StarDict data types.
- *
- * @author Valerij Bancer
- *
  */
 public class ParsingStrategyFactory {
 
@@ -32,7 +29,7 @@ public class ParsingStrategyFactory {
      * Constructs and returns parsers.
      *
      * @param type data type for what the parser is needed.
-     * @return        parser that can convert the byte data into string.
+     * @return parser that can convert the byte data into string.
      */
     public IParser getParser(char type) {
         switch (DataType.valueOf("" + type)) {
