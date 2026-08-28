@@ -1,10 +1,5 @@
 package net.bancer.sparkdict.providers;
 
-/**
- * Android Tutorial: Adding Search Suggestions:
- * http://www.grokkingandroid.com/android-tutorial-adding-suggestions-to-search/
- */
-
 import android.app.SearchManager;
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -16,21 +11,21 @@ import android.database.MatrixCursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import androidx.annotation.NonNull;
+
 import net.bancer.sparkdict.R;
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.Shelf;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Vector;
 
 /**
  * SuggestionsProvider provides suggestions for Quick Search widget.
- *
- * @author Valerij Bancer
- *
+ * Android Tutorial: Adding Search Suggestions:
+ * <a href="http://www.grokkingandroid.com/android-tutorial-adding-suggestions-to-search/">...</a>
  */
 public class SuggestionsProvider extends ContentProvider {
 
@@ -90,22 +85,17 @@ public class SuggestionsProvider extends ContentProvider {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
-                        String[] selectionArgs, String sortOrder) {
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         // Use the UriMatcher to see what kind of query we have and format the db query accordingly
         switch (sURIMatcher.match(uri)) {
             case SEARCH_INDEX_ENTRIES:
-                //System.out.println("SEARCH_INDEX_ENTRIES");
                 if (selectionArgs == null) {
-                    throw new IllegalArgumentException(
-                        "selectionArgs must be provided for the Uri: " + uri);
+                    throw new IllegalArgumentException("selectionArgs must be provided for the Uri: " + uri);
                 }
                 return searchSuggestions(selectionArgs[0]);
             case SEARCH_LEXICAL_ENTRY:
-                //System.out.println("SEARCH_LEXICAL_ENTRY");
                 if (selectionArgs == null) {
-                    throw new IllegalArgumentException(
-                        "selectionArgs must be provided for the Uri: " + uri);
+                    throw new IllegalArgumentException("selectionArgs must be provided for the Uri: " + uri);
                 }
                 return search(selectionArgs[0]);
             default:
@@ -116,22 +106,17 @@ public class SuggestionsProvider extends ContentProvider {
     private Cursor searchSuggestions(String word) {
         MatrixCursor cursor = new MatrixCursor(COLUMNS);
         if (word != null) {
-            String query = word;
             getSuggestions().clear();
             for (int i = 0; i < books.size(); i++) {
                 Book book = books.get(i);
                 if (book.isEnabled()) {
-                    Vector<IndexEntry> tmp = book.getSuggestions(query);
-                    for (IndexEntry entry : tmp) {
-                        suggestions.add(entry);
-                    }
+                    Vector<IndexEntry> tmp = book.getSuggestions(word);
+                    suggestions.addAll(tmp);
                 }
             }
             int id = 0;
-            Iterator<IndexEntry> iterator = suggestions.iterator();
-            while (iterator.hasNext()) {
-                IndexEntry nextWord = iterator.next();
-                cursor.addRow(new Object[]{Long.valueOf(id), nextWord, nextWord});
+            for (IndexEntry nextWord : suggestions) {
+                cursor.addRow(new Object[]{(long) id, nextWord, nextWord});
                 id++;
             }
         }
@@ -140,7 +125,7 @@ public class SuggestionsProvider extends ContentProvider {
 
     private TreeSet<IndexEntry> getSuggestions() {
         if (suggestions == null) {
-            suggestions = new TreeSet<IndexEntry>();
+            suggestions = new TreeSet<>();
         }
         return suggestions;
     }
@@ -160,7 +145,7 @@ public class SuggestionsProvider extends ContentProvider {
      * Not implemented yet. Throws UnsupportedOperationException.
      */
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         // TODO: Implement this to handle requests for the MIME type of the data
         // at the given URI.
         throw new UnsupportedOperationException("Not yet implemented");
@@ -170,7 +155,7 @@ public class SuggestionsProvider extends ContentProvider {
      * Not implemented. Throws UnsupportedOperationException.
      */
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
         throw new UnsupportedOperationException("Cannot insert words into SparkDict.");
     }
 
@@ -178,8 +163,7 @@ public class SuggestionsProvider extends ContentProvider {
      * Not implemented. Throws UnsupportedOperationException.
      */
     @Override
-    public int update(Uri uri, ContentValues values, String selection,
-                      String[] selectionArgs) {
+    public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         throw new UnsupportedOperationException("Cannot update words in SparkDict.");
     }
 
@@ -187,7 +171,7 @@ public class SuggestionsProvider extends ContentProvider {
      * Not implemented. Throws UnsupportedOperationException.
      */
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         throw new UnsupportedOperationException("Cannot delete words from SparkDict.");
     }
 }

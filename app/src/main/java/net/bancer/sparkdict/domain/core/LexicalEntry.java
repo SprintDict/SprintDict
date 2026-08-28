@@ -249,21 +249,11 @@ public class LexicalEntry {
      */
     private byte[] readResourceFile(String path) {
         byte[] result = new byte[0];
-        RandomAccessFile raf = null;
-        try {
-            raf = new RandomAccessFile(path, "r");
+        try (RandomAccessFile raf = new RandomAccessFile(path, "r")) {
             result = new byte[(int) raf.length()];
             raf.read(result);
         } catch (IOException e) {
             Log.e(TAG, "Cannot read resource file: " + path);
-        } finally {
-            if (raf != null) {
-                try {
-                    raf.close();
-                } catch (IOException e) {
-                    Log.e(TAG, "Cannot close resource file: " + path);
-                }
-            }
         }
         return result;
     }

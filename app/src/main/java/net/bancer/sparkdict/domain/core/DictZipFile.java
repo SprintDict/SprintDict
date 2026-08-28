@@ -111,7 +111,7 @@ public class DictZipFile {
     private int pointerPosition;
 
     /**
-     * Opens a dictionary .dict.dz file and initializes its decompression state.
+     * Opens a dictionary .dict.dz file and initialises its decompression state.
      *
      * @param dictzipfilename full path to the <dictionary name>.dict.dz file.
      */

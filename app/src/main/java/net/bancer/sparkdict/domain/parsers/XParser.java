@@ -11,18 +11,12 @@
  */
 package net.bancer.sparkdict.domain.parsers;
 
-import android.util.Log;
-
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Parser for 'x' data type - the data is in XDXF format.
- *
- * @author Valerij Bancer
- *
  */
 public class XParser extends MParser {
 
@@ -115,24 +109,20 @@ public class XParser extends MParser {
 
     private void parseAbrTags(StringBuffer strBuffer) {
         String openTagReplacement = String.format(FONT_TAG_OPEN, ABBREVIATION_COLOR);
-        parseHTMLTagPair(strBuffer, ABR_OPEN_TAG, ABR_CLOSE_TAG,
-            openTagReplacement, FONT_TAG_CLOSE);
+        parseHTMLTagPair(strBuffer, ABR_OPEN_TAG, ABR_CLOSE_TAG, openTagReplacement, FONT_TAG_CLOSE);
     }
 
     private void parseExTags(StringBuffer strBuffer) {
         String openTagReplacement = String.format(FONT_TAG_OPEN, COLOR_GREY);
-        parseHTMLTagPair(strBuffer, EX_OPEN_TAG, EX_CLOSE_TAG,
-            openTagReplacement, FONT_TAG_CLOSE);
+        parseHTMLTagPair(strBuffer, EX_OPEN_TAG, EX_CLOSE_TAG, openTagReplacement, FONT_TAG_CLOSE);
     }
 
     private void parseKTags(StringBuffer strBuffer) {
-        parseHTMLTagPair(strBuffer, K_OPEN_TAG, K_CLOSE_TAG, BIG_OPEN_TAG,
-            BIG_CLOSE_TAG + BR_TAG);
+        parseHTMLTagPair(strBuffer, K_OPEN_TAG, K_CLOSE_TAG, BIG_OPEN_TAG, BIG_CLOSE_TAG + BR_TAG);
     }
 
     private void parseTrTags(StringBuffer strBuffer) {
-        parseHTMLTagPair(strBuffer, TR_OPEN_TAG, TR_CLOSE_TAG,
-            TRANSCRIPTION_OPEN, TRANSCRIPTION_CLOSE);
+        parseHTMLTagPair(strBuffer, TR_OPEN_TAG, TR_CLOSE_TAG, TRANSCRIPTION_OPEN, TRANSCRIPTION_CLOSE);
     }
 
     private void parseKrefTags(StringBuffer strBuffer) {
@@ -151,7 +141,6 @@ public class XParser extends MParser {
     private void parseCTags(StringBuffer strBuffer) {
         int tagPos = strBuffer.indexOf(C_TAG_OPEN_INCOMPLETE);
         while (tagPos > -1) {
-            String html = FONT_TAG_OPEN_INCOMPLETE;
             // double quote position indicates the start of color attribute value
             int start = strBuffer.indexOf("\"", tagPos) + 1;
             if (start > -1) {
@@ -159,13 +148,13 @@ public class XParser extends MParser {
                 int end = strBuffer.indexOf("\"", start + 1);
                 // get color attribute value
                 String color = strBuffer.substring(start, end);
-                if (end > -1 && HTML_COLORS.containsKey(color)) {
+                String htmlColor = HTML_COLORS.get(color);
+                if (end > -1 && htmlColor != null) {
                     // replace the color attribute value to HEX value
-                    strBuffer.replace(start, end, HTML_COLORS.get(color));
+                    strBuffer.replace(start, end, htmlColor);
                 }
             }
-            strBuffer.replace(tagPos, tagPos + C_TAG_OPEN_INCOMPLETE.length(),
-                html);
+            strBuffer.replace(tagPos, tagPos + C_TAG_OPEN_INCOMPLETE.length(), FONT_TAG_OPEN_INCOMPLETE);
             tagPos = strBuffer.indexOf(C_TAG_OPEN_INCOMPLETE);
         }
         parseHTMLTag(strBuffer, C_TAG_OPEN, FONT_TAG_OPEN);
@@ -188,5 +177,4 @@ public class XParser extends MParser {
             closeTagPos = strBuffer.indexOf(RREF_CLOSE_TAG, openTagPos);
         }
     }
-
 }
