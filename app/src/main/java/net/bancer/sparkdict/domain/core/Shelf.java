@@ -19,6 +19,8 @@ public class Shelf {
      */
     private final String[] enabledDicts;
 
+    private final DictionaryFiles dictionaryFiles;
+
     /**
      * Constructor.
      *
@@ -26,8 +28,24 @@ public class Shelf {
      * @param enabledDicts string array of the enabled dictionaries titles.
      */
     public Shelf(String dictPath, String[] enabledDicts) {
+        this(dictPath, enabledDicts, new FileDictionaryFiles(dictPath));
+    }
+
+    /**
+     * Constructor for callers that want to supply the {@link DictionaryFiles}
+     * used for this shelf explicitly, rather than the default
+     * {@link FileDictionaryFiles} this class would otherwise construct. The
+     * same instance is passed down to every {@link Book}/{@link BookInfo} this
+     * shelf constructs.
+     *
+     * @param dictPath path to the dictionaries.
+     * @param enabledDicts string array of the enabled dictionaries titles.
+     * @param dictionaryFiles the DictionaryFiles to associate with this shelf.
+     */
+    public Shelf(String dictPath, String[] enabledDicts, DictionaryFiles dictionaryFiles) {
         this.dictPath = dictPath;
         this.enabledDicts = enabledDicts;
+        this.dictionaryFiles = dictionaryFiles;
         putBooksOnShelf();
     }
 
@@ -66,10 +84,14 @@ public class Shelf {
         HashMap<String, Book> booksMap = new HashMap<>();
         ArrayList<File> infoFiles = findDictMetaFiles();
         for (int i = 0; i < infoFiles.size(); i++) {
-            Book dic = new Book(infoFiles.get(i));
+            Book dic = new Book(infoFiles.get(i), dictionaryFiles);
             booksMap.put(dic.getBookName(), dic);
         }
         return booksMap;
+    }
+
+    public DictionaryFiles getDictionaryFiles() {
+        return dictionaryFiles;
     }
 
     /**
