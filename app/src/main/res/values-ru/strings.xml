@@ -22,8 +22,8 @@
     <string name="select_all">Подключить все</string>
     <string name="unselect_all">Отключить все</string>
     <string name="dict_manager_hint">Выберите словари, которые будут задействованы в поиске.</string>
-    <string name="dict_path_saved_msg">%s сохранён как основной каталог со словарями.</string>
-    <string name="dict_path_not_saved_msg">%s не сохранён. Попробуйте ещё раз.</string>
+    <string name="dict_path_saved_msg">Путь к словарям сохранён.</string>
+    <string name="dict_path_not_saved_msg">Путь к словарям не сохранён.</string>
     <string name="enabled_dicts_saved">Выбранные словари подключены.</string>
     <string name="enabled_dicsts_not_saved">Выбранные словари НЕ подключены. Попробуйте ещё раз.</string>
     <string name="enabled_dicts">Подключенные словари</string>
