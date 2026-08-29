@@ -85,6 +85,8 @@ public class BookInfo {
 
     private String dictType;
 
+    private DictionaryFiles dictionaryFiles;
+
     /**
      * Constructor.
      *
@@ -92,6 +94,18 @@ public class BookInfo {
      */
     public BookInfo(String path) {
         this(new File(path));
+    }
+
+    /**
+     * Constructor for callers that want to supply the {@link DictionaryFiles}
+     * used for this dictionary explicitly, rather than the default
+     * {@link FileDictionaryFiles} this class would otherwise construct.
+     *
+     * @param path path to .ifo file including extension itself.
+     * @param dictionaryFiles the DictionaryFiles to associate with this book.
+     */
+    public BookInfo(String path, DictionaryFiles dictionaryFiles) {
+        this(new File(path), dictionaryFiles);
     }
 
     /**
@@ -108,6 +122,7 @@ public class BookInfo {
         }
         filePath = infoFile.toString();
         dirPath = infoFile.getParent();
+        dictionaryFiles = new FileDictionaryFiles(dirPath);
         try {
             Scanner input = new Scanner(infoFile, "UTF-8");
             input.useDelimiter("\n");
@@ -145,6 +160,29 @@ public class BookInfo {
         } catch (FileNotFoundException e) {
             //TODO: "Cannot read info file: " + infoFile
         }
+    }
+
+    /**
+     * Constructor for callers that want to supply the {@link DictionaryFiles}
+     * used for this dictionary explicitly, rather than the default
+     * {@link FileDictionaryFiles} this class would otherwise construct.
+     *
+     * @param infoFile java.io.File object of <dictionary name>.ifo file.
+     * @param dictionaryFiles the DictionaryFiles to associate with this book.
+     */
+    public BookInfo(File infoFile, DictionaryFiles dictionaryFiles) {
+        this(infoFile);
+        this.dictionaryFiles = dictionaryFiles;
+    }
+
+    /**
+     * DictionaryFiles getter.
+     *
+     * @return the DictionaryFiles associated with this book. Not yet used for
+     * any actual I/O -- see {@link DictionaryFiles}.
+     */
+    public DictionaryFiles getDictionaryFiles() {
+        return dictionaryFiles;
     }
 
     /**

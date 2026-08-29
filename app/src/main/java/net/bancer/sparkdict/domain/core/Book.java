@@ -50,6 +50,8 @@ public class Book implements Iterable<IndexEntry> {
      */
     private Iterator<IndexEntry> indexEntriesIterator;
 
+    private DictionaryFiles dictionaryFiles = null;
+
     /**
      * Constructor.
      *
@@ -61,6 +63,37 @@ public class Book implements Iterable<IndexEntry> {
             throw new IllegalArgumentException("infoFile must not be null");
         }
         bookInfo = new BookInfo(infoFile);
+    }
+
+    /**
+     * Constructor for callers that want to supply the {@link DictionaryFiles}
+     * used for this dictionary explicitly, rather than the default
+     * {@link FileDictionaryFiles} this class would otherwise construct.
+     *
+     * @param infoFile book info as java.io.File object
+     * @param dictionaryFiles the DictionaryFiles to associate with this book.
+     * @throws IllegalArgumentException if infoFile is null.
+     */
+    public Book(File infoFile, DictionaryFiles dictionaryFiles) {
+        if (infoFile == null) {
+            throw new IllegalArgumentException("infoFile must not be null");
+        }
+        this.dictionaryFiles = dictionaryFiles;
+        bookInfo = new BookInfo(infoFile, dictionaryFiles);
+    }
+
+    private static DictionaryFiles defaultDictionaryFilesFor(File infoFile) {
+        return new FileDictionaryFiles(infoFile != null ? infoFile.getParent() : null);
+    }
+
+    /**
+     * DictionaryFiles getter.
+     *
+     * @return the DictionaryFiles associated with this book. Not yet used for
+     * any actual I/O -- see {@link DictionaryFiles}.
+     */
+    public DictionaryFiles getDictionaryFiles() {
+        return dictionaryFiles;
     }
 
     /**
@@ -87,7 +120,7 @@ public class Book implements Iterable<IndexEntry> {
     /**
      * Converts the first letter of every word in the provided string to upper case.
      *
-     * @param prefix string to be capitalized.
+     * @param prefix string to be capitalised.
      * @return capitalized string.
      */
     private static String capitalizeString(String prefix) {
