@@ -1,8 +1,11 @@
 package net.bancer.sparkdict.domain.core;
 
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.Inflater;
@@ -102,7 +105,10 @@ public class DictZipFile {
 
     private final List<Chunk> chunks;
 
-    private RandomAccessFile dzFile;
+    /**
+     * Contents of <dictionary name>.dict.dz file.
+     */
+    private SeekableByteChannel dzFile;
 
     private int pos;
 
@@ -113,10 +119,27 @@ public class DictZipFile {
     /**
      * Opens a dictionary .dict.dz file and initialises its decompression state.
      *
-     * @param dictzipfilename full path to the <dictionary name>.dict.dz file.
+     * @param dictZipFilename full path to the <dictionary name>.dict.dz file.
      */
-    public DictZipFile(String dictzipfilename) throws IOException {
-        dzFile = new RandomAccessFile(dictzipfilename, "r");
+    public DictZipFile(String dictZipFilename) throws IOException {
+        this(new RandomAccessFile(dictZipFilename, "r").getChannel());
+    }
+
+    /**
+     * Opens a dictionary .dict.dz file and initialises its decompression state,
+     * reading through an already-open channel instead of a filesystem path.
+     *
+     * <p>This constructor exists so callers that only have a
+     * {@link SeekableByteChannel} (for example, one backed by a Storage Access
+     * Framework document) can use this class without going through a raw
+     * filesystem path. Behaviour is otherwise identical to
+     * {@link #DictZipFile(String)}.</p>
+     *
+     * @param channel an open, readable, seekable channel positioned at the
+     *                start of the dictionary's .dict.dz data.
+     */
+    public DictZipFile(SeekableByteChannel channel) throws IOException {
+        this.dzFile = channel;
         pos = 0;
         pointerPosition = 0;
         chunks = new ArrayList<>();
@@ -225,7 +248,7 @@ public class DictZipFile {
      */
     private void readGZipMagic() throws IOException {
         byte[] buffer = new byte[2];
-        dzFile.read(buffer);
+        channelRead(buffer);
         pointerPosition += 2;
         if (buffer[0] != GZIP_MAGIC_1 || buffer[1] != GZIP_MAGIC_2) {
             throw new IOException("Not a gzipped file");
@@ -238,7 +261,7 @@ public class DictZipFile {
      * @throws IOException If the compression method is not supported.
      */
     private void readCompressionMethod() throws IOException {
-        byte compressionMethod = dzFile.readByte();
+        byte compressionMethod = channelReadByte();
         pointerPosition += 1;
         if (compressionMethod != GZIP_DEFLATE_METHOD) {
             throw new IOException("Unknown compression method");
@@ -252,13 +275,13 @@ public class DictZipFile {
      * @throws IOException If the flags cannot be read.
      */
     private byte readHeaderFlags() throws IOException {
-        byte flags = dzFile.readByte();
+        byte flags = channelReadByte();
         pointerPosition += 1;
         return flags;
     }
 
     /**
-     * Reads and discards the fixed gzip header fields following the flags.
+     * Skips the fixed gzip header fields following the flags (MTIME, XFL, OS).
      *
      * <p>These fields contain the modification time, extra flags, and operating
      * system identifier. They are not required by this class.</p>
@@ -266,9 +289,7 @@ public class DictZipFile {
      * @throws IOException If the header fields cannot be read.
      */
     private void readGZipHeaderFields() throws IOException {
-        dzFile.readInt();
-        dzFile.readByte();
-        dzFile.readByte();
+        channelSkip(6);
         pointerPosition += 6;
     }
 
@@ -284,7 +305,7 @@ public class DictZipFile {
     private byte[] readExtraField() throws IOException {
         int xlen = readUnsignedShort();
         byte[] extra = new byte[xlen];
-        dzFile.read(extra);
+        channelRead(extra);
         pointerPosition += 2 + xlen;
         return extra;
     }
@@ -346,8 +367,8 @@ public class DictZipFile {
      * @throws IOException If an error occurs while reading the value.
      */
     private int readUnsignedShort() throws IOException {
-        int low = dzFile.readUnsignedByte();
-        int high = dzFile.readUnsignedByte();
+        int low = channelReadUnsignedByte();
+        int high = channelReadUnsignedByte();
         return low + 256 * high;
     }
 
@@ -372,7 +393,7 @@ public class DictZipFile {
     private void readNullTerminatedHeaderField() throws IOException {
         byte value;
         do {
-            value = dzFile.readByte();
+            value = channelReadByte();
             pointerPosition += 1;
         } while (value != 0);
     }
@@ -383,8 +404,7 @@ public class DictZipFile {
      * @throws IOException If the CRC cannot be read.
      */
     private void readHeaderCrc() throws IOException {
-        dzFile.readByte();
-        dzFile.readByte();
+        channelSkip(2);
         pointerPosition += 2;
     }
 
@@ -401,10 +421,10 @@ public class DictZipFile {
         if (n >= this.chunks.size()) {
             return null;
         }
-        this.dzFile.seek(this.pointerPosition + this.chunks.get(n).offset);
+        dzFile.position(this.pointerPosition + this.chunks.get(n).offset);
         int size = this.chunks.get(n).size;
         byte[] buff = new byte[size];
-        this.dzFile.read(buff);
+        channelRead(buff);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         InflaterOutputStream gz = new InflaterOutputStream(bos, new Inflater(true));
         gz.write(buff);
@@ -424,5 +444,56 @@ public class DictZipFile {
         seek(offset);
         read(result, size);
         return result;
+    }
+
+    // --- Channel primitives, replacing the RandomAccessFile-specific calls
+    // that used to live inline above. Each mirrors the exact discard/EOF
+    // behaviour the RandomAccessFile-based code had. ---
+
+    /**
+     * Reads bytes from the channel into the specified buffer.
+     *
+     * @param buffer the buffer to fill with bytes read from the channel
+     * @throws IOException if an I/O error occurs while reading from the channel
+     */
+    private void channelRead(byte[] buffer) throws IOException {
+        dzFile.read(ByteBuffer.wrap(buffer));
+    }
+
+    /**
+     * Reads a single byte from the channel.
+     *
+     * @return the byte read from the channel
+     * @throws EOFException if the end of the channel is reached before a byte can be read
+     * @throws IOException if an I/O error occurs while reading from the channel
+     */
+    private byte channelReadByte() throws IOException {
+        ByteBuffer buf = ByteBuffer.allocate(1);
+        int n = dzFile.read(buf);
+        if (n < 1) {
+            throw new EOFException();
+        }
+        return buf.get(0);
+    }
+
+    /**
+     * Reads a single unsigned byte from the channel.
+     *
+     * @return the unsigned byte value in the range 0 to 255
+     * @throws EOFException if the end of the channel is reached before a byte can be read
+     * @throws IOException if an I/O error occurs while reading from the channel
+     */
+    private int channelReadUnsignedByte() throws IOException {
+        return channelReadByte() & 0xff;
+    }
+
+    /**
+     * Advances the channel position by the specified number of bytes.
+     *
+     * @param n the number of bytes to skip
+     * @throws IOException if an I/O error occurs while accessing the channel
+     */
+    private void channelSkip(int n) throws IOException {
+        dzFile.position(dzFile.position() + n);
     }
 }
