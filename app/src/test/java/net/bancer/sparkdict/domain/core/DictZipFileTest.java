@@ -15,7 +15,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.StandardOpenOption;
 
 public class DictZipFileTest {
 
@@ -146,5 +148,68 @@ public class DictZipFileTest {
     public void closeCanBeCalledMultipleTimes() {
         dictZipFile.close();
         dictZipFile.close();
+    }
+
+    @Test
+    public void channelConstructorReturnsSameDataAsPathConstructor() throws DomainException, IOException {
+        IndexEntry indexEntry = findIndexEntry("aardvark");
+        byte[] expected = dictZipFile.read(
+            indexEntry.getWordDataOffset(),
+            indexEntry.getWordDataSize()
+        );
+        try (
+            FileChannel channel = FileChannel.open(
+                new File(Fixtures.GCIDE_DICT_DZ_FILE).toPath(),
+                StandardOpenOption.READ
+            )
+        ) {
+            DictZipFile viaChannel = new DictZipFile(channel);
+            byte[] actual = viaChannel.read(
+                indexEntry.getWordDataOffset(),
+                indexEntry.getWordDataSize()
+            );
+            viaChannel.close();
+            assertArrayEquals(expected, actual);
+        }
+    }
+
+    @Test
+    public void channelConstructorCanReadSeveralEntries() throws DomainException, IOException {
+        IndexEntry first = findIndexEntry("aardvark");
+        IndexEntry second = findIndexEntry("abandon");
+        try (FileChannel channel = FileChannel.open(
+            new File(Fixtures.GCIDE_DICT_DZ_FILE).toPath(), StandardOpenOption.READ)) {
+            DictZipFile viaChannel = new DictZipFile(channel);
+            byte[] firstData = viaChannel.read(first.getWordDataOffset(), first.getWordDataSize());
+            byte[] secondData = viaChannel.read(second.getWordDataOffset(), second.getWordDataSize());
+            byte[] firstDataAgain = viaChannel.read(first.getWordDataOffset(), first.getWordDataSize());
+            viaChannel.close();
+            assertEquals(first.getWordDataSize(), firstData.length);
+            assertEquals(second.getWordDataSize(), secondData.length);
+            assertArrayEquals(firstData, firstDataAgain);
+        }
+    }
+
+    @Test
+    public void channelConstructorHandlesNonGzipFile() throws IOException {
+        try (FileChannel channel = FileChannel.open(
+            new File(Fixtures.GCIDE_IFO_FILE).toPath(), StandardOpenOption.READ)) {
+            try {
+                new DictZipFile(channel);
+                fail("Expected IOException");
+            } catch (IOException e) {
+                assertEquals("Not a gzipped file", e.getMessage());
+            }
+        }
+    }
+
+    @Test
+    public void channelConstructorCloseCanBeCalledMultipleTimes() throws IOException {
+        try (FileChannel channel = FileChannel.open(
+            new File(Fixtures.GCIDE_DICT_DZ_FILE).toPath(), StandardOpenOption.READ)) {
+            DictZipFile viaChannel = new DictZipFile(channel);
+            viaChannel.close();
+            viaChannel.close();
+        }
     }
 }

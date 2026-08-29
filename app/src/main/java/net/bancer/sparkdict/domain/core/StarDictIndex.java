@@ -3,6 +3,8 @@ package net.bancer.sparkdict.domain.core;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -42,7 +44,7 @@ public class StarDictIndex {
 
     private byte[] starDictBuffer = null;
 
-    private RandomAccessFile starDictFile = null;
+    private SeekableByteChannel starDictFile = null;
 
     private BookInfo bookInfo;
 
@@ -54,6 +56,25 @@ public class StarDictIndex {
     public StarDictIndex(BookInfo info) {
         this(info.getFileBaseName(), info.getIdxOffsetBits());
         this.bookInfo = info;
+    }
+
+    /**
+     * Constructor for callers that already have an open, seekable channel
+     * to the .idx data (for example, one opened via a Storage Access
+     * Framework document) instead of a filesystem path.
+     *
+     * <p>Unlike {@link #StarDictIndex(BookInfo)}, this constructor never
+     * lazily opens a {@link RandomAccessFile} from {@code info.getFileBaseName()}
+     * — the supplied channel is used as-is. {@link #getFileName()} still
+     * reports the conventional name for display/debugging purposes only.</p>
+     *
+     * @param info    BookInfo object.
+     * @param channel an open, readable, seekable channel over the .idx data.
+     */
+    public StarDictIndex(BookInfo info, SeekableByteChannel channel) {
+        this(info.getFileBaseName(), info.getIdxOffsetBits());
+        this.bookInfo = info;
+        this.starDictFile = channel;
     }
 
     private StarDictIndex(String dictionaryFileBaseName, int idxOffsetBits) {
@@ -69,9 +90,9 @@ public class StarDictIndex {
         return starDictBuffer;
     }
 
-    private RandomAccessFile getStarDictFile() throws FileNotFoundException {
+    private SeekableByteChannel getStarDictFile() throws FileNotFoundException {
         if (starDictFile == null) {
-            starDictFile = new RandomAccessFile(fileName, "r");
+            starDictFile = new RandomAccessFile(fileName, "r").getChannel();
         }
         return starDictFile;
     }
@@ -88,8 +109,8 @@ public class StarDictIndex {
     public IndexEntry retrieveIndexEntry(long startPosition) throws IOException, FileNotFoundException {
         int sizeRead;
         synchronized (getStarDictFile()) {
-            getStarDictFile().seek(startPosition);
-            sizeRead = getStarDictFile().read(getStarDictBuffer(), 0, BUFFER_SIZE);
+            getStarDictFile().position(startPosition);
+            sizeRead = getStarDictFile().read(ByteBuffer.wrap(getStarDictBuffer(), 0, BUFFER_SIZE));
         }
         if (sizeRead > 0) {
             int bufferIndex = 0;
