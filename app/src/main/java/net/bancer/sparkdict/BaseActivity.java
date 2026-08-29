@@ -25,6 +25,13 @@ public abstract class BaseActivity extends Activity {
     public static final String PREFS_NAME = "SparkDict";
 
     /**
+     * The preferences name that stores the root dictionaries' path selected by the user
+     * in the format content://com.android.externalstorage.documents/tree/primary%3Adictionaries
+     * where "dictionaries" is the name of the selected folder.
+     */
+    public static final String PREF_DICT_ROOT_URI_NAME = "dict_root_uri";
+
+    /**
      * Tag to identify SparkDict (for debug).
      */
     protected static final String TAG = "SparkDict";
