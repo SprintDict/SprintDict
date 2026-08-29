@@ -44,6 +44,8 @@ public class StarDictIndex {
 
     private byte[] starDictBuffer = null;
 
+    private RandomAccessFile starDictRandomAccessFile = null; // kept solely so it can't be GC'd and finalised out from under starDictFile
+
     private SeekableByteChannel starDictFile = null;
 
     private BookInfo bookInfo;
@@ -92,7 +94,8 @@ public class StarDictIndex {
 
     private SeekableByteChannel getStarDictFile() throws FileNotFoundException {
         if (starDictFile == null) {
-            starDictFile = new RandomAccessFile(fileName, "r").getChannel();
+            starDictRandomAccessFile = new RandomAccessFile(fileName, "r");
+            starDictFile = starDictRandomAccessFile.getChannel();
         }
         return starDictFile;
     }

@@ -103,7 +103,10 @@ public class DictZipFile {
      */
     private static final byte DICTZIP_EXTENSION_ID_2 = 'A';
 
-    private final List<Chunk> chunks;
+    private List<Chunk> chunks;
+
+    private RandomAccessFile randomAccessFileKeepAlive = null; // kept solely so it can't be GC'd and finalised out from under channel
+
 
     /**
      * Contents of <dictionary name>.dict.dz file.
@@ -122,7 +125,13 @@ public class DictZipFile {
      * @param dictZipFilename full path to the <dictionary name>.dict.dz file.
      */
     public DictZipFile(String dictZipFilename) throws IOException {
-        this(new RandomAccessFile(dictZipFilename, "r").getChannel());
+        this.randomAccessFileKeepAlive = new RandomAccessFile(dictZipFilename, "r");
+        // Deliberately not folded into one expression: retaining a strong
+        // reference to this RandomAccessFile for the object's lifetime prevents
+        // it from being GC'd and finalised -- which would silently close the
+        // channel below out from under us. See the identical issue in
+        // StarDictIndex.getStarDictFile().
+        initFromChannel(this.randomAccessFileKeepAlive.getChannel());
     }
 
     /**
@@ -139,6 +148,16 @@ public class DictZipFile {
      *                start of the dictionary's .dict.dz data.
      */
     public DictZipFile(SeekableByteChannel channel) throws IOException {
+        initFromChannel(channel);
+    }
+
+    /**
+     * Initialises the dictionary zip file from the specified channel.
+     *
+     * @param channel the channel containing the dictionary zip file data
+     * @throws IOException if an I/O error occurs while reading the gzip header
+     */
+    private void initFromChannel(SeekableByteChannel channel) throws IOException {
         this.dzFile = channel;
         pos = 0;
         pointerPosition = 0;
