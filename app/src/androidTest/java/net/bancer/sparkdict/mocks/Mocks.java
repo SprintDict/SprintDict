@@ -10,22 +10,31 @@ public class Mocks {
 
     public static final String IDX_EXT = ".idx";
     public static final String DICT_EXT = ".dict.dz";
+    public static final String ROOT_FOLDER = "dictionaries";
+    public static final String ROOT_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + ROOT_FOLDER;
 
-    public static final String ROOT_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/dictionaries";
+    public static final String MUELLER_FOLDER = "mueller";
+    public static final String MUELLER_FILE_BASE = "Mueller7GPL";
+    public static final String MUELLER_IFO_PATH_RELATIVE = MUELLER_FOLDER + "/" + MUELLER_FILE_BASE + BookInfo.INFO_FILE_EXTENTION;
+    public static final String MUELLER_DICT_PATH = ROOT_PATH + "/" + MUELLER_FOLDER;
+    public static final String MUELLER_BASE_PATH = MUELLER_DICT_PATH + "/" + MUELLER_FILE_BASE;
+    public static final String MUELLER_IFO_PATH = ROOT_PATH + "/" + MUELLER_IFO_PATH_RELATIVE;
 
-    public static final String MUELLER_DICT_PATH = ROOT_PATH + "/mueller";
-    public static final String MUELLER_BASE_PATH = MUELLER_DICT_PATH + "/Mueller7GPL";
-    public static final String MUELLER_IFO_PATH = MUELLER_BASE_PATH + BookInfo.INFO_FILE_EXTENTION;
+    public static final String BSE_FOLDER = "bse";
+    public static final String BSE_FILE_BASE = "rus_bse";
+    public static final String BSE_IFO_PATH_RELATIVE = BSE_FOLDER + "/" + BSE_FILE_BASE + BookInfo.INFO_FILE_EXTENTION;
+    public static final String BSE_DICT_PATH = ROOT_PATH + "/" + BSE_FOLDER;
+    public static final String BSE_BASE_PATH = BSE_DICT_PATH + "/" + BSE_FILE_BASE;
+    public static final String BSE_IFO_PATH = ROOT_PATH + "/" + BSE_IFO_PATH_RELATIVE;
 
-    public static final String BSE_DICT_PATH = ROOT_PATH + "/bse";
-    public static final String BSE_BASE_PATH = BSE_DICT_PATH + "/rus_bse";
-    public static final String BSE_IFO_PATH = BSE_BASE_PATH + BookInfo.INFO_FILE_EXTENTION;
+    public static final String WORDNET_FOLDER = "wordnet";
+    public static final String WORDNET_FILE_BASE = "wordnet";
+    public static final String WORDNET_IFO_PATH_RELATIVE = WORDNET_FOLDER + "/" + WORDNET_FILE_BASE + BookInfo.INFO_FILE_EXTENTION;
+    public static final String WORDNET_IFO_PATH = ROOT_PATH + "/" + WORDNET_IFO_PATH_RELATIVE;
 
-    public static final String WORDNET_IFO_PATH = ROOT_PATH + "/wordnet/wordnet" + BookInfo.INFO_FILE_EXTENTION;
-
-    public static final String CAMBRIDGE_DICT_PATH = ROOT_PATH + "/Cambridge Advanced Learners Dictionary 3th Ed";
-    public static final String CAMBRIDGE_BASE_PATH = CAMBRIDGE_DICT_PATH + "/Cambridge Advanced Learners Dictionary 3th Ed";
-    public static final String CAMBRIDGE_IFO_PATH = CAMBRIDGE_BASE_PATH + BookInfo.INFO_FILE_EXTENTION;
+    public static final String CAMBRIDGE_FOLDER = "Cambridge Advanced Learners Dictionary 3th Ed";
+    public static final String CAMBRIDGE_FILE_BASE = "Cambridge Advanced Learners Dictionary 3th Ed";
+    public static final String CAMBRIDGE_IFO_PATH_RELATIVE = CAMBRIDGE_FOLDER + "/" + CAMBRIDGE_FILE_BASE + BookInfo.INFO_FILE_EXTENTION;
 
     public static final String MUELLER_DICT_NAME = "Mueller7GPL";
     public static final String BSE_DICT_NAME = "Большая Советская Энциклопедия";
