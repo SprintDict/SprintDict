@@ -83,6 +83,6 @@ public class FileDictionaryFiles implements DictionaryFiles {
     }
 
     private Path resolve(String path) {
-        return Paths.get(rootPath, path);
+        return Paths.get(rootPath).resolve(path);
     }
 }

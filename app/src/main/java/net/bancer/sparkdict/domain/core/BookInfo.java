@@ -4,6 +4,9 @@ import androidx.annotation.NonNull;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Scanner;
 
 /**
@@ -17,6 +20,13 @@ public class BookInfo {
 
     /**
      * Path to the folder containing current dictionary files.
+     *
+     * <p>When this BookInfo was constructed from a real {@code java.io.File}
+     * (see {@link #BookInfo(File)}), this is an absolute filesystem path.
+     * When constructed via {@link #BookInfo(String, DictionaryFiles)}, this
+     * is a root-relative folder name instead -- e.g.
+     * {@code "LingvoUniversal (En-Ru)"} -- meant only to be passed back into
+     * a {@link DictionaryFiles}, never into {@code new File(...)}.</p>
      */
     private final String dirPath;
 
@@ -97,15 +107,36 @@ public class BookInfo {
     }
 
     /**
-     * Constructor for callers that want to supply the {@link DictionaryFiles}
-     * used for this dictionary explicitly, rather than the default
-     * {@link FileDictionaryFiles} this class would otherwise construct.
+     * Constructor for callers that resolve dictionary files through a
+     * {@link DictionaryFiles} implementation rather than a real
+     * {@code java.io.File} -- most importantly
+     * {@link net.bancer.sparkdict.storage.SafDictionaryFiles}. There is no
+     * filesystem File backing this BookInfo at all: {@code relativeIfoPath}
+     * and everything derived from it (see {@link #getFileBaseName()},
+     * {@link #getDirPath()}) are root-relative identifiers, meant only to be
+     * passed back into {@code dictionaryFiles}, never into {@code new File(...)}.
      *
-     * @param path path to .ifo file including extension itself.
-     * @param dictionaryFiles the DictionaryFiles to associate with this book.
+     * @param relativeIfoPath root-relative path to the .ifo document, e.g.
+     *                        {@code "LingvoUniversal (En-Ru)/LingvoUniversal.ifo"}.
+     * @param dictionaryFiles the DictionaryFiles used to both read the .ifo
+     *                        content and resolve this book's sibling files.
+     * @throws IllegalArgumentException if relativeIfoPath is null or does
+     *                                  not end with .ifo.
      */
-    public BookInfo(String path, DictionaryFiles dictionaryFiles) {
-        this(new File(path), dictionaryFiles);
+    public BookInfo(String relativeIfoPath, DictionaryFiles dictionaryFiles) {
+        if (relativeIfoPath == null || !relativeIfoPath.toLowerCase().endsWith(INFO_FILE_EXTENTION)) {
+            throw new IllegalArgumentException("relativeIfoPath must have .ifo extension");
+        }
+        filePath = relativeIfoPath;
+        int slash = relativeIfoPath.lastIndexOf('/');
+        dirPath = slash >= 0 ? relativeIfoPath.substring(0, slash) : "";
+        this.dictionaryFiles = dictionaryFiles;
+        try (SeekableByteChannel channel = dictionaryFiles.openForRead(relativeIfoPath)) {
+            Scanner input = new Scanner(Channels.newInputStream(channel), "UTF-8");
+            parseIfoContent(input);
+        } catch (IOException e) {
+            //TODO: "Cannot read info file: " + relativeIfoPath
+        }
     }
 
     /**
@@ -122,41 +153,17 @@ public class BookInfo {
         }
         filePath = infoFile.toString();
         dirPath = infoFile.getParent();
+        // NOTE: this default roots FileDictionaryFiles at this book's own
+        // folder, not at the overall dictionaries root -- which is the
+        // wrong root per FileDictionaryFiles' root-relative contract. It's
+        // harmless today because nothing calls getDictionaryFiles() for real
+        // I/O on a bare BookInfo(File) -- Book keeps its own, correctly
+        // rooted DictionaryFiles field instead (see Book.defaultDictionaryFilesFor).
+        // Worth fixing or removing if this default is ever relied upon directly.
         dictionaryFiles = new FileDictionaryFiles(dirPath);
         try {
             Scanner input = new Scanner(infoFile, "UTF-8");
-            input.useDelimiter("\n");
-            while (input.hasNextLine()) {
-                String line = input.nextLine();
-                if (line.contains("version=")) {
-                    version = line.substring(8);
-                } else if (line.contains("bookname=")) {
-                    bookName = line.substring(9);
-                } else if (line.contains("synwordcount=")) {
-                    synWordCount = Integer.parseInt(line.substring(13));
-                } else if (line.contains("wordcount=")) {
-                    wordCount = Integer.parseInt(line.substring(10));
-                } else if (line.contains("idxfilesize=")) {
-                    idxFileSize = Integer.parseInt(line.substring(12));
-                } else if (line.contains("idxoffsetbits=")) {
-                    idxOffsetBits = Integer.parseInt(line.substring(14));
-                } else if (line.contains("author=")) {
-                    author = line.substring(7);
-                } else if (line.contains("email=")) {
-                    email = line.substring(6);
-                } else if (line.contains("website=")) {
-                    website = line.substring(8);
-                } else if (line.contains("description=")) {
-                    description = line.substring(12);
-                } else if (line.contains("date=")) {
-                    date = line.substring(5);
-                } else if (line.contains("sametypesequence=")) {
-                    sameTypeSequence = line.substring(17);
-                    //System.out.println("Same Type Sequence: " + line.substring(17));
-                } else if (line.contains("dicttype=")) {
-                    dictType = line.substring(9);
-                }
-            }
+            parseIfoContent(input);
         } catch (FileNotFoundException e) {
             //TODO: "Cannot read info file: " + infoFile
         }
@@ -176,10 +183,49 @@ public class BookInfo {
     }
 
     /**
+     * Parses .ifo content, line by line, into this object's fields.
+     * Shared by every constructor regardless of where the content came from.
+     *
+     * @param input a Scanner positioned at the start of the .ifo content.
+     */
+    private void parseIfoContent(Scanner input) {
+        input.useDelimiter("\n");
+        while (input.hasNextLine()) {
+            String line = input.nextLine();
+            if (line.contains("version=")) {
+                version = line.substring(8);
+            } else if (line.contains("bookname=")) {
+                bookName = line.substring(9);
+            } else if (line.contains("synwordcount=")) {
+                synWordCount = Integer.parseInt(line.substring(13));
+            } else if (line.contains("wordcount=")) {
+                wordCount = Integer.parseInt(line.substring(10));
+            } else if (line.contains("idxfilesize=")) {
+                idxFileSize = Integer.parseInt(line.substring(12));
+            } else if (line.contains("idxoffsetbits=")) {
+                idxOffsetBits = Integer.parseInt(line.substring(14));
+            } else if (line.contains("author=")) {
+                author = line.substring(7);
+            } else if (line.contains("email=")) {
+                email = line.substring(6);
+            } else if (line.contains("website=")) {
+                website = line.substring(8);
+            } else if (line.contains("description=")) {
+                description = line.substring(12);
+            } else if (line.contains("date=")) {
+                date = line.substring(5);
+            } else if (line.contains("sametypesequence=")) {
+                sameTypeSequence = line.substring(17);
+            } else if (line.contains("dicttype=")) {
+                dictType = line.substring(9);
+            }
+        }
+    }
+
+    /**
      * DictionaryFiles getter.
      *
-     * @return the DictionaryFiles associated with this book. Not yet used for
-     * any actual I/O -- see {@link DictionaryFiles}.
+     * @return the DictionaryFiles associated with this book.
      */
     public DictionaryFiles getDictionaryFiles() {
         return dictionaryFiles;
@@ -285,6 +331,8 @@ public class BookInfo {
      * File base name getter.
      *
      * @return path to the <dictionary name>.ifo file excluding ".ifo" part.
+     * Root-relative if this BookInfo was constructed via
+     * {@link #BookInfo(String, DictionaryFiles)}, absolute otherwise.
      */
     public String getFileBaseName() {
         int end = filePath.length() - 4;
@@ -294,7 +342,8 @@ public class BookInfo {
     /**
      * Compressed dictionary file path getter.
      *
-     * @return full path to the dictionary data file including ".dict.dz" at the end.
+     * @return path to the dictionary data file including ".dict.dz" at the
+     * end. Root-relative or absolute, matching {@link #getFileBaseName()}.
      */
     public String getPathToDictFile() {
         return getFileBaseName() + ".dict.dz";
@@ -303,5 +352,4 @@ public class BookInfo {
     public String getDirPath() {
         return dirPath;
     }
-
 }

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -50,7 +51,7 @@ public class Book implements Iterable<IndexEntry> {
      */
     private Iterator<IndexEntry> indexEntriesIterator;
 
-    private DictionaryFiles dictionaryFiles = null;
+    private DictionaryFiles dictionaryFiles;
 
     /**
      * Constructor.
@@ -59,10 +60,7 @@ public class Book implements Iterable<IndexEntry> {
      * @throws IllegalArgumentException if the parameter is null.
      */
     public Book(File infoFile) {
-        if (infoFile == null) {
-            throw new IllegalArgumentException("infoFile must not be null");
-        }
-        bookInfo = new BookInfo(infoFile);
+        this(infoFile, defaultDictionaryFilesFor(infoFile));
     }
 
     /**
@@ -82,15 +80,37 @@ public class Book implements Iterable<IndexEntry> {
         bookInfo = new BookInfo(infoFile, dictionaryFiles);
     }
 
+    /**
+     * Constructor for callers that resolve dictionary files through a
+     * {@link DictionaryFiles} implementation rather than a real
+     * {@code java.io.File} -- see
+     * {@link BookInfo#BookInfo(String, DictionaryFiles)}.
+     *
+     * @param relativeIfoPath root-relative path to the .ifo document.
+     * @param dictionaryFiles the DictionaryFiles to associate with this book.
+     */
+    public Book(String relativeIfoPath, DictionaryFiles dictionaryFiles) {
+        this.dictionaryFiles = dictionaryFiles;
+        bookInfo = new BookInfo(relativeIfoPath, dictionaryFiles);
+    }
+
+    /**
+     * Computes the default {@link FileDictionaryFiles}, correctly rooted at
+     * the overall dictionaries folder -- two levels above the .ifo file
+     * (.ifo file -> its dictionary folder -> the root) -- rather than at the
+     * dictionary's own folder, matching {@link FileDictionaryFiles}' actual
+     * root-relative contract.
+     */
     private static DictionaryFiles defaultDictionaryFilesFor(File infoFile) {
-        return new FileDictionaryFiles(infoFile != null ? infoFile.getParent() : null);
+        String dictionaryFolder = infoFile != null ? infoFile.getParent() : null;
+        String root = dictionaryFolder != null ? new File(dictionaryFolder).getParent() : null;
+        return new FileDictionaryFiles(root);
     }
 
     /**
      * DictionaryFiles getter.
      *
-     * @return the DictionaryFiles associated with this book. Not yet used for
-     * any actual I/O -- see {@link DictionaryFiles}.
+     * @return the DictionaryFiles associated with this book.
      */
     public DictionaryFiles getDictionaryFiles() {
         return dictionaryFiles;
@@ -193,12 +213,16 @@ public class Book implements Iterable<IndexEntry> {
     private LexicalEntry getLexicalEntry(IndexEntry idxEntry) {
         try {
             if (dzFile == null) {
-                dzFile = new DictZipFile(bookInfo.getFileBaseName() + DICT_FILE_EXTENSION);
+                SeekableByteChannel channel = dictionaryFiles.openForRead(bookInfo.getFileBaseName() + DICT_FILE_EXTENSION);
+                dzFile = new DictZipFile(channel);
             }
             if (resZipFile == null) {
-                File zipFile = new File(bookInfo.getDirPath(), RES_ZIP_NAME);
-                if (zipFile.exists()) {
-                    resZipFile = new ResourcesZipFile(zipFile);
+                String resZipPath = bookInfo.getDirPath() + "/" + RES_ZIP_NAME;
+                try {
+                    SeekableByteChannel channel = dictionaryFiles.openForRead(resZipPath);
+                    resZipFile = new ResourcesZipFile(channel);
+                } catch (IOException e) {
+                    // res.zip is optional -- not every dictionary has one.
                 }
             }
             byte[] buffer = dzFile.read(idxEntry.getWordDataOffset(), idxEntry.getWordDataSize());

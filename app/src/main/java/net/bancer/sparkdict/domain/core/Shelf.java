@@ -1,9 +1,9 @@
 package net.bancer.sparkdict.domain.core;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Shelf is place where all dictionaries (books) are located.
@@ -12,7 +12,6 @@ public class Shelf {
 
     private ArrayList<Book> books;
 
-    private final String dictPath;
 
     /**
      * Array containing titles of enabled dictionaries.
@@ -35,15 +34,18 @@ public class Shelf {
      * Constructor for callers that want to supply the {@link DictionaryFiles}
      * used for this shelf explicitly, rather than the default
      * {@link FileDictionaryFiles} this class would otherwise construct. The
-     * same instance is passed down to every {@link Book}/{@link BookInfo} this
-     * shelf constructs.
+     * same instance is passed down to every {@link Book}/{@link BookInfo}
+     * this shelf constructs, and is also now this shelf's sole source of
+     * dictionary discovery -- see {@link #constructBooksMap()}.
      *
-     * @param dictPath path to the dictionaries.
+     * @param dictPath unused directly by this constructor now that discovery
+     *                 goes through dictionaryFiles -- kept only because the
+     *                 two-arg constructor above needs it to build the
+     *                 default FileDictionaryFiles.
      * @param enabledDicts string array of the enabled dictionaries titles.
      * @param dictionaryFiles the DictionaryFiles to associate with this shelf.
      */
     public Shelf(String dictPath, String[] enabledDicts, DictionaryFiles dictionaryFiles) {
-        this.dictPath = dictPath;
         this.enabledDicts = enabledDicts;
         this.dictionaryFiles = dictionaryFiles;
         putBooksOnShelf();
@@ -77,14 +79,19 @@ public class Shelf {
     /**
      * Constructs Book objects and puts them into a HashMap.
      *
+     * <p>Discovery now goes uniformly through {@code dictionaryFiles} for
+     * both backends, instead of a File-specific scan -- see
+     * {@code FileDictionaryFiles#findDictionaryMetaFilePaths()} and
+     * {@code SafDictionaryFiles#findDictionaryMetaFilePaths()}.</p>
+     *
      * @return HashMap of all books.
      */
     private HashMap<String, Book> constructBooksMap() {
         // Use hashmap in order to make later sorting easier
         HashMap<String, Book> booksMap = new HashMap<>();
-        ArrayList<File> infoFiles = findDictMetaFiles();
-        for (int i = 0; i < infoFiles.size(); i++) {
-            Book dic = new Book(infoFiles.get(i), dictionaryFiles);
+        List<String> ifoPaths = dictionaryFiles.findDictionaryMetaFilePaths();
+        for (String ifoPath : ifoPaths) {
+            Book dic = new Book(ifoPath, dictionaryFiles);
             booksMap.put(dic.getBookName(), dic);
         }
         return booksMap;
@@ -92,35 +99,6 @@ public class Shelf {
 
     public DictionaryFiles getDictionaryFiles() {
         return dictionaryFiles;
-    }
-
-    /**
-     * Finds dictionary metadata files in the configured dictionary path.
-     * {@code .ifo} files. If the dictionary path or one of its subdirectories
-     * cannot be listed, the corresponding entries are skipped.</p>
-     *
-     * @return a list of dictionary metadata files
-     */
-    private ArrayList<File> findDictMetaFiles() {
-        ArrayList<File> result = new ArrayList<>();
-        File[] dictFolders = new File(dictPath).listFiles();
-        if (dictFolders != null) {
-            for (File dictFolder : dictFolders) {
-                if (dictFolder.isDirectory()) {
-                    File[] dictFiles = dictFolder.listFiles();
-                    if (dictFiles != null) {
-                        for (File file : dictFiles) {
-                            if (file.toString().endsWith(BookInfo.INFO_FILE_EXTENTION)) {
-                                result.add(file);
-                            }
-                        }
-                    }
-                }
-            }
-        } //else {
-            //TODO: log "Failed to list files in " + dictPath
-        //}
-        return result;
     }
 
     /**
