@@ -1,8 +1,6 @@
 package net.bancer.sparkdict.domain.core;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
@@ -43,9 +41,6 @@ public class StarDictIndex {
     private final String fileName;
 
     private byte[] starDictBuffer = null;
-
-    private RandomAccessFile starDictRandomAccessFile = null; // kept solely so it can't be GC'd and finalised out from under starDictFile
-
     private SeekableByteChannel starDictFile = null;
 
     private BookInfo bookInfo;
@@ -64,11 +59,6 @@ public class StarDictIndex {
      * Constructor for callers that already have an open, seekable channel
      * to the .idx data (for example, one opened via a Storage Access
      * Framework document) instead of a filesystem path.
-     *
-     * <p>Unlike {@link #StarDictIndex(BookInfo)}, this constructor never
-     * lazily opens a {@link RandomAccessFile} from {@code info.getFileBaseName()}
-     * — the supplied channel is used as-is. {@link #getFileName()} still
-     * reports the conventional name for display/debugging purposes only.</p>
      *
      * @param info    BookInfo object.
      * @param channel an open, readable, seekable channel over the .idx data.
@@ -92,10 +82,14 @@ public class StarDictIndex {
         return starDictBuffer;
     }
 
-    private SeekableByteChannel getStarDictFile() throws FileNotFoundException {
+    /**
+     * Lazily opens the .idx file via this book's {@link DictionaryFiles},
+     * working identically whether that resolves to a real filesystem path
+     * or a Storage Access Framework document.
+     */
+    private SeekableByteChannel getStarDictFile() throws IOException {
         if (starDictFile == null) {
-            starDictRandomAccessFile = new RandomAccessFile(fileName, "r");
-            starDictFile = starDictRandomAccessFile.getChannel();
+            starDictFile = bookInfo.getDictionaryFiles().openForRead(fileName);
         }
         return starDictFile;
     }
@@ -107,9 +101,8 @@ public class StarDictIndex {
      * @param startPosition position where index entry starts.
      * @return IndexEntry object.
      * @throws IOException           if there was a problem reading data file.
-     * @throws FileNotFoundException if the data file was not found.
      */
-    public IndexEntry retrieveIndexEntry(long startPosition) throws IOException, FileNotFoundException {
+    public IndexEntry retrieveIndexEntry(long startPosition) throws IOException {
         int sizeRead;
         synchronized (getStarDictFile()) {
             getStarDictFile().position(startPosition);

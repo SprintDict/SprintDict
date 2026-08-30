@@ -1,9 +1,10 @@
 package net.bancer.sparkdict.domain.core;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Vector;
 
 /**
@@ -36,7 +37,9 @@ public class SparkDictIndex implements IObservable {
 
     private final StarDictIndex starDictIndex;
 
-    private RandomAccessFile sparkDictReadOnlyFile = null;
+    private final DictionaryFiles dictionaryFiles;
+
+    private SeekableByteChannel sparkDictReadOnlyFile = null;
 
     private final byte[] sparkDictbuffer;
 
@@ -47,6 +50,7 @@ public class SparkDictIndex implements IObservable {
      */
     public SparkDictIndex(BookInfo bookInfo) {
         starDictIndex = new StarDictIndex(bookInfo);
+        dictionaryFiles = bookInfo.getDictionaryFiles();
         observers = new Vector<>();
         sparkDictbuffer = new byte[SparkDictIndex.INDEX_ENTRY_SIZE];
     }
@@ -94,55 +98,56 @@ public class SparkDictIndex implements IObservable {
         parseBookIndex(starDictIndex);
     }
 
-	/**
-	 * Parses the StarDict index file and creates the corresponding SparkDict index file.
-	 *
-	 * <p>The generated SparkDict index contains pointers to each lexical entry in the
-	 * StarDict index file.</p>
-	 *
-	 * @param bookIndex StarDict index to parse.
-	 * @throws IOException If an I/O error occurs while reading the StarDict index
-	 *     or writing the SparkDict index.
-	 */
+    /**
+     * Parses the StarDict index file and creates the corresponding SparkDict
+     * index file, both resolved through this book's {@link DictionaryFiles}.
+     *
+     * <p>The write side only ever appends sequentially -- the original
+     * {@code sparkDictPointer} tracking variable was dead code, since nothing
+     * ever seeks the write handle a second time -- so a plain
+     * {@link OutputStream} from {@link DictionaryFiles#createForWrite} is
+     * sufficient; no random-access write capability is needed.</p>
+     *
+     * @param bookIndex StarDict index to parse.
+     * @throws IOException If an I/O error occurs while reading the StarDict index
+     * or writing the SparkDict index.
+     */
     private void parseBookIndex(StarDictIndex bookIndex) throws IOException {
         long starDictPointer = 0;
         byte[] starDictIdxBuffer = new byte[BUFFER_SIZE];
-        RandomAccessFile starDictIdx = new RandomAccessFile(bookIndex.getFileName(), "r");
-        starDictIdx.seek(starDictPointer);
-        int sizeRead = starDictIdx.read(starDictIdxBuffer, 0, BUFFER_SIZE);
 
-        int sparkDictPointer = 0;
-        String path = bookIndex.getFileBaseName() + FILE_EXTENSION;
-        RandomAccessFile sparkDictIdx = new RandomAccessFile(path, "rw");
-        sparkDictIdx.seek(sparkDictPointer);
+        try (SeekableByteChannel starDictIdx = dictionaryFiles.openForRead(bookIndex.getFileName());
+             OutputStream sparkDictIdx = dictionaryFiles.createForWrite(bookIndex.getFileBaseName() + FILE_EXTENSION)) {
 
-        while (sizeRead > 0) {
-            int wordStart = 0;
-            int currentPosition = 0;
-            while (currentPosition < sizeRead) {
-                if (starDictIdxBuffer[currentPosition] == StarDictIndex.SEPARATOR) {
-                    // Length = position of separator + 1 byte occupied by separator +
-                    // 			index offset bytes size + data bytes size - start position
-                    int length = currentPosition + 1 + bookIndex.getLexicalEntryOffsetFieldSizeInBytes() + bookIndex.getLexicalEntrySizeFieldInBytes() - wordStart;
-                    if (wordStart + length <= sizeRead) {
-                        writePointerToSparkdictIndex(starDictPointer, sparkDictIdx);
-                        sparkDictPointer += INDEX_ENTRY_SIZE;
-                        starDictPointer += length;
+            starDictIdx.position(starDictPointer);
+            int sizeRead = starDictIdx.read(ByteBuffer.wrap(starDictIdxBuffer, 0, BUFFER_SIZE));
+
+            while (sizeRead > 0) {
+                int wordStart = 0;
+                int currentPosition = 0;
+                while (currentPosition < sizeRead) {
+                    if (starDictIdxBuffer[currentPosition] == StarDictIndex.SEPARATOR) {
+                        // Length = position of separator + 1 byte occupied by separator +
+                        // index offset bytes size + data bytes size - start position
+                        int length = currentPosition + 1 + bookIndex.getLexicalEntryOffsetFieldSizeInBytes() + bookIndex.getLexicalEntrySizeFieldInBytes() - wordStart;
+                        if (wordStart + length <= sizeRead) {
+                            writePointerToSparkdictIndex(starDictPointer, sparkDictIdx);
+                            starDictPointer += length;
+                        }
+                        currentPosition = wordStart + length; // Move the pointer further
+                        wordStart = currentPosition;
+                    } else {
+                        currentPosition++;
                     }
-                    currentPosition = wordStart + length; // Move the pointer further
-                    wordStart = currentPosition;
-                } else {
-                    currentPosition++;
                 }
+                starDictIdx.position(starDictPointer);
+                sizeRead = starDictIdx.read(ByteBuffer.wrap(starDictIdxBuffer, 0, BUFFER_SIZE));
             }
-            starDictIdx.seek(starDictPointer);
-            sizeRead = starDictIdx.read(starDictIdxBuffer, 0, BUFFER_SIZE);
         }
-        starDictIdx.close();
     }
 
-    private void writePointerToSparkdictIndex(long pointer, RandomAccessFile spardictIdx) throws IOException {
-        spardictIdx.write(intToByteArray((int) pointer));
+    private void writePointerToSparkdictIndex(long pointer, OutputStream sparkDictIdx) throws IOException {
+        sparkDictIdx.write(intToByteArray((int) pointer));
         articlesIndexed++;
         notifyObservers();
     }
@@ -176,19 +181,14 @@ public class SparkDictIndex implements IObservable {
         }
     }
 
-	/**
-	 * Returns the SparkDict index file opened for read-only access.
-	 *
-	 * <p>The file is opened lazily on the first call and the same
-	 * {@link RandomAccessFile} instance is returned on subsequent calls.</p>
-	 *
-	 * @return SparkDict index file opened for reading.
-	 * @throws FileNotFoundException If the SparkDict index file cannot be opened.
-	 */
-    private RandomAccessFile getSparkDictReadOnlyFile() throws FileNotFoundException {
+    /**
+     * Lazily opens the .sparkdict.idx file for random-access reads via this
+     * book's {@link DictionaryFiles}.
+     */
+    private SeekableByteChannel getSparkDictReadOnlyFile() throws IOException {
         if (sparkDictReadOnlyFile == null) {
             String uri = starDictIndex.getFileBaseName() + SparkDictIndex.FILE_EXTENSION;
-            sparkDictReadOnlyFile = new RandomAccessFile(uri, "r");
+            sparkDictReadOnlyFile = dictionaryFiles.openForRead(uri);
         }
         return sparkDictReadOnlyFile;
     }
@@ -198,11 +198,9 @@ public class SparkDictIndex implements IObservable {
      *
      * @return the quantity of index entries in the <dictionary name>.sparkdict.idx file.
      * @throws IOException If the SparkDict index file cannot be accessed.
-     * @throws FileNotFoundException If the SparkDict index file cannot be opened.
      */
-    public long getSize() throws FileNotFoundException, IOException {
-        return getSparkDictReadOnlyFile().length()
-            / SparkDictIndex.INDEX_ENTRY_SIZE;
+    public long getSize() throws IOException {
+        return getSparkDictReadOnlyFile().size() / SparkDictIndex.INDEX_ENTRY_SIZE;
     }
 
     /**
@@ -212,12 +210,10 @@ public class SparkDictIndex implements IObservable {
      * @return IndexEntry that is number `id` counting from the beginning of the
      * index file.
      * @throws IOException If the SparkDict index file cannot be accessed.
-     * @throws FileNotFoundException If the SparkDict index file cannot be opened.
      */
-    public IndexEntry getIndexEntry(long id) throws FileNotFoundException,
-        IOException {
-        getSparkDictReadOnlyFile().seek(id * SparkDictIndex.INDEX_ENTRY_SIZE);
-        int sizeRead = getSparkDictReadOnlyFile().read(sparkDictbuffer);
+    public IndexEntry getIndexEntry(long id) throws IOException {
+        getSparkDictReadOnlyFile().position(id * SparkDictIndex.INDEX_ENTRY_SIZE);
+        int sizeRead = getSparkDictReadOnlyFile().read(ByteBuffer.wrap(sparkDictbuffer));
         if (sizeRead > 0) {
             long startPosition = SparkDictIndex.byteArrayToInt(sparkDictbuffer);
             return starDictIndex.retrieveIndexEntry(startPosition);
@@ -231,7 +227,6 @@ public class SparkDictIndex implements IObservable {
     }
 
     public boolean delete() {
-        File file = new File(starDictIndex.getFileBaseName() + SparkDictIndex.FILE_EXTENSION);
-        return file.delete();
+        return dictionaryFiles.delete(starDictIndex.getFileBaseName() + SparkDictIndex.FILE_EXTENSION);
     }
 }

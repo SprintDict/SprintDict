@@ -15,7 +15,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +54,7 @@ public class IndexEntriesIteratorTest {
                 "Cannot get quantity of `Test Dictionary` dictionary SparkDictIndex entries.",
                 e.getMessage()
             );
-            assertTrue(e.getCause() instanceof FileNotFoundException);
+            assertTrue(e.getCause() instanceof IOException);
         }
     }
 
