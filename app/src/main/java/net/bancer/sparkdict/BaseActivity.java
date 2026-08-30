@@ -4,11 +4,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.net.Uri;
+import android.util.Log;
 import android.view.Gravity;
 import android.widget.Toast;
 
 import net.bancer.sparkdict.domain.core.Book;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
+import net.bancer.sparkdict.domain.core.FileDictionaryFiles;
 import net.bancer.sparkdict.domain.core.Shelf;
+import net.bancer.sparkdict.storage.SafDictionaryFiles;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -164,7 +169,36 @@ public abstract class BaseActivity extends Activity {
     protected void refreshShelf() {
         String dictPath = getDictPathFromPrefs();
         String[] enabledDicts = getEnabledDictsFromPrefs();
-        shelf = new Shelf(dictPath, enabledDicts);
+        DictionaryFiles dictionaryFiles = createDictionaryFiles(dictPath);
+        shelf = new Shelf(dictPath, enabledDicts, dictionaryFiles);
+    }
+
+    /**
+     * Creates the {@link DictionaryFiles} used to resolve dictionary files,
+     * choosing between the legacy {@code java.io.File}-backed implementation
+     * and the Storage-Access-Framework-backed one according to
+     * {@link AppConfig#USE_SAF_STORAGE}.
+     *
+     * <p>Falls back to the legacy implementation even when the flag is on, if
+     * no Storage Access Framework folder has been selected yet -- e.g. right
+     * after flipping the flag on a device that hasn't run the folder picker
+     * since. This avoids crashing on a missing preference in exchange for a
+     * silently-empty shelf, which would be a much more confusing failure mode
+     * for a flag with no settings UI to explain it.</p>
+     *
+     * @param dictPath legacy filesystem path, used for the fallback and by
+     *                  the non-SAF implementation.
+     * @return the DictionaryFiles to use.
+     */
+    private DictionaryFiles createDictionaryFiles(String dictPath) {
+        if (AppConfig.USE_SAF_STORAGE) {
+            String uriString = getStrSharedPreference(PREF_DICT_ROOT_URI_NAME);
+            if (!uriString.isEmpty()) {
+                return new SafDictionaryFiles(this, Uri.parse(uriString));
+            }
+            Log.w(TAG, "USE_SAF_STORAGE is enabled but no SAF folder has been selected yet; falling back to legacy file access");
+        }
+        return new FileDictionaryFiles(dictPath);
     }
 
     /**
