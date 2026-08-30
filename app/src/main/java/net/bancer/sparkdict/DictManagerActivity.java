@@ -75,7 +75,7 @@ public class DictManagerActivity extends BaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (!Environment.isExternalStorageManager()) {
+        if (!AppConfig.USE_SAF_STORAGE && !Environment.isExternalStorageManager()) {
             Uri uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID);
             Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri);
             startActivityForResult(intent, FILE_PERMISSIONS_ACCESS_REQUEST);
