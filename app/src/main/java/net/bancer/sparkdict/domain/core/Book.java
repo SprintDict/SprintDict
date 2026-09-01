@@ -19,12 +19,12 @@ public class Book implements Iterable<IndexEntry> {
     /**
      * Extension of the compressed dictionary file: <dictionary name>.dict.dz
      */
-    private static final String DICT_FILE_EXTENSION = ".dict.dz";
+    public static final String DICT_FILE_EXTENSION = ".dict.dz";
 
     /**
      * ZIP archive containing dictionary resources such as audio files and pictures.
      */
-    private static final String RES_ZIP_NAME = "res.zip";
+    public static final String RES_ZIP_NAME = "res.zip";
 
     /**
      * BookInfo object.
@@ -51,7 +51,7 @@ public class Book implements Iterable<IndexEntry> {
      */
     private Iterator<IndexEntry> indexEntriesIterator;
 
-    private DictionaryFiles dictionaryFiles;
+    private final DictionaryFiles dictionaryFiles;
 
     /**
      * Constructor.

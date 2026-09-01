@@ -18,8 +18,10 @@ import net.bancer.sparkdict.mocks.Mocks;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,6 +35,7 @@ import java.nio.file.Files;
 import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SafDictionaryFilesTest {
 
     private static final String TEMP_FILE_NAME = "SafDictionaryFilesTest-" + System.currentTimeMillis() + ".tmp";

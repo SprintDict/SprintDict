@@ -53,7 +53,9 @@ public class LexicalEntryTest {
         String ifoFile = Fixtures.DUMMY_MULTI_IFO_FILE;
         BookInfo bookInfo = new BookInfo(ifoFile);
         byte[] buffer = getLexicalEntry(lemma, bookInfo);
-        ResourcesZipFile resZip = new ResourcesZipFile(new File(Fixtures.DUMMY_MULTI_RES_ZIP_FILE));
+        File file = new File(Fixtures.DUMMY_MULTI_RES_ZIP_FILE);
+        FileChannel channel = FileChannel.open(file.toPath(), StandardOpenOption.READ);
+        ResourcesZipFile resZip = new ResourcesZipFile(channel);
         return new LexicalEntry(lemma, buffer, bookInfo, resZip);
     }
 

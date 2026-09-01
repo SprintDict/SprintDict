@@ -40,7 +40,7 @@ public class SparkDictIndexTest {
         assertNull(indexMueller.getIndexEntry(Mocks.MUELLER_DICT_SIZE));
     }
 
-    @Test(expected = IOException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testGetIndexEntryIOException() throws IOException {
         indexMueller.getIndexEntry(-1);
     }

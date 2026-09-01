@@ -2,10 +2,7 @@ package net.bancer.sparkdict;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.net.Uri;
-import android.util.Log;
+import android.os.Bundle;
 import android.view.Gravity;
 import android.widget.Toast;
 
@@ -13,7 +10,8 @@ import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.FileDictionaryFiles;
 import net.bancer.sparkdict.domain.core.Shelf;
-import net.bancer.sparkdict.storage.SafDictionaryFiles;
+import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
+import net.bancer.sparkdict.storage.SparkDictPreferences;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -24,17 +22,7 @@ import java.util.LinkedList;
  */
 public abstract class BaseActivity extends Activity {
 
-    /**
-     * The name of SparkDict shared preferences.
-     */
-    public static final String PREFS_NAME = "SparkDict";
-
-    /**
-     * The preferences name that stores the root dictionaries' path selected by the user
-     * in the format content://com.android.externalstorage.documents/tree/primary%3Adictionaries
-     * where "dictionaries" is the name of the selected folder.
-     */
-    public static final String PREF_DICT_ROOT_URI_NAME = "dict_root_uri";
+    protected SparkDictPreferences preferences;
 
     /**
      * Tag to identify SparkDict (for debug).
@@ -47,6 +35,12 @@ public abstract class BaseActivity extends Activity {
     private static Shelf shelf;
     private static LinkedList<String> recentHistory;
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        preferences = new SparkDictPreferences(this);
+    }
+
     /**
      * Retrieves path to dictionaries from shared preferences.
      *
@@ -54,7 +48,7 @@ public abstract class BaseActivity extends Activity {
      */
     protected String getDictPathFromPrefs() {
         String key = getString(R.string.menu_dict_path);
-        String dictPath = getStrSharedPreference(key);
+        String dictPath = preferences.getString(key);
         return dictPath.trim();
     }
 
@@ -65,17 +59,8 @@ public abstract class BaseActivity extends Activity {
      * @return a string array of titles of enabled dictionaries.
      */
     protected String[] getEnabledDictsFromPrefs() {
-        String strEnabledDicts = getStrSharedPreference(getString(R.string.enabled_dicts));
+        String strEnabledDicts = preferences.getString(getString(R.string.enabled_dicts));
         return strEnabledDicts.split("\\|\\|");
-    }
-
-    /**
-     * Retrieves SparkDict shared preferences.
-     *
-     * @return SparkDict shared preferences.
-     */
-    protected SharedPreferences getSharedPreferences() {
-        return getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
     /**
@@ -88,56 +73,6 @@ public abstract class BaseActivity extends Activity {
         Toast toast = Toast.makeText(context, msg, Toast.LENGTH_LONG);
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
-    }
-
-    /**
-     * Get string value from shared preferences identified by key.
-     *
-     * @param key shared preference key.
-     * @return string value of the shared preference.
-     */
-    protected String getStrSharedPreference(String key) {
-        SharedPreferences settings = getSharedPreferences();
-        return settings.getString(key, "");
-    }
-
-    /**
-     * Get float value from shared preferences identified by key.
-     *
-     * @param key shared preference key.
-     * @return float value of the shared preference.
-     */
-    public float getFloatSharedPreference(String key) {
-        SharedPreferences settings = getSharedPreferences();
-        return settings.getFloat(key, 20.0f);
-    }
-
-    /**
-     * Saves a string value to shared preferences identifying it by the key.
-     *
-     * @param key   key of the shared preference to be saved.
-     * @param value string value to be saved.
-     * @return `true` if the value was saved, else `false`.
-     */
-    protected boolean saveSharedPreference(String key, String value) {
-        SharedPreferences settings = getSharedPreferences();
-        Editor editor = settings.edit();
-        editor.putString(key, value);
-        return editor.commit();
-    }
-
-    /**
-     * Saves a float value to shared preferences identifying it by the key.
-     *
-     * @param key   key of the shared preference to be saved.
-     * @param value float value to be saved.
-     * @return `true` if the value was saved, else `false`.
-     */
-    public boolean saveSharedPreference(String key, float value) {
-        SharedPreferences settings = getSharedPreferences();
-        Editor editor = settings.edit();
-        editor.putFloat(key, value);
-        return editor.commit();
     }
 
     /**
@@ -192,11 +127,7 @@ public abstract class BaseActivity extends Activity {
      */
     private DictionaryFiles createDictionaryFiles(String dictPath) {
         if (AppConfig.USE_SAF_STORAGE) {
-            String uriString = getStrSharedPreference(PREF_DICT_ROOT_URI_NAME);
-            if (!uriString.isEmpty()) {
-                return new SafDictionaryFiles(this, Uri.parse(uriString));
-            }
-            Log.w(TAG, "USE_SAF_STORAGE is enabled but no SAF folder has been selected yet; falling back to legacy file access");
+            return SafDictionaryFilesFactory.create(this);
         }
         return new FileDictionaryFiles(dictPath);
     }
@@ -223,7 +154,7 @@ public abstract class BaseActivity extends Activity {
     protected LinkedList<String> getRecentHistory() {
         if (recentHistory == null) {
             recentHistory = new LinkedList<>();
-            String history = getStrSharedPreference(RECENT_HISTORY_PREF_KEY);
+            String history = preferences.getString(RECENT_HISTORY_PREF_KEY);
             if (!history.isEmpty()) {
                 String[] historyArr = history.split(RECENT_HISTORY_WORDS_SEPARATOR);
                 for (String s : historyArr) {
@@ -248,6 +179,6 @@ public abstract class BaseActivity extends Activity {
             }
             historyStr.append(recentHistory.get(i));
         }
-        return saveSharedPreference(RECENT_HISTORY_PREF_KEY, historyStr.toString());
+        return preferences.save(RECENT_HISTORY_PREF_KEY, historyStr.toString());
     }
 }

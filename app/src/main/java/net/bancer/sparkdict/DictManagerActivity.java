@@ -28,6 +28,7 @@ import net.bancer.sparkdict.adapters.DictManagerItemsAdapter;
 import net.bancer.sparkdict.domain.IndexBuilder;
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.utils.DomainException;
+import net.bancer.sparkdict.storage.SparkDictPreferences;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -229,8 +230,8 @@ public class DictManagerActivity extends BaseActivity {
         String key = getString(R.string.menu_dict_path);
         // Save the path to SharedPreferences
         // TODO: remove isSaved after finished migrating to SAF
-        boolean isSaved = saveSharedPreference(key, value);
-        boolean isSavedUri = saveSharedPreference(PREF_DICT_ROOT_URI_NAME, uri.toString());
+        boolean isSaved = preferences.save(key, value);
+        boolean isSavedUri = preferences.save(SparkDictPreferences.PREF_DICT_ROOT_URI_NAME, uri.toString());
         String msg;
         if (isSaved && isSavedUri) { // Create message string for a toast
             msg = getString(R.string.dict_path_saved_msg);
@@ -263,7 +264,7 @@ public class DictManagerActivity extends BaseActivity {
                 enabledDicts.append(book.getBookName());
             }
         }
-        boolean isSaved = saveSharedPreference(
+        boolean isSaved = preferences.save(
             getString(R.string.enabled_dicts),
             enabledDicts.toString()
         );
