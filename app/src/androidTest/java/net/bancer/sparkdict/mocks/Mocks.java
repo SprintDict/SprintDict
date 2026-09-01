@@ -2,6 +2,7 @@ package net.bancer.sparkdict.mocks;
 
 import android.os.Environment;
 
+import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.BookInfo;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 
@@ -35,8 +36,12 @@ public class Mocks {
     public static final String CAMBRIDGE_FOLDER = "Cambridge Advanced Learners Dictionary 3th Ed";
     public static final String CAMBRIDGE_FILE_BASE = "Cambridge Advanced Learners Dictionary 3th Ed";
     public static final String CAMBRIDGE_IFO_PATH_RELATIVE = CAMBRIDGE_FOLDER + "/" + CAMBRIDGE_FILE_BASE + BookInfo.INFO_FILE_EXTENTION;
+    public static final String CAMBRIDGE_DICT_DZ_PATH_RELATIVE = CAMBRIDGE_FOLDER + "/" + CAMBRIDGE_FILE_BASE + Book.DICT_FILE_EXTENSION;
+    public static final String CAMBRIDGE_RES_ZIP_PATH_RELATIVE = CAMBRIDGE_FOLDER + "/" + Book.RES_ZIP_NAME;
 
     public static final String MUELLER_DICT_NAME = "Mueller7GPL";
+    public static final String WORDNET_DICT_NAME = "WordNet";
+    public static final String CAMBRIDGE_DICT_NAME = "Cambridge Advanced Learners Dictionary 3th Ed. (En-En)";
     public static final String BSE_DICT_NAME = "Большая Советская Энциклопедия";
 
     public static final int MUELLER_DICT_SIZE = 46198;

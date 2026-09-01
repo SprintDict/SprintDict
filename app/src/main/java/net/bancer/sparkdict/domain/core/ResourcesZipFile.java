@@ -1,15 +1,16 @@
 package net.bancer.sparkdict.domain.core;
 
-import android.util.Log;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.SeekableByteChannel;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
 
 /**
  * Provides access to resources stored in a dictionary {@code res.zip} archive.
@@ -17,73 +18,25 @@ import java.util.zip.ZipFile;
  * <p>The archive contains dictionary resources such as audio files and
  * pictures. The ZIP file is opened when this object is created and remains
  * open until {@link #close()} is called.</p>
- *
- * <p>Two backends are used depending on how this object was constructed:
- * {@code java.util.zip.ZipFile} for the path-based constructor, since it is
- * the fast, native-backed implementation this class has always used and
- * some real dictionaries' res.zip archives are large enough that a slower
- * implementation is noticeably worse on removable storage; and Apache
- * Commons Compress's {@code ZipFile} for the channel-based constructor,
- * since {@code java.util.zip.ZipFile} has no way to open from a channel at
- * all. Only one of the two backend fields is ever non-null at a time.</p>
  */
-public class ResourcesZipFile {
+public class ResourcesZipFile implements Closeable {
 
-    private static final String TAG = "ResourcesZipFile";
+    private static final int EOCD_SIGNATURE = 0x06054b50;
+    private static final int CENTRAL_DIRECTORY_SIGNATURE = 0x02014b50;
+    private static final int LOCAL_FILE_HEADER_SIGNATURE = 0x04034b50;
 
-    /**
-     * ZIP archive containing the dictionary resources (audio and pictures).
-     */
-    private ZipFile zipFile = null;
+    private static final int COMPRESSION_STORED = 0;
+    private static final int COMPRESSION_DEFLATED = 8;
 
-    private org.apache.commons.compress.archivers.zip.ZipFile compressZipFile = null;
+    private static final int EOCD_MIN_SIZE = 22;
+    private static final int EOCD_MAX_COMMENT_SIZE = 65535;
 
-    /**
-     * Opens a dictionary's res.zip file and initialises its decompression state.
-     *
-     * @param file full path to the res.zip file.
-     */
-    public ResourcesZipFile(File file) {
-        try {
-            zipFile = new ZipFile(file);
-        } catch (IOException e) {
-            Log.e(TAG, "Cannot open resource ZIP: " + file, e);
-            close();
-        }
-    }
+    private final SeekableByteChannel channel;
 
-    /**
-     * Opens a dictionary's res.zip archive through an already-open, seekable
-     * channel instead of a filesystem path.
-     *
-     * <p>This constructor exists so callers that only have a
-     * {@link SeekableByteChannel} (for example, one backed by a Storage
-     * Access Framework document) can use this class without copying the
-     * archive to local storage first. Error handling matches
-     * {@link #ResourcesZipFile(File)}: a failure to open is logged and
-     * leaves this object in the same closed state rather than throwing.</p>
-     *
-     * <p><b>Known open issue:</b> Commons Compress's central-directory scan
-     * has been observed to be dramatically slower than
-     * {@code java.util.zip.ZipFile} on a large res.zip served from slow
-     * removable storage. This constructor is not yet exercised by any
-     * production code path, and its real-world performance against a slow
-     * SAF-backed document has not been verified. Investigate before relying
-     * on it -- a buffering wrapper around the supplied channel is the likely
-     * fix if the same slowness shows up here.</p>
-     *
-     * @param channel an open, readable, seekable channel over the res.zip data.
-     */
+    private Map<String, ZipEntryInfo> entries;
+
     public ResourcesZipFile(SeekableByteChannel channel) {
-        try {
-            compressZipFile = org.apache.commons.compress.archivers.zip.ZipFile.builder()
-                .setSeekableByteChannel(channel)
-                .setIgnoreLocalFileHeader(true)
-                .get();
-        } catch (IOException e) {
-            Log.e(TAG, "Cannot open resource ZIP from channel", e);
-            close();
-        }
+        this.channel = channel;
     }
 
     /**
@@ -99,85 +52,355 @@ public class ResourcesZipFile {
      */
     public byte[] getResourceFromZip(String resourceName) {
         String entryName = "res/" + resourceName;
-        if (zipFile != null) {
-            ZipEntry entry = zipFile.getEntry(entryName);
+        try {
+            initialiseEntries();
+            ZipEntryInfo entry = entries.get(entryName);
             if (entry == null) {
                 return new byte[0];
             }
-            try (InputStream input = zipFile.getInputStream(entry)) {
-                return readEntry(input, entryName, entry.getSize());
-            } catch (IOException e) {
-                Log.e(TAG, "Cannot read ZIP entry: " + entryName, e);
-                return new byte[0];
-            }
+            return readEntry(entry);
+        } catch (IOException e) {
+            //TODO: log "Cannot read ZIP entry: " + entryName
+            return new byte[0];
         }
-        if (compressZipFile != null) {
-            ZipArchiveEntry entry = compressZipFile.getEntry(entryName);
-            if (entry == null) {
-                return new byte[0];
-            }
-            try (InputStream input = compressZipFile.getInputStream(entry)) {
-                return readEntry(input, entryName, entry.getSize());
-            } catch (IOException e) {
-                Log.e(TAG, "Cannot read ZIP entry: " + entryName, e);
-                return new byte[0];
-            }
-        }
-        return new byte[0];
+    }
+
+    private static int getInt(ByteBuffer buffer) {
+        return buffer.getInt();
+    }
+
+    private static int getIntAt(ByteBuffer buffer, int offset) {
+        return buffer.getInt(offset);
+    }
+
+    private static int getUnsignedShort(ByteBuffer buffer) {
+        return Short.toUnsignedInt(buffer.getShort());
+    }
+
+    private static long getUnsignedInt(ByteBuffer buffer) {
+        return Integer.toUnsignedLong(buffer.getInt());
+    }
+
+    private static void skip(ByteBuffer buffer, int bytes) {
+        buffer.position(buffer.position() + bytes);
     }
 
     /**
-     * Reads the specified number of bytes from a ZIP entry input stream.
-     *
-     * @param input the input stream containing the ZIP entry data
-     * @param entryName the name of the ZIP entry, used for logging
-     * @param size the expected size of the ZIP entry in bytes
-     * @return the entry data, or an empty array if the end of the stream is
-     *         reached before the expected number of bytes are read
-     * @throws IOException if an I/O error occurs while reading the entry
+     * Reads and indexes the ZIP central directory.
      */
-    private byte[] readEntry(InputStream input, String entryName, long size) throws IOException {
-        byte[] result = new byte[(int) size];
-        int offset = 0;
-        while (offset < result.length) {
-            int bytesRead = input.read(result, offset, result.length - offset);
-            if (bytesRead == -1) {
-                break;
+    private void initialiseEntries() throws IOException {
+        if (entries != null) {
+            return;
+        }
+
+        long fileSize = channel.size();
+
+        if (fileSize < EOCD_MIN_SIZE) {
+            throw new IOException("Invalid ZIP file: file is too small");
+        }
+
+        long eocdOffset = findEndOfCentralDirectory(fileSize);
+        channel.position(eocdOffset);
+
+        ByteBuffer eocd = readBuffer(EOCD_MIN_SIZE);
+
+        int signature = getInt(eocd);
+        if (signature != EOCD_SIGNATURE) {
+            throw new IOException("Invalid ZIP end of central directory");
+        }
+
+        skip(eocd, 4); // disk number + central-directory disk number
+
+        int entryCountOnDisk = getUnsignedShort(eocd);
+        int entryCount = getUnsignedShort(eocd);
+
+        long centralDirectorySize = getUnsignedInt(eocd);
+        long centralDirectoryOffset = getUnsignedInt(eocd);
+
+        int commentLength = getUnsignedShort(eocd);
+
+        if (entryCountOnDisk != entryCount) {
+            throw new IOException("Multi-disk ZIP files are not supported");
+        }
+
+        if (commentLength > 0) {
+            // The comment is irrelevant to us.
+        }
+
+        if (centralDirectoryOffset + centralDirectorySize > fileSize) {
+            throw new IOException("Invalid ZIP central directory");
+        }
+
+        if (entryCount == 0) {
+            entries = new HashMap<>();
+            return;
+        }
+
+        if (centralDirectorySize > Integer.MAX_VALUE) {
+            throw new IOException("ZIP central directory is too large");
+        }
+
+        channel.position(centralDirectoryOffset);
+
+        ByteBuffer directory = readBuffer((int) centralDirectorySize);
+        Map<String, ZipEntryInfo> result = new HashMap<>(entryCount);
+
+        for (int i = 0; i < entryCount; i++) {
+            readCentralDirectoryEntry(directory, result);
+        }
+
+        entries = result;
+    }
+
+    /**
+     * Finds the End of Central Directory record.
+     */
+    private long findEndOfCentralDirectory(long fileSize) throws IOException {
+        long searchSize = Math.min(
+            fileSize,
+            EOCD_MIN_SIZE + EOCD_MAX_COMMENT_SIZE
+        );
+
+        long searchStart = fileSize - searchSize;
+
+        channel.position(searchStart);
+
+        ByteBuffer buffer = readBuffer((int) searchSize);
+
+        for (int i = buffer.limit() - EOCD_MIN_SIZE; i >= 0; i--) {
+            if (getIntAt(buffer, i) == EOCD_SIGNATURE) {
+                return searchStart + i;
             }
-            offset += bytesRead;
         }
-        if (offset != result.length) {
-            Log.e(TAG, "Unexpected end of ZIP entry: " + entryName);
-            return new byte[0];
+
+        throw new IOException("ZIP end of central directory not found");
+    }
+
+    /**
+     * Reads one entry from the central directory.
+     */
+    private void readCentralDirectoryEntry(
+        ByteBuffer buffer,
+        Map<String, ZipEntryInfo> result
+    ) throws IOException {
+        int signature = getInt(buffer);
+
+        if (signature != CENTRAL_DIRECTORY_SIGNATURE) {
+            throw new IOException("Invalid ZIP central directory entry");
         }
+
+        skip(buffer, 2); // version made by
+        skip(buffer, 2); // version needed to extract
+
+        int flags = getUnsignedShort(buffer);
+        int compressionMethod = getUnsignedShort(buffer);
+
+        skip(buffer, 2); // modification time
+        skip(buffer, 2); // modification date
+        skip(buffer, 4); // CRC-32
+
+        long compressedSize = getUnsignedInt(buffer);
+        long uncompressedSize = getUnsignedInt(buffer);
+
+        int fileNameLength = getUnsignedShort(buffer);
+        int extraFieldLength = getUnsignedShort(buffer);
+        int commentLength = getUnsignedShort(buffer);
+
+        skip(buffer, 2); // disk number start
+        skip(buffer, 2); // internal attributes
+        skip(buffer, 4); // external attributes
+
+        long localHeaderOffset = getUnsignedInt(buffer);
+
+        byte[] fileNameBytes = new byte[fileNameLength];
+        buffer.get(fileNameBytes);
+
+        String fileName = decodeFileName(fileNameBytes, flags);
+
+        skip(buffer, extraFieldLength);
+        skip(buffer, commentLength);
+
+        result.put(
+            fileName,
+            new ZipEntryInfo(
+                compressionMethod,
+                compressedSize,
+                uncompressedSize,
+                localHeaderOffset
+            )
+        );
+    }
+
+    private String decodeFileName(byte[] bytes, int flags) {
+        if ((flags & (1 << 11)) != 0) {
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Reads and decompresses one ZIP entry.
+     */
+    private byte[] readEntry(ZipEntryInfo entry) throws IOException {
+        channel.position(entry.localHeaderOffset);
+
+        ByteBuffer localHeader = readBuffer(30);
+
+        int signature = getInt(localHeader);
+
+        if (signature != LOCAL_FILE_HEADER_SIGNATURE) {
+            throw new IOException("Invalid ZIP local file header");
+        }
+
+        skip(localHeader, 2); // version needed
+        int flags = getUnsignedShort(localHeader);
+        int compressionMethod = getUnsignedShort(localHeader);
+
+        if (compressionMethod != entry.compressionMethod) {
+            throw new IOException("ZIP compression method mismatch");
+        }
+
+        skip(localHeader, 4); // modification time/date
+        skip(localHeader, 4); // CRC-32
+        skip(localHeader, 4); // compressed size
+        skip(localHeader, 4); // uncompressed size
+
+        int fileNameLength = getUnsignedShort(localHeader);
+        int extraFieldLength = getUnsignedShort(localHeader);
+
+        long dataOffset =
+            entry.localHeaderOffset
+                + 30L
+                + fileNameLength
+                + extraFieldLength;
+
+        if (entry.compressedSize > Integer.MAX_VALUE) {
+            throw new IOException("ZIP entry is too large");
+        }
+
+        channel.position(dataOffset);
+
+        byte[] compressedData = readBytes((int) entry.compressedSize);
+
+        if (compressionMethod == COMPRESSION_STORED) {
+            return compressedData;
+        }
+
+        if (compressionMethod == COMPRESSION_DEFLATED) {
+            return inflate(compressedData, entry.uncompressedSize);
+        }
+
+        throw new IOException(
+            "Unsupported ZIP compression method: " + compressionMethod
+        );
+    }
+
+    private byte[] inflate(byte[] compressedData, long uncompressedSize)
+        throws IOException {
+
+        if (uncompressedSize > Integer.MAX_VALUE) {
+            throw new IOException("ZIP entry is too large");
+        }
+
+        Inflater inflater = new Inflater(true);
+        inflater.setInput(compressedData);
+
+        ByteArrayOutputStream output =
+            new ByteArrayOutputStream((int) uncompressedSize);
+
+        byte[] buffer = new byte[8192];
+
+        try {
+            while (!inflater.finished()) {
+                int count = inflater.inflate(buffer);
+
+                if (count == 0) {
+                    if (inflater.needsDictionary()) {
+                        throw new IOException(
+                            "ZIP entry requires an unsupported dictionary"
+                        );
+                    }
+
+                    if (inflater.needsInput()) {
+                        throw new IOException(
+                            "Unexpected end of compressed ZIP entry"
+                        );
+                    }
+                }
+
+                output.write(buffer, 0, count);
+            }
+        } catch (DataFormatException e) {
+            throw new IOException("Invalid deflated ZIP entry", e);
+        } finally {
+            inflater.end();
+        }
+
+        byte[] result = output.toByteArray();
+
+        if (result.length != (int) uncompressedSize) {
+            throw new IOException(
+                "Unexpected ZIP entry size: expected "
+                    + uncompressedSize
+                    + ", got "
+                    + result.length
+            );
+        }
+
         return result;
     }
 
-    /**
-     * Closes the dictionary's resources file and releases its underlying resources.
-     *
-     * <p>If the resources file is not currently open, this method does nothing.
-     * After the file is closed, the internal file reference is cleared so that
-     * the resources file can be reopened when it is needed again.</p>
-     */
-    public void close() {
-        if (zipFile != null) {
-            try {
-                zipFile.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Cannot close dictionary res.zip file", e);
-            } finally {
-                zipFile = null;
+    private ByteBuffer readBuffer(int size) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(size);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+
+        while (buffer.hasRemaining()) {
+            int bytesRead = channel.read(buffer);
+
+            if (bytesRead == -1) {
+                throw new IOException("Unexpected end of ZIP file");
             }
         }
-        if (compressZipFile != null) {
-            try {
-                compressZipFile.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Cannot close dictionary res.zip file", e);
-            } finally {
-                compressZipFile = null;
-            }
+
+        buffer.flip();
+        return buffer;
+    }
+
+    private byte[] readBytes(int size) throws IOException {
+        ByteBuffer buffer = readBuffer(size);
+
+        byte[] result = new byte[size];
+        buffer.get(result);
+
+        return result;
+    }
+
+    @Override
+    public void close() {
+        try {
+            channel.close();
+        } catch (IOException e) {
+            //TODO: log "Cannot close resource ZIP"
+        }
+    }
+
+    private static class ZipEntryInfo {
+
+        private final int compressionMethod;
+        private final long compressedSize;
+        private final long uncompressedSize;
+        private final long localHeaderOffset;
+
+        private ZipEntryInfo(
+            int compressionMethod,
+            long compressedSize,
+            long uncompressedSize,
+            long localHeaderOffset
+        ) {
+            this.compressionMethod = compressionMethod;
+            this.compressedSize = compressedSize;
+            this.uncompressedSize = uncompressedSize;
+            this.localHeaderOffset = localHeaderOffset;
         }
     }
 }

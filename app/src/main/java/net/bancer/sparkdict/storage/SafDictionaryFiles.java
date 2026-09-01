@@ -15,7 +15,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.SeekableByteChannel;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@link DictionaryFiles} implementation backed by a Storage Access
@@ -49,6 +51,12 @@ public class SafDictionaryFiles implements DictionaryFiles {
 
     private final Uri treeUri;
 
+    /** Caches folder name -> DocumentFile, to avoid repeat root scans. */
+    private final Map<String, DocumentFile> folderCache = new HashMap<>();
+
+    /** Caches "folder/file" -> DocumentFile, to avoid repeat folder scans. */
+    private final Map<String, DocumentFile> fileCache = new HashMap<>();
+
     public SafDictionaryFiles(Context context, Uri treeUri) {
         this.context = context.getApplicationContext();
         this.treeUri = treeUri;
@@ -65,10 +73,12 @@ public class SafDictionaryFiles implements DictionaryFiles {
             if (!folder.isDirectory() || folder.getName() == null) {
                 continue;
             }
+            folderCache.put(folder.getName(), folder);
             for (DocumentFile file : folder.listFiles()) {
                 String name = file.getName();
                 if (name != null && name.endsWith(BookInfo.INFO_FILE_EXTENTION)) {
                     String relativePath = folder.getName() + "/" + name;
+                    fileCache.put(relativePath, file);
                     result.add(relativePath);
                 }
             }
@@ -120,25 +130,33 @@ public class SafDictionaryFiles implements DictionaryFiles {
      * the file are created if they do not already exist.
      */
     private DocumentFile resolve(String path, boolean create) throws IOException {
+        DocumentFile cached = fileCache.get(path);
+        if (cached != null) {
+            return cached;
+        }
         int slash = path.indexOf('/');
         if (slash < 0) {
             throw new IOException("Expected a 'folder/name' path, got: " + path);
         }
         String folderName = path.substring(0, slash);
         String fileName = path.substring(slash + 1);
-        DocumentFile root = DocumentFile.fromTreeUri(context, treeUri);
-        if (root == null) {
-            throw new IOException("Cannot resolve dictionary root");
-        }
-        DocumentFile folder = root.findFile(folderName);
+        DocumentFile folder = folderCache.get(folderName);
         if (folder == null) {
-            if (!create) {
-                return null;
+            DocumentFile root = DocumentFile.fromTreeUri(context, treeUri);
+            if (root == null) {
+                throw new IOException("Cannot resolve dictionary root");
             }
-            folder = root.createDirectory(folderName);
+            folder = root.findFile(folderName);
             if (folder == null) {
-                throw new IOException("Cannot create directory: " + folderName);
+                if (!create) {
+                    return null;
+                }
+                folder = root.createDirectory(folderName);
+                if (folder == null) {
+                    throw new IOException("Cannot create directory: " + folderName);
+                }
             }
+            folderCache.put(folderName, folder);
         }
         DocumentFile file = folder.findFile(fileName);
         if (file == null && create) {
@@ -146,6 +164,9 @@ public class SafDictionaryFiles implements DictionaryFiles {
             if (file == null) {
                 throw new IOException("Cannot create document: " + fileName);
             }
+        }
+        if (file != null) {
+            fileCache.put(path, file);
         }
         return file;
     }

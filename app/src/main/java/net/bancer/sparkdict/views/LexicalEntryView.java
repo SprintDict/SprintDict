@@ -12,9 +12,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import net.bancer.sparkdict.BaseActivity;
 import net.bancer.sparkdict.R;
 import net.bancer.sparkdict.domain.core.LexicalEntry;
+import net.bancer.sparkdict.storage.SparkDictPreferences;
 
 /**
  * LexicalEntryView displays all parts of the lexical entry and handles
@@ -129,10 +129,10 @@ public class LexicalEntryView extends LinearLayout implements
      * article's from shared preferences and applies them to the current view.
      */
     private void restoreTextSizeFromPreferences() {
-        BaseActivity baseActivity = (BaseActivity) getContext();
-        int dictTitleSize = (int) baseActivity.getFloatSharedPreference(getContext().getString(R.string.pref_dict_title_font_size));
-        int articleTitleSize = (int) baseActivity.getFloatSharedPreference(getContext().getString(R.string.pref_article_title_font_size));
-        int definitionsSize = (int) baseActivity.getFloatSharedPreference(getContext().getString(R.string.pref_definitions_font_size));
+        SparkDictPreferences preferences = new SparkDictPreferences(getContext());
+        int dictTitleSize = (int) preferences.getFloat(getContext().getString(R.string.pref_dict_title_font_size));
+        int articleTitleSize = (int) preferences.getFloat(getContext().getString(R.string.pref_article_title_font_size));
+        int definitionsSize = (int) preferences.getFloat(getContext().getString(R.string.pref_definitions_font_size));
         setTextSizes(dictTitleSize, articleTitleSize, definitionsSize);
     }
 
@@ -141,18 +141,18 @@ public class LexicalEntryView extends LinearLayout implements
      * body into shared preferences.
      */
     private void saveFontSizesToSharedPreferences() {
-        BaseActivity baseActivity = (BaseActivity) getContext();
+        SparkDictPreferences preferences = new SparkDictPreferences(getContext());
         TextView dictTitleView = findViewById(R.id.dict_title);
         if (dictTitleView != null) {
-            baseActivity.saveSharedPreference(getContext().getString(R.string.pref_dict_title_font_size), dictTitleView.getTextSize());
+            preferences.save(getContext().getString(R.string.pref_dict_title_font_size), dictTitleView.getTextSize());
         }
         TextView articleTitleView = findViewById(R.id.article_title);
         if (articleTitleView != null) {
-            baseActivity.saveSharedPreference(getContext().getString(R.string.pref_article_title_font_size), articleTitleView.getTextSize());
+            preferences.save(getContext().getString(R.string.pref_article_title_font_size), articleTitleView.getTextSize());
         }
         TextView definitionsView = findViewById(R.id.definitions_body);
         if (definitionsView != null) {
-            baseActivity.saveSharedPreference(getContext().getString(R.string.pref_definitions_font_size), definitionsView.getTextSize());
+            preferences.save(getContext().getString(R.string.pref_definitions_font_size), definitionsView.getTextSize());
         }
     }
 
