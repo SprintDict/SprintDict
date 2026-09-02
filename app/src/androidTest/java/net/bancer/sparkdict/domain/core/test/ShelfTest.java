@@ -13,6 +13,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import net.bancer.sparkdict.domain.core.Book;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.LexicalEntry;
 import net.bancer.sparkdict.domain.core.Shelf;
@@ -53,7 +54,7 @@ import java.util.Vector;
 @RunWith(AndroidJUnit4.class)
 public class ShelfTest {
 
-    private SafDictionaryFiles safDictionaryFiles;
+    private DictionaryFiles dictionaryFiles;
 
     @Before
     public void setUp() {
@@ -64,12 +65,12 @@ public class ShelfTest {
             "No SAF folder has been selected yet on this device -- run the folder picker once before running this test.",
             uriString.isEmpty()
         );
-        safDictionaryFiles = new SafDictionaryFiles(context, Uri.parse(uriString));
+        dictionaryFiles = new SafDictionaryFiles(context, Uri.parse(uriString));
     }
 
     @Test
     public void discoversDictionariesThroughSaf() {
-        Shelf shelf = new Shelf(null, new String[0], safDictionaryFiles);
+        Shelf shelf = new Shelf(new String[0], dictionaryFiles);
         assertNotNull(shelf.getBooks());
         assertFalse("Expected at least one dictionary to be discovered via SAF", shelf.getBooks().isEmpty());
         Book wordNet = findBookByName(shelf, Mocks.WORDNET_DICT_NAME);
@@ -79,8 +80,10 @@ public class ShelfTest {
 
     @Test
     public void readsLexicalEntryThroughSaf() throws DomainException {
-        Book wordNet = requireBook(Mocks.WORDNET_DICT_NAME);
-        LexicalEntry entry = wordNet.getLexicalEntry("15 May Organization");
+        LexicalEntry entry;
+        try (Book wordNet = requireBook(Mocks.WORDNET_DICT_NAME)) {
+            entry = wordNet.getLexicalEntry("15 May Organization");
+        }
         String expected = "<i><font color=\"#006600\">n</font></i><br>"
             + "<gloss>a terrorist organization formed in 1979 by a faction "
             + "of the Popular Front for the Liberation of Palestine but "
@@ -91,8 +94,10 @@ public class ShelfTest {
 
     @Test
     public void readsSuggestionsThroughSaf() {
-        Book wordNet = requireBook(Mocks.WORDNET_DICT_NAME);
-        Vector<IndexEntry> suggestions = wordNet.getSuggestions(".");
+        Vector<IndexEntry> suggestions;
+        try (Book wordNet = requireBook(Mocks.WORDNET_DICT_NAME)) {
+            suggestions = wordNet.getSuggestions(".");
+        }
         assertNotNull(suggestions);
         assertEquals(3, suggestions.size());
         assertEquals(".22 caliber", suggestions.get(0).getLemma());
@@ -108,10 +113,11 @@ public class ShelfTest {
      */
     @Test
     public void repeatedLookupsOnSameBookDoNotCloseTheChannel() throws DomainException {
-        Book wordNet = requireBook(Mocks.WORDNET_DICT_NAME);
-        for (int i = 0; i < 50; i++) {
-            LexicalEntry entry = wordNet.getLexicalEntry("15 May Organization");
-            assertNotNull("Lookup #" + i + " unexpectedly returned null", entry);
+        try (Book wordNet = requireBook(Mocks.WORDNET_DICT_NAME)) {
+            for (int i = 0; i < 50; i++) {
+                LexicalEntry entry = wordNet.getLexicalEntry("15 May Organization");
+                assertNotNull("Lookup #" + i + " unexpectedly returned null", entry);
+            }
         }
     }
 
@@ -121,12 +127,13 @@ public class ShelfTest {
      */
     @Test
     public void repeatedLookupsOnCambridgeDoNotCloseTheChannel() throws DomainException {
-        Book cambridge = findBook(Mocks.CAMBRIDGE_DICT_NAME);
-        assumeFalse("Cambridge dictionary not present on this device", cambridge == null);
-        for (int i = 0; i < 50; i++) {
-            LexicalEntry entry = cambridge.getLexicalEntry("interface");
-            assertNotNull("Lookup #" + i + " unexpectedly returned null", entry);
-            assertEquals("interface", entry.getLemma());
+        try (Book cambridge = findBook(Mocks.CAMBRIDGE_DICT_NAME)) {
+            assumeFalse("Cambridge dictionary not present on this device", cambridge == null);
+            for (int i = 0; i < 50; i++) {
+                LexicalEntry entry = cambridge.getLexicalEntry("interface");
+                assertNotNull("Lookup #" + i + " unexpectedly returned null", entry);
+                assertEquals("interface", entry.getLemma());
+            }
         }
     }
 
@@ -138,12 +145,14 @@ public class ShelfTest {
      */
     @Test
     public void interleavedLookupsAcrossTwoBooksDoNotCloseTheChannel() throws DomainException {
-        Book wordNet = requireBook(Mocks.WORDNET_DICT_NAME);
-        Book cambridge = findBook(Mocks.CAMBRIDGE_DICT_NAME);
-        assumeFalse("Cambridge dictionary not present on this device", cambridge == null);
-        for (int i = 0; i < 20; i++) {
-            assertNotNull(wordNet.getLexicalEntry("15 May Organization"));
-            assertNotNull(cambridge.getLexicalEntry("interface"));
+        try (Book wordNet = requireBook(Mocks.WORDNET_DICT_NAME)) {
+            try (Book cambridge = findBook(Mocks.CAMBRIDGE_DICT_NAME)) {
+                assumeFalse("Cambridge dictionary not present on this device", cambridge == null);
+                for (int i = 0; i < 20; i++) {
+                    assertNotNull(wordNet.getLexicalEntry("15 May Organization"));
+                    assertNotNull(cambridge.getLexicalEntry("interface"));
+                }
+            }
         }
     }
 
@@ -154,7 +163,7 @@ public class ShelfTest {
     }
 
     private Book findBook(String name) {
-        Shelf shelf = new Shelf(null, new String[0], safDictionaryFiles);
+        Shelf shelf = new Shelf(new String[0], dictionaryFiles);
         return findBookByName(shelf, name);
     }
 

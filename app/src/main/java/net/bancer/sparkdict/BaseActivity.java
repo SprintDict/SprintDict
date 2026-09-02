@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.DictionaryFiles;
-import net.bancer.sparkdict.domain.core.FileDictionaryFiles;
 import net.bancer.sparkdict.domain.core.Shelf;
 import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 import net.bancer.sparkdict.storage.SparkDictPreferences;
@@ -102,34 +101,18 @@ public abstract class BaseActivity extends Activity {
      * always up-to-date.
      */
     protected void refreshShelf() {
-        String dictPath = getDictPathFromPrefs();
         String[] enabledDicts = getEnabledDictsFromPrefs();
-        DictionaryFiles dictionaryFiles = createDictionaryFiles(dictPath);
-        shelf = new Shelf(dictPath, enabledDicts, dictionaryFiles);
+        DictionaryFiles dictionaryFiles = createDictionaryFiles();
+        shelf = new Shelf(enabledDicts, dictionaryFiles);
     }
 
     /**
-     * Creates the {@link DictionaryFiles} used to resolve dictionary files,
-     * choosing between the legacy {@code java.io.File}-backed implementation
-     * and the Storage-Access-Framework-backed one according to
-     * {@link AppConfig#USE_SAF_STORAGE}.
+     * Creates the {@link DictionaryFiles} used to resolve dictionary files.
      *
-     * <p>Falls back to the legacy implementation even when the flag is on, if
-     * no Storage Access Framework folder has been selected yet -- e.g. right
-     * after flipping the flag on a device that hasn't run the folder picker
-     * since. This avoids crashing on a missing preference in exchange for a
-     * silently-empty shelf, which would be a much more confusing failure mode
-     * for a flag with no settings UI to explain it.</p>
-     *
-     * @param dictPath legacy filesystem path, used for the fallback and by
-     *                  the non-SAF implementation.
      * @return the DictionaryFiles to use.
      */
-    private DictionaryFiles createDictionaryFiles(String dictPath) {
-        if (AppConfig.USE_SAF_STORAGE) {
-            return SafDictionaryFilesFactory.create(this);
-        }
-        return new FileDictionaryFiles(dictPath);
+    private DictionaryFiles createDictionaryFiles() {
+        return SafDictionaryFilesFactory.create(this);
     }
 
     /**

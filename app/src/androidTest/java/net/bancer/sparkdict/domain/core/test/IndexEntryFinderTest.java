@@ -1,14 +1,19 @@
 package net.bancer.sparkdict.domain.core.test;
 
+import android.content.Context;
+
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import junit.framework.TestCase;
 
 import net.bancer.sparkdict.domain.core.BookInfo;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.IndexEntriesIterator;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.utils.DomainException;
 import net.bancer.sparkdict.mocks.Mocks;
+import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,17 +22,18 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class IndexEntryFinderTest extends TestCase {
 
-    private IndexEntriesIterator iteratorMueller;
-    private IndexEntriesIterator iteratorBSE;
+    private DictionaryFiles dictionaryFiles;
 
     @Before
     public void setUp() throws DomainException {
-        iteratorMueller = new IndexEntriesIterator(new BookInfo(Mocks.MUELLER_IFO_PATH));
-        iteratorBSE = new IndexEntriesIterator(new BookInfo(Mocks.BSE_IFO_PATH));
+        Context context = ApplicationProvider.getApplicationContext();
+        dictionaryFiles = SafDictionaryFilesFactory.create(context);
     }
 
     @Test
-    public void testBinarySearch() throws DomainException {
+    public void testBinarySearchInMueller() throws DomainException {
+        BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
+        IndexEntriesIterator iteratorMueller = new IndexEntriesIterator(bookInfo);
         IndexEntry ie = iteratorMueller.findIndexEntry("abacus");
         assertEquals("abacus", ie.getLemma());
 
@@ -42,8 +48,13 @@ public class IndexEntryFinderTest extends TestCase {
 
         ie = iteratorMueller.findIndexEntry("non-existent word");
         assertNull(ie);
+    }
 
-        ie = iteratorBSE.findIndexEntry("...Биоз"); //first
+    @Test
+    public void testBinarySearchInBse() throws DomainException {
+        BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
+        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
+        IndexEntry ie = iteratorBSE.findIndexEntry("...Биоз"); //first
         assertEquals("...Биоз", ie.getLemma());
 
         ie = iteratorBSE.findIndexEntry("Яёи культура"); //last

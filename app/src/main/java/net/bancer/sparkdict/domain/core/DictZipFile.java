@@ -3,7 +3,6 @@ package net.bancer.sparkdict.domain.core;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.util.ArrayList;
@@ -105,13 +104,10 @@ public class DictZipFile {
 
     private List<Chunk> chunks;
 
-    private RandomAccessFile randomAccessFileKeepAlive = null; // kept solely so it can't be GC'd and finalised out from under channel
-
-
     /**
      * Contents of <dictionary name>.dict.dz file.
      */
-    private SeekableByteChannel dzFile;
+    private SeekableByteChannel dzFileChannel;
 
     private int pos;
 
@@ -120,29 +116,8 @@ public class DictZipFile {
     private int pointerPosition;
 
     /**
-     * Opens a dictionary .dict.dz file and initialises its decompression state.
-     *
-     * @param dictZipFilename full path to the <dictionary name>.dict.dz file.
-     */
-    public DictZipFile(String dictZipFilename) throws IOException {
-        this.randomAccessFileKeepAlive = new RandomAccessFile(dictZipFilename, "r");
-        // Deliberately not folded into one expression: retaining a strong
-        // reference to this RandomAccessFile for the object's lifetime prevents
-        // it from being GC'd and finalised -- which would silently close the
-        // channel below out from under us. See the identical issue in
-        // StarDictIndex.getStarDictFile().
-        initFromChannel(this.randomAccessFileKeepAlive.getChannel());
-    }
-
-    /**
      * Opens a dictionary .dict.dz file and initialises its decompression state,
      * reading through an already-open channel instead of a filesystem path.
-     *
-     * <p>This constructor exists so callers that only have a
-     * {@link SeekableByteChannel} (for example, one backed by a Storage Access
-     * Framework document) can use this class without going through a raw
-     * filesystem path. Behaviour is otherwise identical to
-     * {@link #DictZipFile(String)}.</p>
      *
      * @param channel an open, readable, seekable channel positioned at the
      *                start of the dictionary's .dict.dz data.
@@ -158,7 +133,7 @@ public class DictZipFile {
      * @throws IOException if an I/O error occurs while reading the gzip header
      */
     private void initFromChannel(SeekableByteChannel channel) throws IOException {
-        this.dzFile = channel;
+        this.dzFileChannel = channel;
         pos = 0;
         pointerPosition = 0;
         chunks = new ArrayList<>();
@@ -204,25 +179,6 @@ public class DictZipFile {
      */
     private void seek(int pos) {
         this.pos = pos;
-    }
-
-    /**
-     * Closes the dictionary file and releases its underlying resources.
-     *
-     * <p>If the dictionary file is not currently open, this method does nothing.
-     * After the file is closed, the internal file reference is cleared so that
-     * the dictionary file can be reopened when it is needed again.</p>
-     */
-    public void close() {
-        if (dzFile != null) {
-            try {
-                dzFile.close();
-            } catch (IOException e) {
-                //TODO: Log "Cannot close dictionary .dict.dz file"
-            } finally {
-                dzFile = null;
-            }
-        }
     }
 
     /**
@@ -440,7 +396,7 @@ public class DictZipFile {
         if (n >= this.chunks.size()) {
             return null;
         }
-        dzFile.position(this.pointerPosition + this.chunks.get(n).offset);
+        dzFileChannel.position(this.pointerPosition + this.chunks.get(n).offset);
         int size = this.chunks.get(n).size;
         byte[] buff = new byte[size];
         channelRead(buff);
@@ -476,7 +432,7 @@ public class DictZipFile {
      * @throws IOException if an I/O error occurs while reading from the channel
      */
     private void channelRead(byte[] buffer) throws IOException {
-        dzFile.read(ByteBuffer.wrap(buffer));
+        dzFileChannel.read(ByteBuffer.wrap(buffer));
     }
 
     /**
@@ -488,7 +444,7 @@ public class DictZipFile {
      */
     private byte channelReadByte() throws IOException {
         ByteBuffer buf = ByteBuffer.allocate(1);
-        int n = dzFile.read(buf);
+        int n = dzFileChannel.read(buf);
         if (n < 1) {
             throw new EOFException();
         }
@@ -513,6 +469,6 @@ public class DictZipFile {
      * @throws IOException if an I/O error occurs while accessing the channel
      */
     private void channelSkip(int n) throws IOException {
-        dzFile.position(dzFile.position() + n);
+        dzFileChannel.position(dzFileChannel.position() + n);
     }
 }

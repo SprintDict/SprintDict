@@ -3,11 +3,16 @@ package net.bancer.sparkdict.domain.core.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import android.content.Context;
+
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import net.bancer.sparkdict.domain.core.BookInfo;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.SparkDictIndex;
 import net.bancer.sparkdict.mocks.Mocks;
+import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,10 +26,14 @@ public class SparkDictIndexTest {
     private SparkDictIndex indexMueller;
     private SparkDictIndex indexBSE;
 
+    private DictionaryFiles dictionaryFiles;
+
     @Before
     public void setUp() {
-        indexMueller = new SparkDictIndex(new BookInfo(Mocks.MUELLER_IFO_PATH));
-        indexBSE = new SparkDictIndex(new BookInfo(Mocks.BSE_IFO_PATH));
+        Context context = ApplicationProvider.getApplicationContext();
+        dictionaryFiles = SafDictionaryFilesFactory.create(context);
+        indexMueller = new SparkDictIndex(new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles));
+        indexBSE = new SparkDictIndex(new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles));
     }
 
     @Test

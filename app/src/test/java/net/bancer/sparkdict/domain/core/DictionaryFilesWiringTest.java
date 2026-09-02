@@ -2,14 +2,12 @@ package net.bancer.sparkdict.domain.core;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 import net.bancer.sparkdict.Fixtures;
 
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
@@ -44,21 +42,16 @@ public class DictionaryFilesWiringTest {
     }
 
     @Test
-    public void bookInfoDefaultsToFileDictionaryFilesWhenNotSupplied() {
-        BookInfo info = new BookInfo(Fixtures.GCIDE_IFO_FILE);
-        assertTrue(info.getDictionaryFiles() instanceof FileDictionaryFiles);
-    }
-
-    @Test
     public void bookStoresSuppliedDictionaryFilesAndPassesItToBookInfo() {
-        Book book = new Book(new File(Fixtures.GCIDE_IFO_FILE), STUB);
-        assertSame(STUB, book.getDictionaryFiles());
-        assertSame(STUB, book.getInfo().getDictionaryFiles());
+        try (Book book = new Book(Fixtures.GCIDE_IFO_FILE, STUB)) {
+            assertSame(STUB, book.getDictionaryFiles());
+            assertSame(STUB, book.getInfo().getDictionaryFiles());
+        }
     }
 
     @Test
     public void shelfThreadsSameDictionaryFilesInstanceIntoEveryBook() {
-        Shelf shelf = new Shelf(Fixtures.TEST_DATA_PATH, new String[0], STUB);
+        Shelf shelf = new Shelf(new String[0], STUB);
         assertSame(STUB, shelf.getDictionaryFiles());
         for (Book book : shelf.getBooks()) {
             assertSame(STUB, book.getDictionaryFiles());

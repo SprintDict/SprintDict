@@ -37,7 +37,7 @@ public class ResourcesZipFileTest {
         SeekableByteChannel channel = safDictionaryFiles.openForRead(resZipPath);
         ResourcesZipFile resZipFile = new ResourcesZipFile(channel);
         byte[] image = resZipFile.getResourceFromZip("x_abacus.jpg");
-        resZipFile.close();
+        //resZipFile.close();
         assertEquals(37891, image.length);
     }
 }

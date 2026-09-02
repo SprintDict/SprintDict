@@ -24,6 +24,8 @@ public class IndexEntriesIteratorTest {
 
     private IndexEntriesIterator iterator;
 
+    private DictionaryFiles dictionaryFiles;
+
     @BeforeClass
     public static void setUpBeforeClass() throws IOException {
         Fixtures.buildSparkDictIndex();
@@ -37,14 +39,15 @@ public class IndexEntriesIteratorTest {
     @Test(expected = DomainException.class)
     public void constructorThrowsDomainExceptionWhenPathDoesNotExist() throws DomainException {
         new IndexEntriesIterator(
-            new BookInfo("/path/that/does/not/exist/stardict.ifo")
+            new BookInfo("/path/that/does/not/exist/stardict.ifo", dictionaryFiles)
         );
     }
 
     @Test
     public void constructorThrowsDomainExceptionWhenIndexFileDoesNotExist() {
         BookInfo bookInfo = new BookInfo(
-            Fixtures.TEST_DATA_PATH + "all-fields-ifo/stardict.ifo"
+            Fixtures.TEST_DATA_PATH + "all-fields-ifo/stardict.ifo",
+            dictionaryFiles
         );
         try {
             new IndexEntriesIterator(bookInfo);
@@ -60,9 +63,9 @@ public class IndexEntriesIteratorTest {
 
     @Before
     public void setUp() throws DomainException {
-        iterator = new IndexEntriesIterator(
-            new BookInfo(Fixtures.GCIDE_IFO_FILE)
-        );
+        dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
+        iterator = new IndexEntriesIterator(bookInfo);
     }
 
     @Test

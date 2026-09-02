@@ -1,7 +1,6 @@
 package net.bancer.sparkdict.domain.core;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,10 +15,9 @@ import java.util.zip.Inflater;
  * Provides access to resources stored in a dictionary {@code res.zip} archive.
  *
  * <p>The archive contains dictionary resources such as audio files and
- * pictures. The ZIP file is opened when this object is created and remains
- * open until {@link #close()} is called.</p>
+ * pictures.</p>
  */
-public class ResourcesZipFile implements Closeable {
+public class ResourcesZipFile {
 
     private static final int EOCD_SIGNATURE = 0x06054b50;
     private static final int CENTRAL_DIRECTORY_SIGNATURE = 0x02014b50;
@@ -373,15 +371,6 @@ public class ResourcesZipFile implements Closeable {
         buffer.get(result);
 
         return result;
-    }
-
-    @Override
-    public void close() {
-        try {
-            channel.close();
-        } catch (IOException e) {
-            //TODO: log "Cannot close resource ZIP"
-        }
     }
 
     private static class ZipEntryInfo {
