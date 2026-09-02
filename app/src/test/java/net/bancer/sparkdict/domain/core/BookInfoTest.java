@@ -5,31 +5,41 @@ import static org.junit.Assert.assertThrows;
 
 import net.bancer.sparkdict.Fixtures;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 
 public class BookInfoTest {
 
+    private DictionaryFiles dictionaryFiles;
+
+    @Before
+    public void setUp() {
+        dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);
+    }
+
     @Test
     public void constructorRejectsNullFile() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> new BookInfo((File) null));
-        assertEquals("infoFile must not be null or empty", exception.getMessage());
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> new BookInfo(null, dictionaryFiles)
+        );
+        assertEquals("relativeIfoPath must have .ifo extension", exception.getMessage());
     }
 
     @Test
     public void constructorRejectsNonIfoFile() {
-        File idxFile = new File(Fixtures.GCIDE_IDX_FILE);
         assertThrows(
             IllegalArgumentException.class,
-            () -> new BookInfo(idxFile)
+            () -> new BookInfo(Fixtures.GCIDE_IDX_FILE, dictionaryFiles)
         );
     }
 
     @Test
     public void constructorHandlesMissingFile() {
         String path = Fixtures.TEST_DATA_PATH + "missing/missing.ifo";
-        BookInfo bookInfo = new BookInfo(path);
+        BookInfo bookInfo = new BookInfo(path, dictionaryFiles);
         assertEquals(path, bookInfo.getFileBaseName() + BookInfo.INFO_FILE_EXTENTION);
         assertEquals(
             Fixtures.TEST_DATA_PATH + "missing",
@@ -39,7 +49,7 @@ public class BookInfoTest {
 
     @Test
     public void constructorWithPathParsesGcideFile() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
         assertEquals("3.0.0", bookInfo.getVersion());
         assertEquals(
             "GNU Collaborative International Dictionary of English",
@@ -53,7 +63,7 @@ public class BookInfoTest {
 
     @Test
     public void constructorWithFileParsesGcideFile() {
-        BookInfo bookInfo = new BookInfo(new File(Fixtures.GCIDE_IFO_FILE));
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
         assertEquals("3.0.0", bookInfo.getVersion());
         assertEquals(
             "GNU Collaborative International Dictionary of English",
@@ -67,7 +77,7 @@ public class BookInfoTest {
 
     @Test
     public void getFileBaseNameReturnsGcidePathWithoutExtension() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
         assertEquals(
             Fixtures.GCIDE_IFO_FILE.substring(
                 0,
@@ -79,7 +89,7 @@ public class BookInfoTest {
 
     @Test
     public void getPathToDictFileReturnsGcideDictPath() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
         assertEquals(
             Fixtures.GCIDE_IFO_FILE.substring(
                 0,
@@ -91,7 +101,7 @@ public class BookInfoTest {
 
     @Test
     public void getDirPathReturnsGcideDirectory() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
         assertEquals(
             new File(Fixtures.GCIDE_IFO_FILE).getParent(),
             bookInfo.getDirPath()
@@ -100,7 +110,7 @@ public class BookInfoTest {
 
     @Test
     public void toStringReturnsGcideInformation() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
         assertEquals(
             "\n"
                 + "Version: 3.0.0\n"
@@ -123,7 +133,7 @@ public class BookInfoTest {
 
     @Test
     public void constructorParsesAllFields() {
-        BookInfo bookInfo = new BookInfo(Fixtures.ALL_FIELDS_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.ALL_FIELDS_IFO_FILE, dictionaryFiles);
         assertEquals("2.4.2", bookInfo.getVersion());
         assertEquals("Test Dictionary", bookInfo.getBookName());
         assertEquals(456, bookInfo.getWordCount());
@@ -136,7 +146,7 @@ public class BookInfoTest {
 
     @Test
     public void toStringReturnsAllFields() {
-        BookInfo bookInfo = new BookInfo(Fixtures.ALL_FIELDS_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.ALL_FIELDS_IFO_FILE, dictionaryFiles);
         assertEquals(
             "\n"
                 + "Version: 2.4.2\n"

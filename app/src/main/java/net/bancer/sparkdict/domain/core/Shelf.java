@@ -23,29 +23,10 @@ public class Shelf {
     /**
      * Constructor.
      *
-     * @param dictPath     path to the dictionaries.
-     * @param enabledDicts string array of the enabled dictionaries titles.
-     */
-    public Shelf(String dictPath, String[] enabledDicts) {
-        this(dictPath, enabledDicts, new FileDictionaryFiles(dictPath));
-    }
-
-    /**
-     * Constructor for callers that want to supply the {@link DictionaryFiles}
-     * used for this shelf explicitly, rather than the default
-     * {@link FileDictionaryFiles} this class would otherwise construct. The
-     * same instance is passed down to every {@link Book}/{@link BookInfo}
-     * this shelf constructs, and is also now this shelf's sole source of
-     * dictionary discovery -- see {@link #constructBooksMap()}.
-     *
-     * @param dictPath unused directly by this constructor now that discovery
-     *                 goes through dictionaryFiles -- kept only because the
-     *                 two-arg constructor above needs it to build the
-     *                 default FileDictionaryFiles.
      * @param enabledDicts string array of the enabled dictionaries titles.
      * @param dictionaryFiles the DictionaryFiles to associate with this shelf.
      */
-    public Shelf(String dictPath, String[] enabledDicts, DictionaryFiles dictionaryFiles) {
+    public Shelf(String[] enabledDicts, DictionaryFiles dictionaryFiles) {
         this.enabledDicts = enabledDicts;
         this.dictionaryFiles = dictionaryFiles;
         putBooksOnShelf();
@@ -130,7 +111,7 @@ public class Shelf {
      */
     public void closeResources() {
         for (Book book : getBooks()) {
-            book.closeResources();
+            book.close();
         }
     }
 }

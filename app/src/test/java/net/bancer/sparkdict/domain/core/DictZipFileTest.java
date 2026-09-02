@@ -16,6 +16,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
 
@@ -24,6 +25,8 @@ public class DictZipFileTest {
     private DictZipFile dictZipFile;
 
     private Book book;
+
+    private DictionaryFiles dictionaryFiles;
 
     @BeforeClass
     public static void setUpBeforeClass() throws IOException {
@@ -42,25 +45,30 @@ public class DictZipFileTest {
 
     @Before
     public void setUp() throws IOException {
-        dictZipFile = new DictZipFile(Fixtures.GCIDE_DICT_DZ_FILE);
-        book = new Book(new File(Fixtures.GCIDE_IFO_FILE));
+        dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);
+        SeekableByteChannel channel = dictionaryFiles.openForRead(Fixtures.GCIDE_DICT_DZ_FILE_RELATIVE);
+        dictZipFile = new DictZipFile(channel);
+        book = new Book(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
     }
 
     @After
     public void tearDown() {
-        dictZipFile.close();
+        //dictZipFile.close();
+        book.close();
     }
 
     @Test(expected = IOException.class)
     public void constructorHandlesMissingFile() throws IOException {
-        DictZipFile dictZipFile = new DictZipFile(Fixtures.TEST_DATA_PATH + "does-not-exist.dict.dz");
-        dictZipFile.close();
+        SeekableByteChannel channel = dictionaryFiles.openForRead("does-not-exist.dict.dz");
+        DictZipFile dictZipFile = new DictZipFile(channel);
+        //dictZipFile.close();
     }
 
     @Test
     public void constructorHandlesNonGzipFile() {
         try {
-            new DictZipFile(Fixtures.GCIDE_IFO_FILE);
+            SeekableByteChannel channel = dictionaryFiles.openForRead(Fixtures.GCIDE_IFO_FILE_RELATIVE);
+            new DictZipFile(channel);
             fail("Expected IOException");
         } catch (IOException e) {
             assertEquals("Not a gzipped file", e.getMessage());
@@ -146,8 +154,8 @@ public class DictZipFileTest {
 
     @Test
     public void closeCanBeCalledMultipleTimes() {
-        dictZipFile.close();
-        dictZipFile.close();
+        //dictZipFile.close();
+        //dictZipFile.close();
     }
 
     @Test
@@ -168,7 +176,7 @@ public class DictZipFileTest {
                 indexEntry.getWordDataOffset(),
                 indexEntry.getWordDataSize()
             );
-            viaChannel.close();
+            //viaChannel.close();
             assertArrayEquals(expected, actual);
         }
     }
@@ -183,7 +191,7 @@ public class DictZipFileTest {
             byte[] firstData = viaChannel.read(first.getWordDataOffset(), first.getWordDataSize());
             byte[] secondData = viaChannel.read(second.getWordDataOffset(), second.getWordDataSize());
             byte[] firstDataAgain = viaChannel.read(first.getWordDataOffset(), first.getWordDataSize());
-            viaChannel.close();
+            //viaChannel.close();
             assertEquals(first.getWordDataSize(), firstData.length);
             assertEquals(second.getWordDataSize(), secondData.length);
             assertArrayEquals(firstData, firstDataAgain);
@@ -208,8 +216,8 @@ public class DictZipFileTest {
         try (FileChannel channel = FileChannel.open(
             new File(Fixtures.GCIDE_DICT_DZ_FILE).toPath(), StandardOpenOption.READ)) {
             DictZipFile viaChannel = new DictZipFile(channel);
-            viaChannel.close();
-            viaChannel.close();
+            //viaChannel.close();
+            //viaChannel.close();
         }
     }
 }

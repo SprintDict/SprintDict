@@ -1,13 +1,18 @@
 package net.bancer.sparkdict.domain.core.test;
 
+import android.content.Context;
+
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import junit.framework.TestCase;
 
 import net.bancer.sparkdict.domain.core.BookInfo;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.StarDictIndex;
 import net.bancer.sparkdict.mocks.Mocks;
+import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,22 +31,26 @@ public class StarDictIndexTest extends TestCase {
 
     private StarDictIndex bseStarDictIndex;
 
+    private DictionaryFiles dictionaryFiles;
+
     @Before
     public void setUp() throws Exception {
-        muellerInfo = new BookInfo(Mocks.MUELLER_IFO_PATH);
+        Context context = ApplicationProvider.getApplicationContext();
+        dictionaryFiles = SafDictionaryFilesFactory.create(context);
+        muellerInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         muellerStarDictIndex = new StarDictIndex(muellerInfo);
-        bseInfo = new BookInfo(Mocks.BSE_IFO_PATH);
+        bseInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         bseStarDictIndex = new StarDictIndex(bseInfo);
     }
 
     @Test
     public void testStarDictIndex() {
-        assertEquals(Mocks.MUELLER_BASE_PATH + Mocks.IDX_EXT, muellerStarDictIndex.getFileName());
+        assertEquals(Mocks.MUELLER_IDX_PATH_RELATIVE, muellerStarDictIndex.getFileName());
         assertEquals(muellerInfo.getIdxOffsetBits() / StarDictIndex.BITS_IN_BYTE, muellerStarDictIndex.getLexicalEntryOffsetFieldSizeInBytes());
 
         assertNotNull(bseInfo);
         assertNotNull(bseStarDictIndex);
-        assertEquals(Mocks.BSE_BASE_PATH + Mocks.IDX_EXT, bseStarDictIndex.getFileName());
+        assertEquals(Mocks.BSE_IDX_PATH_RELATIVE, bseStarDictIndex.getFileName());
         assertEquals(bseInfo.getIdxOffsetBits() / StarDictIndex.BITS_IN_BYTE, bseStarDictIndex.getLexicalEntryOffsetFieldSizeInBytes());
     }
 

@@ -2,8 +2,6 @@ package net.bancer.sparkdict.domain.core;
 
 import androidx.annotation.NonNull;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.SeekableByteChannel;
@@ -21,12 +19,9 @@ public class BookInfo {
     /**
      * Path to the folder containing current dictionary files.
      *
-     * <p>When this BookInfo was constructed from a real {@code java.io.File}
-     * (see {@link #BookInfo(File)}), this is an absolute filesystem path.
-     * When constructed via {@link #BookInfo(String, DictionaryFiles)}, this
-     * is a root-relative folder name instead -- e.g.
-     * {@code "LingvoUniversal (En-Ru)"} -- meant only to be passed back into
-     * a {@link DictionaryFiles}, never into {@code new File(...)}.</p>
+     * <p>This is a root-relative folder name
+     * -- e.g. {@code "LingvoUniversal (En-Ru)"}
+     * -- meant only to be passed back into a {@link DictionaryFiles}.</p>
      */
     private final String dirPath;
 
@@ -95,16 +90,7 @@ public class BookInfo {
 
     private String dictType;
 
-    private DictionaryFiles dictionaryFiles;
-
-    /**
-     * Constructor.
-     *
-     * @param path Full path to .ifo file including extension itself.
-     */
-    public BookInfo(String path) {
-        this(new File(path));
-    }
+    private final DictionaryFiles dictionaryFiles;
 
     /**
      * Constructor for callers that resolve dictionary files through a
@@ -137,49 +123,6 @@ public class BookInfo {
         } catch (IOException e) {
             //TODO: "Cannot read info file: " + relativeIfoPath
         }
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param infoFile java.io.File object of <dictionary name>.ifo file.
-     */
-    public BookInfo(File infoFile) {
-        if (infoFile == null) {
-            throw new IllegalArgumentException("infoFile must not be null or empty");
-        }
-        if (!infoFile.getName().toLowerCase().endsWith(INFO_FILE_EXTENTION)) {
-            throw new IllegalArgumentException("infoFile must have .ifo extension");
-        }
-        filePath = infoFile.toString();
-        dirPath = infoFile.getParent();
-        // NOTE: this default roots FileDictionaryFiles at this book's own
-        // folder, not at the overall dictionaries root -- which is the
-        // wrong root per FileDictionaryFiles' root-relative contract. It's
-        // harmless today because nothing calls getDictionaryFiles() for real
-        // I/O on a bare BookInfo(File) -- Book keeps its own, correctly
-        // rooted DictionaryFiles field instead (see Book.defaultDictionaryFilesFor).
-        // Worth fixing or removing if this default is ever relied upon directly.
-        dictionaryFiles = new FileDictionaryFiles(dirPath);
-        try {
-            Scanner input = new Scanner(infoFile, "UTF-8");
-            parseIfoContent(input);
-        } catch (FileNotFoundException e) {
-            //TODO: "Cannot read info file: " + infoFile
-        }
-    }
-
-    /**
-     * Constructor for callers that want to supply the {@link DictionaryFiles}
-     * used for this dictionary explicitly, rather than the default
-     * {@link FileDictionaryFiles} this class would otherwise construct.
-     *
-     * @param infoFile java.io.File object of <dictionary name>.ifo file.
-     * @param dictionaryFiles the DictionaryFiles to associate with this book.
-     */
-    public BookInfo(File infoFile, DictionaryFiles dictionaryFiles) {
-        this(infoFile);
-        this.dictionaryFiles = dictionaryFiles;
     }
 
     /**

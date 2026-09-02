@@ -15,8 +15,10 @@ import androidx.annotation.NonNull;
 
 import net.bancer.sparkdict.R;
 import net.bancer.sparkdict.domain.core.Book;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.Shelf;
+import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 
 import java.util.ArrayList;
 import java.util.TreeSet;
@@ -79,7 +81,9 @@ public class SuggestionsProvider extends ContentProvider {
         String strEnabledDicts = prefs.getString(keyEnabledDicts, "");
 
         String[] enabledDicts = strEnabledDicts.split("\\|\\|");
-        Shelf shelf = new Shelf(dictPath, enabledDicts);
+
+        DictionaryFiles dictionaryFiles = SafDictionaryFilesFactory.create(context);
+        Shelf shelf = new Shelf(enabledDicts, dictionaryFiles);
         books = shelf.getBooks();
         return true;
     }

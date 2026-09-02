@@ -17,6 +17,7 @@ public class Mocks {
     public static final String MUELLER_FOLDER = "mueller";
     public static final String MUELLER_FILE_BASE = "Mueller7GPL";
     public static final String MUELLER_IFO_PATH_RELATIVE = MUELLER_FOLDER + "/" + MUELLER_FILE_BASE + BookInfo.INFO_FILE_EXTENTION;
+    public static final String MUELLER_IDX_PATH_RELATIVE = MUELLER_FOLDER + "/" + MUELLER_FILE_BASE + IDX_EXT;
     public static final String MUELLER_DICT_PATH = ROOT_PATH + "/" + MUELLER_FOLDER;
     public static final String MUELLER_BASE_PATH = MUELLER_DICT_PATH + "/" + MUELLER_FILE_BASE;
     public static final String MUELLER_IFO_PATH = ROOT_PATH + "/" + MUELLER_IFO_PATH_RELATIVE;
@@ -24,6 +25,7 @@ public class Mocks {
     public static final String BSE_FOLDER = "bse";
     public static final String BSE_FILE_BASE = "rus_bse";
     public static final String BSE_IFO_PATH_RELATIVE = BSE_FOLDER + "/" + BSE_FILE_BASE + BookInfo.INFO_FILE_EXTENTION;
+    public static final String BSE_IDX_PATH_RELATIVE = BSE_FOLDER + "/" + BSE_FILE_BASE + IDX_EXT;
     public static final String BSE_DICT_PATH = ROOT_PATH + "/" + BSE_FOLDER;
     public static final String BSE_BASE_PATH = BSE_DICT_PATH + "/" + BSE_FILE_BASE;
     public static final String BSE_IFO_PATH = ROOT_PATH + "/" + BSE_IFO_PATH_RELATIVE;

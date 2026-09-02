@@ -10,9 +10,17 @@ import net.bancer.sparkdict.Fixtures;
 
 import java.io.IOException;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class SparkDictIndexTest {
+
+    private DictionaryFiles dictionaryFiles;
+
+    @Before
+    public void setUp() {
+        dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);
+    }
 
     @Test
     public void intToByteArrayReturnsBigEndianByteArray() {
@@ -52,7 +60,7 @@ public class SparkDictIndexTest {
 
     @Test
     public void getBookNameReturnsBookName() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         assertEquals(
             bookInfo.getBookName(),
@@ -62,7 +70,7 @@ public class SparkDictIndexTest {
 
     @Test
     public void buildIndexCreatesIndexWithExpectedSize() throws IOException {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         index.buildIndex();
         assertEquals(bookInfo.getWordCount(), index.getSize());
@@ -73,7 +81,7 @@ public class SparkDictIndexTest {
 
     @Test
     public void getIndexEntryReturnsFirstEntry() throws IOException {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         index.buildIndex();
         IndexEntry entry = index.getIndexEntry(0);
@@ -83,7 +91,7 @@ public class SparkDictIndexTest {
 
     @Test
     public void getIndexEntryReturnsNullWhenIdIsBeyondIndex() throws IOException {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         index.buildIndex();
         assertNull(index.getIndexEntry(index.getSize()));
@@ -104,7 +112,7 @@ public class SparkDictIndexTest {
 
     @Test
     public void registerObserverReceivesArticlesIndexedNotification() throws IOException {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         TestObserver observer = new TestObserver();
         index.registerObserver(observer);
@@ -116,7 +124,7 @@ public class SparkDictIndexTest {
 
     @Test
     public void removeObserverStopsNotifications() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         TestObserver observer = new TestObserver();
         index.registerObserver(observer);

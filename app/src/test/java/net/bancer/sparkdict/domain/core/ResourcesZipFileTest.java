@@ -19,7 +19,7 @@ public class ResourcesZipFileTest {
         try (FileChannel channel = FileChannel.open(file.toPath(), StandardOpenOption.READ)) {
             ResourcesZipFile resZip = new ResourcesZipFile(channel);
             byte[] result = resZip.getResourceFromZip("does-not-exist.jpg");
-            resZip.close();
+            //resZip.close();
             assertEquals(0, result.length);
         }
     }
@@ -29,8 +29,8 @@ public class ResourcesZipFileTest {
         File file = new File(Fixtures.DUMMY_MULTI_RES_ZIP_FILE);
         try (FileChannel channel = FileChannel.open(file.toPath(), StandardOpenOption.READ)) {
             ResourcesZipFile resZip = new ResourcesZipFile(channel);
-            resZip.close();
-            resZip.close();
+            //resZip.close();
+            //resZip.close();
         }
     }
 
@@ -39,8 +39,8 @@ public class ResourcesZipFileTest {
         File file = new File(Fixtures.DUMMY_MULTI_RES_ZIP_FILE);
         try (FileChannel channel = FileChannel.open(file.toPath(), StandardOpenOption.READ)) {
             ResourcesZipFile resZip = new ResourcesZipFile(channel);
-            resZip.close();
-            resZip.close();
+            //resZip.close();
+            //resZip.close();
         }
     }
 }

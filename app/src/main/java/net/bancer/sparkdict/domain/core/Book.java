@@ -4,7 +4,7 @@ import net.bancer.sparkdict.domain.utils.DomainException;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Iterator;
@@ -14,7 +14,7 @@ import java.util.Vector;
  * Book is an abstraction of a dictionary containing lexical entries and index
  * entries.
  */
-public class Book implements Iterable<IndexEntry> {
+public class Book implements Iterable<IndexEntry>, Closeable {
 
     /**
      * Extension of the compressed dictionary file: <dictionary name>.dict.dz
@@ -41,10 +41,14 @@ public class Book implements Iterable<IndexEntry> {
      */
     private DictZipFile dzFile = null;
 
+    private SeekableByteChannel dictZipChannel = null;
+
     /**
      * ZIP archive containing the resource.
      */
     private ResourcesZipFile resZipFile = null;
+
+    private SeekableByteChannel resZipChannel = null;
 
     /**
      * Index entries iterator.
@@ -56,55 +60,12 @@ public class Book implements Iterable<IndexEntry> {
     /**
      * Constructor.
      *
-     * @param infoFile book info as java.io.File object
-     * @throws IllegalArgumentException if the parameter is null.
-     */
-    public Book(File infoFile) {
-        this(infoFile, defaultDictionaryFilesFor(infoFile));
-    }
-
-    /**
-     * Constructor for callers that want to supply the {@link DictionaryFiles}
-     * used for this dictionary explicitly, rather than the default
-     * {@link FileDictionaryFiles} this class would otherwise construct.
-     *
-     * @param infoFile book info as java.io.File object
-     * @param dictionaryFiles the DictionaryFiles to associate with this book.
-     * @throws IllegalArgumentException if infoFile is null.
-     */
-    public Book(File infoFile, DictionaryFiles dictionaryFiles) {
-        if (infoFile == null) {
-            throw new IllegalArgumentException("infoFile must not be null");
-        }
-        this.dictionaryFiles = dictionaryFiles;
-        bookInfo = new BookInfo(infoFile, dictionaryFiles);
-    }
-
-    /**
-     * Constructor for callers that resolve dictionary files through a
-     * {@link DictionaryFiles} implementation rather than a real
-     * {@code java.io.File} -- see
-     * {@link BookInfo#BookInfo(String, DictionaryFiles)}.
-     *
      * @param relativeIfoPath root-relative path to the .ifo document.
      * @param dictionaryFiles the DictionaryFiles to associate with this book.
      */
     public Book(String relativeIfoPath, DictionaryFiles dictionaryFiles) {
         this.dictionaryFiles = dictionaryFiles;
         bookInfo = new BookInfo(relativeIfoPath, dictionaryFiles);
-    }
-
-    /**
-     * Computes the default {@link FileDictionaryFiles}, correctly rooted at
-     * the overall dictionaries folder -- two levels above the .ifo file
-     * (.ifo file -> its dictionary folder -> the root) -- rather than at the
-     * dictionary's own folder, matching {@link FileDictionaryFiles}' actual
-     * root-relative contract.
-     */
-    private static DictionaryFiles defaultDictionaryFilesFor(File infoFile) {
-        String dictionaryFolder = infoFile != null ? infoFile.getParent() : null;
-        String root = dictionaryFolder != null ? new File(dictionaryFolder).getParent() : null;
-        return new FileDictionaryFiles(root);
     }
 
     /**
@@ -213,14 +174,14 @@ public class Book implements Iterable<IndexEntry> {
     private LexicalEntry getLexicalEntry(IndexEntry idxEntry) {
         try {
             if (dzFile == null) {
-                SeekableByteChannel channel = dictionaryFiles.openForRead(bookInfo.getFileBaseName() + DICT_FILE_EXTENSION);
-                dzFile = new DictZipFile(channel);
+                dictZipChannel = dictionaryFiles.openForRead(bookInfo.getFileBaseName() + DICT_FILE_EXTENSION);
+                dzFile = new DictZipFile(dictZipChannel);
             }
             if (resZipFile == null) {
                 String resZipPath = bookInfo.getDirPath() + "/" + RES_ZIP_NAME;
                 try {
-                    SeekableByteChannel channel = dictionaryFiles.openForRead(resZipPath);
-                    resZipFile = new ResourcesZipFile(channel);
+                    resZipChannel = dictionaryFiles.openForRead(resZipPath);
+                    resZipFile = new ResourcesZipFile(resZipChannel);
                 } catch (IOException e) {
                     // res.zip is optional -- not every dictionary has one.
                 }
@@ -368,14 +329,30 @@ public class Book implements Iterable<IndexEntry> {
      * <p>If either resource is not currently open, it is ignored. The resources
      * can be reopened automatically when they are needed again.</p>
      */
-    public void closeResources() {
+    public void close() {
         if (dzFile != null) {
-            dzFile.close();
             dzFile = null;
         }
+        if (dictZipChannel != null) {
+            try {
+                dictZipChannel.close();
+            } catch (IOException e) {
+                //TODO: log "Cannot close .dict.dz channel"
+            } finally {
+                dictZipChannel = null;
+            }
+        }
         if (resZipFile != null) {
-            resZipFile.close();
             resZipFile = null;
+        }
+        if (resZipChannel != null) {
+            try {
+                resZipChannel.close();
+            } catch (IOException e) {
+                //TODO: log "Cannot close .dict.dz channel"
+            } finally {
+                resZipChannel = null;
+            }
         }
     }
 }
