@@ -81,7 +81,7 @@ public class SparkDictActivityTest {
     }
 
     @Test
-    public void testInputTextByPressingEnterKey() {
+    public void testInputTextByPressingEnterKey() throws InterruptedException {
         onView(withId(R.id.searchTextView))
             .check(matches(withText("")));
         // Assert that the progress bar is not visible before the search.
@@ -93,11 +93,12 @@ public class SparkDictActivityTest {
             .check(matches(withText("interface")));
         onView(withId(R.id.searchTextView))
             .perform(pressImeActionButton());
-//        onView(withId(R.id.searchTextView))
-//            .check(matches(withText("")));
+        Thread.sleep(1000);
+        onView(withId(R.id.searchTextView))
+            .check(matches(withText("")));
         // Assert that the progress bar is not visible after the search.
-//        onView(withId(R.id.search_progress))
-//            .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.GONE)));
+        onView(withId(R.id.search_progress))
+            .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.GONE)));
     }
 
     @Test
@@ -122,11 +123,11 @@ public class SparkDictActivityTest {
         onView(withId(R.id.find_on_page_next_btn))
             .perform(click());
         // check that "went" is highlighted
-//        onView(allOf(
-//            withId(R.id.definitions_body),
-//            hasHighlightedWord("went")
-//        ))
-//            .check(matches(isDisplayed()));
+        onView(allOf(
+            withId(R.id.definitions_body),
+            hasHighlightedWord("went")
+        ))
+            .check(matches(isDisplayed()));
         // enter "gone" into "find on page" input
         onView(withId(R.id.find_on_page_edit_text))
             .perform(replaceText("gone"));
@@ -134,11 +135,11 @@ public class SparkDictActivityTest {
         onView(withId(R.id.find_on_page_previous_btn))
             .perform(click());
         // check that "gone" is highlighted
-//        onView(allOf(
-//            withId(R.id.definitions_body),
-//            hasHighlightedWord("gone")
-//        ))
-//            .check(matches(isDisplayed()));
+        onView(allOf(
+            withId(R.id.definitions_body),
+            hasHighlightedWord("gone")
+        ))
+            .check(matches(isDisplayed()));
         // click on ✕ button
         onView(withId(R.id.find_on_page_close_btn))
             .perform(click());

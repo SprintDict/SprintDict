@@ -2,6 +2,7 @@ package net.bancer.sparkdict.domain.core;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 
@@ -74,7 +75,7 @@ public class StarDictIndex {
      * working identically whether that resolves to a real filesystem path
      * or a Storage Access Framework document.
      */
-    private SeekableByteChannel getStarDictFile() throws IOException {
+    private synchronized SeekableByteChannel getStarDictFile() throws IOException {
         if (starDictFile == null) {
             starDictFile = bookInfo.getDictionaryFiles().openForRead(fileName);
         }
@@ -91,20 +92,32 @@ public class StarDictIndex {
      */
     public IndexEntry retrieveIndexEntry(long startPosition) throws IOException {
         int sizeRead;
-        synchronized (getStarDictFile()) {
-            getStarDictFile().position(startPosition);
-            sizeRead = getStarDictFile().read(ByteBuffer.wrap(getStarDictBuffer(), 0, BUFFER_SIZE));
-        }
-        if (sizeRead > 0) {
-            int bufferIndex = 0;
-            while (bufferIndex < sizeRead) {
-                if (getStarDictBuffer()[bufferIndex] == SEPARATOR) {
-                    int indexEntryLength = bufferIndex + 1 + lexicalEntryOffsetFieldSizeInBytes + lexicalEntrySizeFieldInBytes;
-                    return retrieveIndexEntry(getStarDictBuffer(), indexEntryLength);
-                } else {
+        int indexEntryLength = -1;
+        synchronized (this) {
+            try {
+                getStarDictFile().position(startPosition);
+                sizeRead = getStarDictFile().read(ByteBuffer.wrap(getStarDictBuffer(), 0, BUFFER_SIZE));
+            } catch (ClosedChannelException e) {
+                // The underlying SAF provider process may have been killed
+                // independently of this app, invalidating the channel with no
+                // action on our part. Reopen once and retry.
+                starDictFile = null;
+                getStarDictFile().position(startPosition);
+                sizeRead = getStarDictFile().read(ByteBuffer.wrap(getStarDictBuffer(), 0, BUFFER_SIZE));
+            }
+            if (sizeRead > 0) {
+                int bufferIndex = 0;
+                while (bufferIndex < sizeRead) {
+                    if (getStarDictBuffer()[bufferIndex] == SEPARATOR) {
+                        indexEntryLength = bufferIndex + 1 + lexicalEntryOffsetFieldSizeInBytes + lexicalEntrySizeFieldInBytes;
+                        break;
+                    }
                     bufferIndex++;
                 }
             }
+        }
+        if (indexEntryLength >= 0) {
+            return retrieveIndexEntry(getStarDictBuffer(), indexEntryLength);
         }
         return null;
     }
