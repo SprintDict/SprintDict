@@ -14,12 +14,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.StandardOpenOption;
 
 public class LexicalEntryTest {
 
@@ -59,9 +56,7 @@ public class LexicalEntryTest {
     private LexicalEntry getDummMultiLexicalEntry(String lemma) throws Exception {
         BookInfo bookInfo = new BookInfo(Fixtures.DUMMY_MULTI_IFO_FILE_RELATIVE, dictionaryFiles);
         byte[] buffer = getLexicalEntry(lemma, bookInfo);
-        File file = new File(Fixtures.DUMMY_MULTI_RES_ZIP_FILE);
-        FileChannel channel = FileChannel.open(file.toPath(), StandardOpenOption.READ);
-        ResourcesZipFile resZip = new ResourcesZipFile(channel);
+        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE_RELATIVE, dictionaryFiles);
         return new LexicalEntry(lemma, buffer, bookInfo, resZip);
     }
 
@@ -335,14 +330,11 @@ public class LexicalEntryTest {
         byte[] buffer = getLexicalEntry("aplander", bookInfo);
         String lemma;
         byte[] image;
-        try (FileChannel channel = FileChannel.open(
-            new File(Fixtures.DUMMY_MULTI_RES_ZIP_FILE).toPath(), StandardOpenOption.READ)) {
-            ResourcesZipFile resZip = new ResourcesZipFile(channel);
-            LexicalEntry entry = new LexicalEntry("aplander", buffer, bookInfo, resZip);
-            lemma = entry.getLemma();
-            image = entry.getResource("pic/aplander.jpg"); // must run before the channel closes
-            //resZip.close();
-        }
+        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE_RELATIVE, dictionaryFiles);
+        LexicalEntry entry = new LexicalEntry("aplander", buffer, bookInfo, resZip);
+        lemma = entry.getLemma();
+        image = entry.getResource("pic/aplander.jpg"); // must run before the channel closes
+        resZip.close();
         assertEquals("aplander", lemma);
         assertNotNull(image);
         assertTrue(image.length > 0);

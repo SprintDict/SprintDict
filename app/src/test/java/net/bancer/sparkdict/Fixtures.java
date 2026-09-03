@@ -36,7 +36,8 @@ public final class Fixtures {
 
     public static final String DUMMY_MULTI_DICT_DZ_FILE = TEST_DATA_PATH + DUMMY_MULTI_DICT_FOLDER + "/stardict.dict.dz";
 
-    public static final String DUMMY_MULTI_RES_ZIP_FILE = TEST_DATA_PATH + DUMMY_MULTI_DICT_FOLDER + "/res.zip";
+    public static final String DUMMY_MULTI_RES_ZIP_FILE_RELATIVE = DUMMY_MULTI_DICT_FOLDER + "/res.zip";
+    public static final String DUMMY_MULTI_RES_ZIP_FILE = TEST_DATA_PATH + DUMMY_MULTI_RES_ZIP_FILE_RELATIVE;
 
     public static void buildSparkDictIndex() throws IOException {
         DictionaryFiles dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);

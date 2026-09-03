@@ -1,6 +1,7 @@
 package net.bancer.sparkdict.domain.core;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -17,7 +18,7 @@ import java.util.zip.Inflater;
  * <p>The archive contains dictionary resources such as audio files and
  * pictures.</p>
  */
-public class ResourcesZipFile {
+public class ResourcesZipFile implements Closeable {
 
     private static final int EOCD_SIGNATURE = 0x06054b50;
     private static final int CENTRAL_DIRECTORY_SIGNATURE = 0x02014b50;
@@ -29,12 +30,16 @@ public class ResourcesZipFile {
     private static final int EOCD_MIN_SIZE = 22;
     private static final int EOCD_MAX_COMMENT_SIZE = 65535;
 
-    private final SeekableByteChannel channel;
+    private SeekableByteChannel channel;
 
     private Map<String, ZipEntryInfo> entries;
 
-    public ResourcesZipFile(SeekableByteChannel channel) {
-        this.channel = channel;
+    public ResourcesZipFile(String file, DictionaryFiles dictionaryFiles) {
+        try {
+            this.channel = dictionaryFiles.openForRead(file);
+        } catch (IOException e) {
+            // res.zip is optional -- not every dictionary has one.
+        }
     }
 
     /**
@@ -371,6 +376,19 @@ public class ResourcesZipFile {
         buffer.get(result);
 
         return result;
+    }
+
+    @Override
+    public void close() {
+        if (channel != null) {
+            try {
+                channel.close();
+            } catch (IOException e) {
+                //TODO: log "Cannot close .dict.dz channel"
+            } finally {
+                channel = null;
+            }
+        }
     }
 
     private static class ZipEntryInfo {
