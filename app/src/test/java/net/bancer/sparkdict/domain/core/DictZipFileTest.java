@@ -13,12 +13,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.StandardOpenOption;
 
 public class DictZipFileTest {
 
@@ -46,7 +42,7 @@ public class DictZipFileTest {
     @Before
     public void setUp() throws IOException {
         dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);
-        dictZipFile = new DictZipFile(Fixtures.GCIDE_DICT_DZ_FILE_RELATIVE, dictionaryFiles);
+        dictZipFile = new DictZipFile(Fixtures.GCIDE_DICT_DZ_FILE, dictionaryFiles);
         book = new Book(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
     }
 
@@ -162,7 +158,7 @@ public class DictZipFileTest {
             indexEntry.getWordDataOffset(),
             indexEntry.getWordDataSize()
         );
-        DictZipFile viaChannel = new DictZipFile(Fixtures.GCIDE_DICT_DZ_FILE_RELATIVE, dictionaryFiles);
+        DictZipFile viaChannel = new DictZipFile(Fixtures.GCIDE_DICT_DZ_FILE, dictionaryFiles);
         byte[] actual = viaChannel.read(
             indexEntry.getWordDataOffset(),
             indexEntry.getWordDataSize()
@@ -175,7 +171,7 @@ public class DictZipFileTest {
     public void channelConstructorCanReadSeveralEntries() throws DomainException, IOException {
         IndexEntry first = findIndexEntry("aardvark");
         IndexEntry second = findIndexEntry("abandon");
-        DictZipFile viaChannel = new DictZipFile(Fixtures.GCIDE_DICT_DZ_FILE_RELATIVE, dictionaryFiles);
+        DictZipFile viaChannel = new DictZipFile(Fixtures.GCIDE_DICT_DZ_FILE, dictionaryFiles);
         byte[] firstData = viaChannel.read(first.getWordDataOffset(), first.getWordDataSize());
         byte[] secondData = viaChannel.read(second.getWordDataOffset(), second.getWordDataSize());
         byte[] firstDataAgain = viaChannel.read(first.getWordDataOffset(), first.getWordDataSize());
@@ -186,7 +182,7 @@ public class DictZipFileTest {
     }
 
     @Test
-    public void channelConstructorHandlesNonGzipFile() throws IOException {
+    public void channelConstructorHandlesNonGzipFile() {
         try {
             new DictZipFile(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
             fail("Expected IOException");
@@ -197,7 +193,7 @@ public class DictZipFileTest {
 
     @Test
     public void channelConstructorCloseCanBeCalledMultipleTimes() throws IOException {
-        DictZipFile viaChannel = new DictZipFile(Fixtures.GCIDE_DICT_DZ_FILE_RELATIVE, dictionaryFiles);
+        DictZipFile viaChannel = new DictZipFile(Fixtures.GCIDE_DICT_DZ_FILE, dictionaryFiles);
         viaChannel.close();
         viaChannel.close();
     }

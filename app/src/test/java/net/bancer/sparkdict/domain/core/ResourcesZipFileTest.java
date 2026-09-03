@@ -18,7 +18,7 @@ public class ResourcesZipFileTest {
 
     @Test
     public void getResourceFromZipReturnsEmptyArrayForMissingEntry() {
-        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE_RELATIVE, dictionaryFiles);
+        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE, dictionaryFiles);
         byte[] result = resZip.getResourceFromZip("does-not-exist.jpg");
         resZip.close();
         assertEquals(0, result.length);
@@ -26,13 +26,13 @@ public class ResourcesZipFileTest {
 
     @Test
     public void closeCanBeCalledMultipleTimes() {
-        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE_RELATIVE, dictionaryFiles);
+        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE, dictionaryFiles);
         resZip.close();
     }
 
     @Test
     public void channelConstructorCloseCanBeCalledMultipleTimes() {
-        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE_RELATIVE, dictionaryFiles);
+        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE, dictionaryFiles);
         resZip.close();
         resZip.close();
     }

@@ -121,7 +121,7 @@ public class DictZipFile implements Closeable {
      * reading through a channel instead of a filesystem path.
      *
      * @param file Relative path to dictionary's .dict.dz data.
-     * @param dictionaryFiles the DictionaryFiles to associate with this zip.
+     * @param dictionaryFiles the DictionaryFiles to read .dict.dz file.
      */
     public DictZipFile(String file, DictionaryFiles dictionaryFiles) throws IOException {
         dzFileChannel = dictionaryFiles.openForRead(file);
@@ -181,6 +181,26 @@ public class DictZipFile implements Closeable {
      */
     private void seek(int pos) {
         this.pos = pos;
+    }
+
+    /**
+     * Closes the dictionary file and releases its underlying resources.
+     *
+     * <p>If the dictionary file is not currently open, this method does nothing.
+     * After the file is closed, the internal file reference is cleared so that
+     * the dictionary file can be reopened when it is needed again.</p>
+     */
+    @Override
+    public void close() {
+        if (dzFileChannel != null) {
+            try {
+                dzFileChannel.close();
+            } catch (IOException e) {
+                //TODO: log "Cannot close .dict.dz channel"
+            } finally {
+                dzFileChannel = null;
+            }
+        }
     }
 
     /**
@@ -472,18 +492,5 @@ public class DictZipFile implements Closeable {
      */
     private void channelSkip(int n) throws IOException {
         dzFileChannel.position(dzFileChannel.position() + n);
-    }
-
-    @Override
-    public void close() {
-        if (dzFileChannel != null) {
-            try {
-                dzFileChannel.close();
-            } catch (IOException e) {
-                //TODO: log "Cannot close .dict.dz channel"
-            } finally {
-                dzFileChannel = null;
-            }
-        }
     }
 }

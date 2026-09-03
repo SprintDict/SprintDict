@@ -16,7 +16,8 @@ import java.util.zip.Inflater;
  * Provides access to resources stored in a dictionary {@code res.zip} archive.
  *
  * <p>The archive contains dictionary resources such as audio files and
- * pictures.</p>
+ * pictures. The ZIP file is opened when this object is created and remains
+ * open until {@link #close()} is called.</p>
  */
 public class ResourcesZipFile implements Closeable {
 
@@ -30,15 +31,26 @@ public class ResourcesZipFile implements Closeable {
     private static final int EOCD_MIN_SIZE = 22;
     private static final int EOCD_MAX_COMMENT_SIZE = 65535;
 
-    private SeekableByteChannel channel;
+    /**
+     * ZIP archive containing the dictionary resources (audio and pictures).
+     */
+    private SeekableByteChannel resZipFileChannel;
 
     private Map<String, ZipEntryInfo> entries;
 
+    /**
+     * Opens a dictionary's res.zip file and initialises its decompression state.
+     *
+     * @param file relative path to the res.zip file.
+     * @param dictionaryFiles the DictionaryFiles to read res.zip.
+     */
     public ResourcesZipFile(String file, DictionaryFiles dictionaryFiles) {
         try {
-            this.channel = dictionaryFiles.openForRead(file);
+            this.resZipFileChannel = dictionaryFiles.openForRead(file);
+            initialiseEntries();
         } catch (IOException e) {
             // res.zip is optional -- not every dictionary has one.
+            close();
         }
     }
 
@@ -56,7 +68,6 @@ public class ResourcesZipFile implements Closeable {
     public byte[] getResourceFromZip(String resourceName) {
         String entryName = "res/" + resourceName;
         try {
-            initialiseEntries();
             ZipEntryInfo entry = entries.get(entryName);
             if (entry == null) {
                 return new byte[0];
@@ -65,6 +76,26 @@ public class ResourcesZipFile implements Closeable {
         } catch (IOException e) {
             //TODO: log "Cannot read ZIP entry: " + entryName
             return new byte[0];
+        }
+    }
+
+    /**
+     * Closes the dictionary's resources channel and releases its underlying resources.
+     *
+     * <p>If the resources channel is not currently open, this method does nothing.
+     * After the channel is closed, the internal channel reference is cleared so that
+     * the resources channel can be reopened when it is needed again.</p>
+     */
+    @Override
+    public void close() {
+        if (resZipFileChannel != null) {
+            try {
+                resZipFileChannel.close();
+            } catch (IOException e) {
+                //TODO: log "Cannot close .dict.dz channel"
+            } finally {
+                resZipFileChannel = null;
+            }
         }
     }
 
@@ -96,14 +127,14 @@ public class ResourcesZipFile implements Closeable {
             return;
         }
 
-        long fileSize = channel.size();
+        long fileSize = resZipFileChannel.size();
 
         if (fileSize < EOCD_MIN_SIZE) {
             throw new IOException("Invalid ZIP file: file is too small");
         }
 
         long eocdOffset = findEndOfCentralDirectory(fileSize);
-        channel.position(eocdOffset);
+        resZipFileChannel.position(eocdOffset);
 
         ByteBuffer eocd = readBuffer(EOCD_MIN_SIZE);
 
@@ -143,7 +174,7 @@ public class ResourcesZipFile implements Closeable {
             throw new IOException("ZIP central directory is too large");
         }
 
-        channel.position(centralDirectoryOffset);
+        resZipFileChannel.position(centralDirectoryOffset);
 
         ByteBuffer directory = readBuffer((int) centralDirectorySize);
         Map<String, ZipEntryInfo> result = new HashMap<>(entryCount);
@@ -166,7 +197,7 @@ public class ResourcesZipFile implements Closeable {
 
         long searchStart = fileSize - searchSize;
 
-        channel.position(searchStart);
+        resZipFileChannel.position(searchStart);
 
         ByteBuffer buffer = readBuffer((int) searchSize);
 
@@ -245,7 +276,7 @@ public class ResourcesZipFile implements Closeable {
      * Reads and decompresses one ZIP entry.
      */
     private byte[] readEntry(ZipEntryInfo entry) throws IOException {
-        channel.position(entry.localHeaderOffset);
+        resZipFileChannel.position(entry.localHeaderOffset);
 
         ByteBuffer localHeader = readBuffer(30);
 
@@ -281,7 +312,7 @@ public class ResourcesZipFile implements Closeable {
             throw new IOException("ZIP entry is too large");
         }
 
-        channel.position(dataOffset);
+        resZipFileChannel.position(dataOffset);
 
         byte[] compressedData = readBytes((int) entry.compressedSize);
 
@@ -358,7 +389,7 @@ public class ResourcesZipFile implements Closeable {
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
         while (buffer.hasRemaining()) {
-            int bytesRead = channel.read(buffer);
+            int bytesRead = resZipFileChannel.read(buffer);
 
             if (bytesRead == -1) {
                 throw new IOException("Unexpected end of ZIP file");
@@ -376,19 +407,6 @@ public class ResourcesZipFile implements Closeable {
         buffer.get(result);
 
         return result;
-    }
-
-    @Override
-    public void close() {
-        if (channel != null) {
-            try {
-                channel.close();
-            } catch (IOException e) {
-                //TODO: log "Cannot close .dict.dz channel"
-            } finally {
-                channel = null;
-            }
-        }
     }
 
     private static class ZipEntryInfo {

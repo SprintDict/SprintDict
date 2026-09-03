@@ -47,15 +47,15 @@ public class LexicalEntryTest {
     }
 
     private LexicalEntry getDummTmLexicalEntry(String lemma) throws Exception {
-        BookInfo bookInfo = new BookInfo(Fixtures.DUMMY_TM_IFO_FILE_RELATIVE, dictionaryFiles);
+        BookInfo bookInfo = new BookInfo(Fixtures.DUMMY_TM_IFO_FILE, dictionaryFiles);
         byte[] buffer = getLexicalEntry(lemma, bookInfo);
         return new LexicalEntry(lemma, buffer, bookInfo);
     }
 
     private LexicalEntry getDummMultiLexicalEntry(String lemma) throws Exception {
-        BookInfo bookInfo = new BookInfo(Fixtures.DUMMY_MULTI_IFO_FILE_RELATIVE, dictionaryFiles);
+        BookInfo bookInfo = new BookInfo(Fixtures.DUMMY_MULTI_IFO_FILE, dictionaryFiles);
         byte[] buffer = getLexicalEntry(lemma, bookInfo);
-        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE_RELATIVE, dictionaryFiles);
+        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE, dictionaryFiles);
         return new LexicalEntry(lemma, buffer, bookInfo, resZip);
     }
 
@@ -324,11 +324,11 @@ public class LexicalEntryTest {
     }
     @Test
     public void getResourceDummyMultiEntryViaChannelConstructor() throws Exception {
-        BookInfo bookInfo = new BookInfo(Fixtures.DUMMY_MULTI_IFO_FILE_RELATIVE, dictionaryFiles);
+        BookInfo bookInfo = new BookInfo(Fixtures.DUMMY_MULTI_IFO_FILE, dictionaryFiles);
         byte[] buffer = getLexicalEntry("aplander", bookInfo);
         String lemma;
         byte[] image;
-        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE_RELATIVE, dictionaryFiles);
+        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE, dictionaryFiles);
         LexicalEntry entry = new LexicalEntry("aplander", buffer, bookInfo, resZip);
         lemma = entry.getLemma();
         image = entry.getResource("pic/aplander.jpg"); // must run before the channel closes
