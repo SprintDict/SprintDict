@@ -15,7 +15,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 
 public class LexicalEntryTest {
@@ -65,17 +64,16 @@ public class LexicalEntryTest {
         IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
         IndexEntry indexEntry = iterator.findIndexEntry(lemma);
         assertEquals(lemma, indexEntry.getLemma());
-        SeekableByteChannel channel = dictionaryFiles.openForRead(bookInfo.getFileBaseName() + Book.DICT_FILE_EXTENSION);
-        DictZipFile dictZipFile = new DictZipFile(channel);
+        String file = bookInfo.getFileBaseName() + Book.DICT_FILE_EXTENSION;
+        DictZipFile dictZipFile = new DictZipFile(file, dictionaryFiles);
         byte[] buffer;
         try {
             int offset = indexEntry.getWordDataOffset();
             int size = indexEntry.getWordDataSize();
             buffer = dictZipFile.read(offset, size);
         } finally {
-            //dictZipFile.close();
+            dictZipFile.close();
         }
-        channel.close();
         return buffer;
     }
 

@@ -1,6 +1,7 @@
 package net.bancer.sparkdict.domain.core;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -39,7 +40,7 @@ class Chunk {
 /**
  * DictZipFile is an abstraction of <dictionary name>.dict.dz file.
  */
-public class DictZipFile {
+public class DictZipFile implements Closeable {
 
     private static final int FHCRC = 2;
 
@@ -117,13 +118,14 @@ public class DictZipFile {
 
     /**
      * Opens a dictionary .dict.dz file and initialises its decompression state,
-     * reading through an already-open channel instead of a filesystem path.
+     * reading through a channel instead of a filesystem path.
      *
-     * @param channel an open, readable, seekable channel positioned at the
-     *                start of the dictionary's .dict.dz data.
+     * @param file Relative path to dictionary's .dict.dz data.
+     * @param dictionaryFiles the DictionaryFiles to associate with this zip.
      */
-    public DictZipFile(SeekableByteChannel channel) throws IOException {
-        initFromChannel(channel);
+    public DictZipFile(String file, DictionaryFiles dictionaryFiles) throws IOException {
+        dzFileChannel = dictionaryFiles.openForRead(file);
+        initFromChannel(dzFileChannel);
     }
 
     /**
@@ -470,5 +472,18 @@ public class DictZipFile {
      */
     private void channelSkip(int n) throws IOException {
         dzFileChannel.position(dzFileChannel.position() + n);
+    }
+
+    @Override
+    public void close() {
+        if (dzFileChannel != null) {
+            try {
+                dzFileChannel.close();
+            } catch (IOException e) {
+                //TODO: log "Cannot close .dict.dz channel"
+            } finally {
+                dzFileChannel = null;
+            }
+        }
     }
 }

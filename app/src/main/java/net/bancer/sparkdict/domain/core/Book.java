@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.channels.SeekableByteChannel;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -40,8 +39,6 @@ public class Book implements Iterable<IndexEntry>, Closeable {
      * DictZipFile object.
      */
     private DictZipFile dzFile = null;
-
-    private SeekableByteChannel dictZipChannel = null;
 
     /**
      * ZIP archive containing the resource.
@@ -172,8 +169,8 @@ public class Book implements Iterable<IndexEntry>, Closeable {
     private LexicalEntry getLexicalEntry(IndexEntry idxEntry) {
         try {
             if (dzFile == null) {
-                dictZipChannel = dictionaryFiles.openForRead(bookInfo.getFileBaseName() + DICT_FILE_EXTENSION);
-                dzFile = new DictZipFile(dictZipChannel);
+                String file = bookInfo.getFileBaseName() + DICT_FILE_EXTENSION;
+                dzFile = new DictZipFile(file, dictionaryFiles);
             }
             if (resZipFile == null) {
                 String resZipPath = bookInfo.getDirPath() + "/" + RES_ZIP_NAME;
@@ -324,16 +321,8 @@ public class Book implements Iterable<IndexEntry>, Closeable {
      */
     public void close() {
         if (dzFile != null) {
+            dzFile.close();
             dzFile = null;
-        }
-        if (dictZipChannel != null) {
-            try {
-                dictZipChannel.close();
-            } catch (IOException e) {
-                //TODO: log "Cannot close .dict.dz channel"
-            } finally {
-                dictZipChannel = null;
-            }
         }
         if (resZipFile != null) {
             resZipFile.close();
