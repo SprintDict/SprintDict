@@ -48,8 +48,6 @@ public class Book implements Iterable<IndexEntry>, Closeable {
      */
     private ResourcesZipFile resZipFile = null;
 
-    private SeekableByteChannel resZipChannel = null;
-
     /**
      * Index entries iterator.
      */
@@ -179,12 +177,7 @@ public class Book implements Iterable<IndexEntry>, Closeable {
             }
             if (resZipFile == null) {
                 String resZipPath = bookInfo.getDirPath() + "/" + RES_ZIP_NAME;
-                try {
-                    resZipChannel = dictionaryFiles.openForRead(resZipPath);
-                    resZipFile = new ResourcesZipFile(resZipChannel);
-                } catch (IOException e) {
-                    // res.zip is optional -- not every dictionary has one.
-                }
+                resZipFile = new ResourcesZipFile(resZipPath, dictionaryFiles);
             }
             byte[] buffer = dzFile.read(idxEntry.getWordDataOffset(), idxEntry.getWordDataSize());
             String lemma = idxEntry.getLemma();
@@ -343,16 +336,8 @@ public class Book implements Iterable<IndexEntry>, Closeable {
             }
         }
         if (resZipFile != null) {
+            resZipFile.close();
             resZipFile = null;
-        }
-        if (resZipChannel != null) {
-            try {
-                resZipChannel.close();
-            } catch (IOException e) {
-                //TODO: log "Cannot close .dict.dz channel"
-            } finally {
-                resZipChannel = null;
-            }
         }
     }
 }
