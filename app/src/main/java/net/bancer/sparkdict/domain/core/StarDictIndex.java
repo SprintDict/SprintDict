@@ -41,6 +41,7 @@ public class StarDictIndex {
     private final String fileName;
 
     private byte[] starDictBuffer = null;
+
     private SeekableByteChannel starDictFile = null;
 
     private BookInfo bookInfo;
@@ -53,20 +54,6 @@ public class StarDictIndex {
     public StarDictIndex(BookInfo info) {
         this(info.getFileBaseName(), info.getIdxOffsetBits());
         this.bookInfo = info;
-    }
-
-    /**
-     * Constructor for callers that already have an open, seekable channel
-     * to the .idx data (for example, one opened via a Storage Access
-     * Framework document) instead of a filesystem path.
-     *
-     * @param info    BookInfo object.
-     * @param channel an open, readable, seekable channel over the .idx data.
-     */
-    public StarDictIndex(BookInfo info, SeekableByteChannel channel) {
-        this(info.getFileBaseName(), info.getIdxOffsetBits());
-        this.bookInfo = info;
-        this.starDictFile = channel;
     }
 
     private StarDictIndex(String dictionaryFileBaseName, int idxOffsetBits) {

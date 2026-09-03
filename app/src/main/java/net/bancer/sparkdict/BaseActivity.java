@@ -101,8 +101,8 @@ public abstract class BaseActivity extends Activity {
      * always up-to-date.
      */
     protected void refreshShelf() {
-        String[] enabledDicts = getEnabledDictsFromPrefs();
         DictionaryFiles dictionaryFiles = createDictionaryFiles();
+        String[] enabledDicts = getEnabledDictsFromPrefs();
         shelf = new Shelf(enabledDicts, dictionaryFiles);
     }
 

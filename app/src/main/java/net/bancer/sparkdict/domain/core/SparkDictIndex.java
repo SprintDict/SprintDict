@@ -94,7 +94,12 @@ public class SparkDictIndex implements IObservable {
 	 *     or writing the SparkDict index.
      */
     public void buildIndex() throws IOException {
-        parseBookIndex(starDictIndex);
+        try (
+            SeekableByteChannel starDictIdx = dictionaryFiles.openForRead(starDictIndex.getFileName());
+            OutputStream sparkDictIdx = dictionaryFiles.createForWrite(starDictIndex.getFileBaseName() + FILE_EXTENSION)
+        ) {
+            parseBookIndex(starDictIndex, starDictIdx, sparkDictIdx);
+        }
     }
 
     /**
@@ -108,40 +113,40 @@ public class SparkDictIndex implements IObservable {
      * sufficient; no random-access write capability is needed.</p>
      *
      * @param bookIndex StarDict index to parse.
+     * @param starDictIdx channel to StarDict index file.
+     * @param sparkDictIdx SparkDict output to be written to file.
      * @throws IOException If an I/O error occurs while reading the StarDict index
      * or writing the SparkDict index.
      */
-    private void parseBookIndex(StarDictIndex bookIndex) throws IOException {
+    private void parseBookIndex(
+        StarDictIndex bookIndex,
+        SeekableByteChannel starDictIdx,
+        OutputStream sparkDictIdx
+    ) throws IOException {
         long starDictPointer = 0;
         byte[] starDictIdxBuffer = new byte[BUFFER_SIZE];
-
-        try (SeekableByteChannel starDictIdx = dictionaryFiles.openForRead(bookIndex.getFileName());
-             OutputStream sparkDictIdx = dictionaryFiles.createForWrite(bookIndex.getFileBaseName() + FILE_EXTENSION)) {
-
-            starDictIdx.position(starDictPointer);
-            int sizeRead = starDictIdx.read(ByteBuffer.wrap(starDictIdxBuffer, 0, BUFFER_SIZE));
-
-            while (sizeRead > 0) {
-                int wordStart = 0;
-                int currentPosition = 0;
-                while (currentPosition < sizeRead) {
-                    if (starDictIdxBuffer[currentPosition] == StarDictIndex.SEPARATOR) {
-                        // Length = position of separator + 1 byte occupied by separator +
-                        // index offset bytes size + data bytes size - start position
-                        int length = currentPosition + 1 + bookIndex.getLexicalEntryOffsetFieldSizeInBytes() + bookIndex.getLexicalEntrySizeFieldInBytes() - wordStart;
-                        if (wordStart + length <= sizeRead) {
-                            writePointerToSparkdictIndex(starDictPointer, sparkDictIdx);
-                            starDictPointer += length;
-                        }
-                        currentPosition = wordStart + length; // Move the pointer further
-                        wordStart = currentPosition;
-                    } else {
-                        currentPosition++;
+        starDictIdx.position(starDictPointer);
+        int sizeRead = starDictIdx.read(ByteBuffer.wrap(starDictIdxBuffer, 0, BUFFER_SIZE));
+        while (sizeRead > 0) {
+            int wordStart = 0;
+            int currentPosition = 0;
+            while (currentPosition < sizeRead) {
+                if (starDictIdxBuffer[currentPosition] == StarDictIndex.SEPARATOR) {
+                    // Length = position of separator + 1 byte occupied by separator +
+                    // index offset bytes size + data bytes size - start position
+                    int length = currentPosition + 1 + bookIndex.getLexicalEntryOffsetFieldSizeInBytes() + bookIndex.getLexicalEntrySizeFieldInBytes() - wordStart;
+                    if (wordStart + length <= sizeRead) {
+                        writePointerToSparkdictIndex(starDictPointer, sparkDictIdx);
+                        starDictPointer += length;
                     }
+                    currentPosition = wordStart + length; // Move the pointer further
+                    wordStart = currentPosition;
+                } else {
+                    currentPosition++;
                 }
-                starDictIdx.position(starDictPointer);
-                sizeRead = starDictIdx.read(ByteBuffer.wrap(starDictIdxBuffer, 0, BUFFER_SIZE));
             }
+            starDictIdx.position(starDictPointer);
+            sizeRead = starDictIdx.read(ByteBuffer.wrap(starDictIdxBuffer, 0, BUFFER_SIZE));
         }
     }
 
@@ -183,6 +188,9 @@ public class SparkDictIndex implements IObservable {
     /**
      * Lazily opens the .sparkdict.idx file for random-access reads via this
      * book's {@link DictionaryFiles}.
+     *
+     * @return SparkDict index file opened for reading.
+     * @throws IOException
      */
     private SeekableByteChannel getSparkDictReadOnlyFile() throws IOException {
         if (sparkDictReadOnlyFile == null) {
@@ -226,6 +234,7 @@ public class SparkDictIndex implements IObservable {
     }
 
     public boolean delete() {
-        return dictionaryFiles.delete(starDictIndex.getFileBaseName() + SparkDictIndex.FILE_EXTENSION);
+        String file = starDictIndex.getFileBaseName() + SparkDictIndex.FILE_EXTENSION;
+        return dictionaryFiles.delete(file);
     }
 }
