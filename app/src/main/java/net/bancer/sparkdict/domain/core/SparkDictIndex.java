@@ -3,6 +3,7 @@ package net.bancer.sparkdict.domain.core;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Vector;
 
@@ -190,9 +191,9 @@ public class SparkDictIndex implements IObservable {
      * book's {@link DictionaryFiles}.
      *
      * @return SparkDict index file opened for reading.
-     * @throws IOException
+     * @throws IOException If the SparkDict index file cannot be accessed.
      */
-    private SeekableByteChannel getSparkDictReadOnlyFile() throws IOException {
+    private synchronized SeekableByteChannel getSparkDictReadOnlyFile() throws IOException {
         if (sparkDictReadOnlyFile == null) {
             String uri = starDictIndex.getFileBaseName() + SparkDictIndex.FILE_EXTENSION;
             sparkDictReadOnlyFile = dictionaryFiles.openForRead(uri);
@@ -207,7 +208,12 @@ public class SparkDictIndex implements IObservable {
      * @throws IOException If the SparkDict index file cannot be accessed.
      */
     public long getSize() throws IOException {
-        return getSparkDictReadOnlyFile().size() / SparkDictIndex.INDEX_ENTRY_SIZE;
+        try {
+            return getSparkDictReadOnlyFile().size() / SparkDictIndex.INDEX_ENTRY_SIZE;
+        } catch (ClosedChannelException e) {
+            sparkDictReadOnlyFile = null;
+            return getSparkDictReadOnlyFile().size() / SparkDictIndex.INDEX_ENTRY_SIZE;
+        }
     }
 
     /**
@@ -219,14 +225,23 @@ public class SparkDictIndex implements IObservable {
      * @throws IOException If the SparkDict index file cannot be accessed.
      */
     public IndexEntry getIndexEntry(long id) throws IOException {
-        getSparkDictReadOnlyFile().position(id * SparkDictIndex.INDEX_ENTRY_SIZE);
-        int sizeRead = getSparkDictReadOnlyFile().read(ByteBuffer.wrap(sparkDictbuffer));
-        if (sizeRead > 0) {
-            long startPosition = SparkDictIndex.byteArrayToInt(sparkDictbuffer);
-            return starDictIndex.retrieveIndexEntry(startPosition);
-        } else {
-            return null;
+        long startPosition;
+        int sizeRead;
+        synchronized (this) {
+            try {
+                getSparkDictReadOnlyFile().position(id * SparkDictIndex.INDEX_ENTRY_SIZE);
+                sizeRead = getSparkDictReadOnlyFile().read(ByteBuffer.wrap(sparkDictbuffer));
+            } catch (ClosedChannelException e) {
+                sparkDictReadOnlyFile = null;
+                getSparkDictReadOnlyFile().position(id * SparkDictIndex.INDEX_ENTRY_SIZE);
+                sizeRead = getSparkDictReadOnlyFile().read(ByteBuffer.wrap(sparkDictbuffer));
+            }
+            if (sizeRead <= 0) {
+                return null;
+            }
+            startPosition = SparkDictIndex.byteArrayToInt(sparkDictbuffer);
         }
+        return starDictIndex.retrieveIndexEntry(startPosition);
     }
 
     public String getBookName() {
