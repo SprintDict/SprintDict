@@ -1,11 +1,11 @@
 package net.bancer.sparkdict.domain.core;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import net.bancer.sparkdict.domain.parsers.IParser;
 import net.bancer.sparkdict.domain.parsers.ParsingStrategyFactory;
+import net.bancer.sparkdict.logging.ConsoleLogger;
+import net.bancer.sparkdict.logging.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,16 +35,23 @@ public class LexicalEntry {
     private ResourcesZipFile resZipFile = null;
 
     /**
+     * Logger writes messages to logs.
+     */
+    private final Logger logger;
+
+    /**
      * Constructor.
      *
      * @param lemma      lemma of the lexical entry.
      * @param dataBlocks bytes array of data from <dictionary name>.dict file.
      * @param bookInfo   BookInfo object.
+     * @param logger     logger to write messages to logs.
      */
-    public LexicalEntry(String lemma, byte[] dataBlocks, BookInfo bookInfo) {
+    public LexicalEntry(String lemma, byte[] dataBlocks, BookInfo bookInfo, Logger logger) {
         this.bookInfo = bookInfo;
         this.lemma = lemma;
         this.dictTitle = bookInfo.getBookName();
+        this.logger = logger;
         String dataTypes = bookInfo.getSameTypeSequence();
         if (dataTypes == null) {
             dataTypes = "";
@@ -63,16 +70,41 @@ public class LexicalEntry {
     }
 
     /**
+     * Constructor.
+     *
+     * @param lemma      lemma of the lexical entry.
+     * @param dataBlocks bytes array of data from <dictionary name>.dict file.
+     * @param bookInfo   BookInfo object.
+     */
+    public LexicalEntry(String lemma, byte[] dataBlocks, BookInfo bookInfo) {
+        this(lemma, dataBlocks, bookInfo, new ConsoleLogger());
+    }
+
+    /**
      * Creates a lexical entry from the specified dictionary data.
      *
      * @param lemma      lemma of the lexical entry.
      * @param buffer     dictionary data containing the lexical entry.
      * @param bookInfo   information about the dictionary containing the entry.
      * @param resZipFile ZIP archive containing the dictionary resources, or {@code null}
-     *                   *               if resources are stored as individual files.
+     *                   if resources are stored as individual files.
      */
     public LexicalEntry(String lemma, byte[] buffer, BookInfo bookInfo, ResourcesZipFile resZipFile) {
-        this(lemma, buffer, bookInfo);
+        this(lemma, buffer, bookInfo, resZipFile, new ConsoleLogger());
+    }
+
+    /**
+     * Creates a lexical entry from the specified dictionary data.
+     *
+     * @param lemma      lemma of the lexical entry.
+     * @param buffer     dictionary data containing the lexical entry.
+     * @param bookInfo   information about the dictionary containing the entry.
+     * @param resZipFile ZIP archive containing the dictionary resources, or {@code null}
+     *                   if resources are stored as individual files.
+     * @param logger     logger to write messages to logs.
+     */
+    public LexicalEntry(String lemma, byte[] buffer, BookInfo bookInfo, ResourcesZipFile resZipFile, Logger logger) {
+        this(lemma, buffer, bookInfo, logger);
         this.resZipFile = resZipFile;
     }
 
@@ -236,7 +268,7 @@ public class LexicalEntry {
         if (file.exists()) {
             return readResourceFile(path);
         } else {
-            Log.e(TAG, file + " does not exist");
+            logger.error(TAG, file + " does not exist");
         }
         return new byte[0];
     }
@@ -253,7 +285,7 @@ public class LexicalEntry {
             result = new byte[(int) raf.length()];
             raf.read(result);
         } catch (IOException e) {
-            Log.e(TAG, "Cannot read resource file: " + path);
+            logger.error(TAG, "Cannot read resource file: " + path);
         }
         return result;
     }
