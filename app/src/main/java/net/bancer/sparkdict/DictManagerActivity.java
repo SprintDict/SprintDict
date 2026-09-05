@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -27,6 +28,7 @@ import net.bancer.sparkdict.adapters.DictManagerItemsAdapter;
 import net.bancer.sparkdict.domain.IndexBuilder;
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.utils.DomainException;
+import net.bancer.sparkdict.storage.SparkDictPreferences;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -174,41 +176,46 @@ public class DictManagerActivity extends BaseActivity {
     }
 
     /**
-     * Extracts the filesystem path of the folder selected by the user.
+     * Retrieves the URI selected by the user and persists read and write access
+     * permissions for it.
      *
-     * <p>The selected folder is obtained from the tree URI returned in the
-     * {@link Intent} data. The URI's document ID is split into the storage
-     * volume type and the relative path, which are then combined into the
-     * corresponding filesystem path.</p>
-     *
-     * @param intent the intent returned by the directory picker
-     * @return the filesystem path of the selected folder
+     * @param intent the intent containing the selected document or directory URI
+     * @return the selected URI, or {@code null} if the intent does not contain one
      */
-    private String extractSelectedFolder(Intent intent) {
+    private Uri getSelectedUri(Intent intent) {
         // The result data contains a URI for the document or directory that the user selected.
         Uri uri = intent.getData();
-        final String docId = DocumentsContract.getTreeDocumentId(uri);
-        final String[] split = docId.split(":");
-        final String type = split[0];
-        // Get the path that was picked from intent returned by DirectoryPicker
-        String path = split.length > 1 ? split[1] : "";
-        if ("primary".equalsIgnoreCase(type)) {
-            return Environment.getExternalStorageDirectory() + "/" + path;
+        if (uri == null) {
+            return null;
         }
-        return "/storage/" + type + "/" + path;
+        int modeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+        getContentResolver().takePersistableUriPermission(uri, modeFlags);
+        return uri;
     }
 
+    /**
+     * Saves the dictionary folder selected by the user to {@link SharedPreferences}.
+     *
+     * <p>Both the filesystem path and the Storage Access Framework URI are persisted.
+     * The dictionary shelf and layout are refreshed after saving, and a toast is
+     * displayed to indicate whether the operation succeeded.</p>
+     *
+     * @param intent the intent containing the URI of the selected dictionary folder
+     */
     private void saveDictPath(Intent intent) {
-        String value = this.extractSelectedFolder(intent);
-        // Get the key that identifies the path in SharedPreferences
-        String key = getString(R.string.menu_dict_path);
+        Uri uri = getSelectedUri(intent);
+        if (uri == null) {
+            return;
+        }
         // Save the path to SharedPreferences
-        boolean isSaved = saveSharedPreference(key, value);
+        boolean isSaved = preferences.save(SparkDictPreferences.PREF_DICT_ROOT_URI_NAME, uri.toString());
         String msg;
         if (isSaved) { // Create message string for a toast
-            msg = getString(R.string.dict_path_saved_msg, value);
+            msg = getString(R.string.dict_path_saved_msg);
+            Log.i(TAG, uri + " have been saved to preferences");
         } else {
-            msg = getString(R.string.dict_path_not_saved_msg, value);
+            msg = getString(R.string.dict_path_not_saved_msg);
+            Log.e(TAG, "Failed to save the selected path to preferences");
         }
         refreshShelf();
         initLayout(); // Generate DictManagerActivity screen
@@ -234,7 +241,7 @@ public class DictManagerActivity extends BaseActivity {
                 enabledDicts.append(book.getBookName());
             }
         }
-        boolean isSaved = saveSharedPreference(
+        boolean isSaved = preferences.save(
             getString(R.string.enabled_dicts),
             enabledDicts.toString()
         );

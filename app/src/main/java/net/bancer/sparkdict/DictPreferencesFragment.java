@@ -15,6 +15,8 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
+import net.bancer.sparkdict.storage.SparkDictPreferences;
+
 import java.util.Objects;
 
 /**
@@ -35,7 +37,7 @@ public class DictPreferencesFragment extends PreferenceFragmentCompat
      */
     private SharedPreferences getSharedPreferences() {
         return requireContext()
-            .getSharedPreferences(BaseActivity.PREFS_NAME, Context.MODE_PRIVATE);
+            .getSharedPreferences(SparkDictPreferences.PREFS_NAME, Context.MODE_PRIVATE);
     }
 
     /**
@@ -92,7 +94,7 @@ public class DictPreferencesFragment extends PreferenceFragmentCompat
      */
     private void initPathPreference() {
         SharedPreferences settings = getSharedPreferences();
-        String path = settings.getString(getString(R.string.menu_dict_path), null);
+        String path = settings.getString(SparkDictPreferences.PREF_DICT_ROOT_URI_NAME, null);
         Preference pathPref = findNonNullPreference(getString(R.string.pref_dict_path));
         pathPref.setSummary(path);
     }

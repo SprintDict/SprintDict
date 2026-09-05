@@ -1,20 +1,23 @@
 package net.bancer.sparkdict.domain.core.test;
 
+import android.content.Context;
+
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import junit.framework.TestCase;
 
 import net.bancer.sparkdict.domain.core.Book;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.IndexEntriesIterator;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.utils.DomainException;
 import net.bancer.sparkdict.mocks.Mocks;
+import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.File;
 
 @RunWith(AndroidJUnit4.class)
 public class SuggestionsFinderTest extends TestCase {
@@ -22,10 +25,14 @@ public class SuggestionsFinderTest extends TestCase {
     private IndexEntriesIterator muellerFinder;
     private IndexEntriesIterator bseFinder;
 
+    private DictionaryFiles dictionaryFiles;
+
     @Before
     public void setUp() {
-        muellerFinder = (IndexEntriesIterator) new Book(new File(Mocks.MUELLER_IFO_PATH)).iterator();
-        bseFinder = (IndexEntriesIterator) new Book(new File(Mocks.BSE_IFO_PATH)).iterator();
+        Context context = ApplicationProvider.getApplicationContext();
+        dictionaryFiles = SafDictionaryFilesFactory.create(context);
+        muellerFinder = (IndexEntriesIterator) new Book(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles).iterator();
+        bseFinder = (IndexEntriesIterator) new Book(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles).iterator();
     }
 
     @Test

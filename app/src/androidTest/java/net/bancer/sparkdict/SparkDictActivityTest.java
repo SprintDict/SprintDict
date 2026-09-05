@@ -14,7 +14,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static net.bancer.sparkdict.BaseActivity.PREFS_NAME;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
@@ -41,6 +40,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import net.bancer.sparkdict.domain.core.Shelf;
+import net.bancer.sparkdict.storage.SparkDictPreferences;
 import net.bancer.sparkdict.views.SearchInputField;
 
 import org.hamcrest.Description;
@@ -81,7 +81,7 @@ public class SparkDictActivityTest {
     }
 
     @Test
-    public void testInputTextByPressingEnterKey() {
+    public void testInputTextByPressingEnterKey() throws InterruptedException {
         onView(withId(R.id.searchTextView))
             .check(matches(withText("")));
         // Assert that the progress bar is not visible before the search.
@@ -93,6 +93,7 @@ public class SparkDictActivityTest {
             .check(matches(withText("interface")));
         onView(withId(R.id.searchTextView))
             .perform(pressImeActionButton());
+        Thread.sleep(1000);
         onView(withId(R.id.searchTextView))
             .check(matches(withText("")));
         // Assert that the progress bar is not visible after the search.
@@ -219,17 +220,17 @@ public class SparkDictActivityTest {
     @NonNull
     private static Map<String, ?> backupPreferencesAndRemoveDictionariesPath() {
         Context context = ApplicationProvider.getApplicationContext();
-        SharedPreferences preferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(SparkDictPreferences.PREFS_NAME, Context.MODE_PRIVATE);
         Map<String, ?> originalPreferences = new HashMap<>(preferences.getAll());
         preferences.edit()
-            .remove(context.getString(R.string.menu_dict_path))
+            .remove(SparkDictPreferences.PREF_DICT_ROOT_URI_NAME)
             .commit();
         return originalPreferences;
     }
 
     private static void restorePreferences(Map<String, ?> originalPreferences) {
         Context context = ApplicationProvider.getApplicationContext();
-        SharedPreferences preferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(SparkDictPreferences.PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.clear();
         for (Map.Entry<String, ?> entry : originalPreferences.entrySet()) {

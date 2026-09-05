@@ -6,7 +6,7 @@ import net.bancer.sparkdict.logging.Logger;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Vector;
@@ -15,19 +15,19 @@ import java.util.Vector;
  * Book is an abstraction of a dictionary containing lexical entries and index
  * entries.
  */
-public class Book implements Iterable<IndexEntry> {
+public class Book implements Iterable<IndexEntry>, Closeable {
 
     private static final String TAG = "Book";
 
     /**
      * Extension of the compressed dictionary file: <dictionary name>.dict.dz
      */
-    private static final String DICT_FILE_EXTENSION = ".dict.dz";
+    public static final String DICT_FILE_EXTENSION = ".dict.dz";
 
     /**
      * ZIP archive containing dictionary resources such as audio files and pictures.
      */
-    private static final String RES_ZIP_NAME = "res.zip";
+    public static final String RES_ZIP_NAME = "res.zip";
 
     /**
      * BookInfo object.
@@ -55,37 +55,47 @@ public class Book implements Iterable<IndexEntry> {
     private ResourcesZipFile resZipFile = null;
 
     /**
-     * Index entries iterator.
+     * Index entries iterator, used for exact-lemma searches.
      */
-    private Iterator<IndexEntry> indexEntriesIterator;
+    private IndexEntriesIterator searchIterator;
+
+    /**
+     * Index entries iterator, used for prefix-based suggestion searches.
+     */
+    private IndexEntriesIterator suggestionsIterator;
+
+    private final DictionaryFiles dictionaryFiles;
 
     /**
      * Constructor.
      *
-     * @param infoFile book info as java.io.File object
-     * @throws IllegalArgumentException if the parameter is null.
+     * @param relativeIfoPath root-relative path to the .ifo document.
+     * @param dictionaryFiles the DictionaryFiles to associate with this book.
      */
-    public Book(File infoFile) {
-        if (infoFile == null) {
-            throw new IllegalArgumentException("infoFile must not be null");
-        }
-        this.logger = new ConsoleLogger();
-        bookInfo = new BookInfo(infoFile, logger);
+    public Book(String relativeIfoPath, DictionaryFiles dictionaryFiles) {
+        this(relativeIfoPath, dictionaryFiles, new ConsoleLogger());
     }
 
     /**
      * Constructor.
      *
-     * @param infoFile Book info as java.io.File object
+     * @param relativeIfoPath root-relative path to the .ifo document.
+     * @param dictionaryFiles the DictionaryFiles to associate with this book.
      * @param logger   Logger to write messages to logs.
-     * @throws IllegalArgumentException if the parameter is null.
      */
-    public Book(File infoFile, Logger logger) {
-        if (infoFile == null) {
-            throw new IllegalArgumentException("infoFile must not be null");
-        }
+    public Book(String relativeIfoPath, DictionaryFiles dictionaryFiles, Logger logger) {
+        this.dictionaryFiles = dictionaryFiles;
         this.logger = logger;
-        bookInfo = new BookInfo(infoFile, logger);
+        bookInfo = new BookInfo(relativeIfoPath, dictionaryFiles);
+    }
+
+    /**
+     * DictionaryFiles getter.
+     *
+     * @return the DictionaryFiles associated with this book.
+     */
+    public DictionaryFiles getDictionaryFiles() {
+        return dictionaryFiles;
     }
 
     /**
@@ -186,14 +196,11 @@ public class Book implements Iterable<IndexEntry> {
         try {
             if (dzFile == null) {
                 String file = bookInfo.getFileBaseName() + DICT_FILE_EXTENSION;
-                dzFile = new DictZipFile(file, logger);
+                dzFile = new DictZipFile(file, dictionaryFiles, logger);
             }
             if (resZipFile == null) {
                 String resZipPath = bookInfo.getDirPath() + "/" + RES_ZIP_NAME;
-                File zipFile = new File(resZipPath);
-                if (zipFile.exists()) {
-                    resZipFile = new ResourcesZipFile(zipFile, logger);
-                }
+                resZipFile = new ResourcesZipFile(resZipPath, dictionaryFiles, logger);
             }
             byte[] buffer = dzFile.read(idxEntry.getWordDataOffset(), idxEntry.getWordDataSize());
             String lemma = idxEntry.getLemma();
@@ -291,14 +298,42 @@ public class Book implements Iterable<IndexEntry> {
     }
 
     /**
-     * Returns an Iterator for index entries.
+     * Returns an Iterator for index entries, used for exact-lemma searches
+     * (see {@link #getLexicalEntry(String)}).
+     *
+     * <p>This is intentionally a separate cached instance from the one used by
+     * {@link #getSuggestions(String)} -- IndexEntriesIterator carries mutable
+     * cursor/search state, and the two access patterns (exact-match search vs.
+     * prefix-based suggestion browsing) have different traversal semantics.
+     * Sharing one instance between them, even in a single-threaded world, is
+     * incorrect: whichever access pattern ran most recently silently clobbers
+     * the other's cursor state. Splitting them also removes a genuine data race
+     * that existed when both were driven concurrently from different background
+     * threads -- the suggestion dropdown's executor and the search executor.</p>
      */
     @Override
     @NotNull
     public Iterator<IndexEntry> iterator() {
-        if (indexEntriesIterator == null) {
+        if (searchIterator == null) {
             try {
-                indexEntriesIterator = new IndexEntriesIterator(bookInfo);
+                searchIterator = new IndexEntriesIterator(bookInfo);
+            } catch (DomainException e) {
+                // TODO log error
+            }
+        }
+        return searchIterator;
+    }
+
+    /**
+     * Returns the Iterator used for prefix-based suggestion browsing (see
+     * {@link #getSuggestions(String)}), independent from the one returned by
+     * {@link #iterator()} -- see that method's documentation for why they must
+     * not be shared.
+     */
+    private IndexEntriesIterator getSuggestionsIterator() {
+        if (suggestionsIterator == null) {
+            try {
+                suggestionsIterator = new IndexEntriesIterator(bookInfo);
             } catch (DomainException e) {
                 String message = String.format(
                     "Failed to construct index entries iterator for %s dictionary",
@@ -307,7 +342,7 @@ public class Book implements Iterable<IndexEntry> {
                 logger.error(TAG, message, e);
             }
         }
-        return indexEntriesIterator;
+        return suggestionsIterator;
     }
 
     /**
@@ -318,7 +353,7 @@ public class Book implements Iterable<IndexEntry> {
      */
     public Vector<IndexEntry> getSuggestions(String prefix) {
         Vector<IndexEntry> result = new Vector<>(IndexEntriesIterator.MAX);
-        IndexEntriesIterator iterator = (IndexEntriesIterator) iterator();
+        IndexEntriesIterator iterator = getSuggestionsIterator();
         if (!iterator.hasNext()) {
             String message = String.format(
                 "Index entries iterator for %s dictionary has no values. Index file is probably missing",
@@ -362,7 +397,7 @@ public class Book implements Iterable<IndexEntry> {
      * <p>If either resource is not currently open, it is ignored. The resources
      * can be reopened automatically when they are needed again.</p>
      */
-    public void closeResources() {
+    public void close() {
         if (dzFile != null) {
             dzFile.close();
             dzFile = null;

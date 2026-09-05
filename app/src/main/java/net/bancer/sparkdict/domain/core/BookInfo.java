@@ -5,8 +5,9 @@ import androidx.annotation.NonNull;
 import net.bancer.sparkdict.logging.ConsoleLogger;
 import net.bancer.sparkdict.logging.Logger;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Scanner;
 
 /**
@@ -22,6 +23,10 @@ public class BookInfo {
 
     /**
      * Path to the folder containing current dictionary files.
+     *
+     * <p>This is a root-relative folder name
+     * -- e.g. {@code "LingvoUniversal (En-Ru)"}
+     * -- meant only to be passed back into a {@link DictionaryFiles}.</p>
      */
     private final String dirPath;
 
@@ -95,60 +100,58 @@ public class BookInfo {
      */
     private final Logger logger;
 
-    /**
-     * Constructor.
-     *
-     * @param path Full path to .ifo file including extension itself.
-     */
-    public BookInfo(String path) {
-        this(new File(path), new ConsoleLogger());
-    }
+    private final DictionaryFiles dictionaryFiles;
 
     /**
      * Constructor.
      *
-     * @param path   Full path to .ifo file including extension itself.
-     * @param logger Logger to write messages to logs.
+     * @param relativeIfoPath root-relative path to the .ifo document, e.g.
+     *                        {@code "LingvoUniversal (En-Ru)/LingvoUniversal.ifo"}.
+     * @param dictionaryFiles the DictionaryFiles used to both read the .ifo
+     *                        content and resolve this book's sibling files.
      */
-    public BookInfo(String path, Logger logger) {
-        this(new File(path), logger);
+    public BookInfo(String relativeIfoPath, DictionaryFiles dictionaryFiles) {
+        this(relativeIfoPath, dictionaryFiles, new ConsoleLogger());
     }
 
     /**
-     * Constructor.
+     * Constructor for callers that resolve dictionary files through a
+     * {@link DictionaryFiles} implementation rather than a real
+     * {@code java.io.File} -- most importantly
+     * {@link net.bancer.sparkdict.storage.SafDictionaryFiles}. There is no
+     * filesystem File backing this BookInfo at all: {@code relativeIfoPath}
+     * and everything derived from it (see {@link #getFileBaseName()},
+     * {@link #getDirPath()}) are root-relative identifiers, meant only to be
+     * passed back into {@code dictionaryFiles}, never into {@code new File(...)}.
      *
-     * @param infoFile java.io.File object of <dictionary name>.ifo file.
+     * @param relativeIfoPath root-relative path to the .ifo document, e.g.
+     *                        {@code "LingvoUniversal (En-Ru)/LingvoUniversal.ifo"}.
+     * @param dictionaryFiles the DictionaryFiles used to both read the .ifo
+     *                        content and resolve this book's sibling files.
+     * @param logger          Logger to write messages to logs.
+     * @throws IllegalArgumentException if relativeIfoPath is null or does
+     *                                  not end with .ifo.
      */
-    public BookInfo(File infoFile) {
-        this(infoFile, new ConsoleLogger());
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param infoFile java.io.File object of <dictionary name>.ifo file.
-     * @param logger   Logger to write messages to logs.
-     */
-    public BookInfo(File infoFile, Logger logger) {
-        if (infoFile == null) {
-            throw new IllegalArgumentException("infoFile must not be null or empty");
+    public BookInfo(String relativeIfoPath, DictionaryFiles dictionaryFiles, Logger logger) {
+        if (relativeIfoPath == null || !relativeIfoPath.toLowerCase().endsWith(INFO_FILE_EXTENTION)) {
+            throw new IllegalArgumentException("relativeIfoPath must have .ifo extension");
         }
-        if (!infoFile.getName().toLowerCase().endsWith(INFO_FILE_EXTENTION)) {
-            throw new IllegalArgumentException("infoFile must have .ifo extension");
-        }
-        filePath = infoFile.toString();
-        dirPath = infoFile.getParent();
         this.logger = logger;
-        try {
-            Scanner input = new Scanner(infoFile, "UTF-8");
+        filePath = relativeIfoPath;
+        int slash = relativeIfoPath.lastIndexOf('/');
+        dirPath = slash >= 0 ? relativeIfoPath.substring(0, slash) : "";
+        this.dictionaryFiles = dictionaryFiles;
+        try (SeekableByteChannel channel = dictionaryFiles.openForRead(relativeIfoPath)) {
+            Scanner input = new Scanner(Channels.newInputStream(channel), "UTF-8");
             parseIfoContent(input);
-        } catch (FileNotFoundException e) {
-            logger.error(TAG, "Cannot read info file: " + infoFile);
+        } catch (IOException e) {
+            logger.error(TAG, "Cannot read info file: " + relativeIfoPath);
         }
     }
 
     /**
      * Parses .ifo content, line by line, into this object's fields.
+     * Shared by every constructor regardless of where the content came from.
      *
      * @param input a Scanner positioned at the start of the .ifo content.
      */
@@ -184,6 +187,15 @@ public class BookInfo {
                 dictType = line.substring(9);
             }
         }
+    }
+
+    /**
+     * DictionaryFiles getter.
+     *
+     * @return the DictionaryFiles associated with this book.
+     */
+    public DictionaryFiles getDictionaryFiles() {
+        return dictionaryFiles;
     }
 
     /**
@@ -286,6 +298,8 @@ public class BookInfo {
      * File base name getter.
      *
      * @return path to the <dictionary name>.ifo file excluding ".ifo" part.
+     * Root-relative if this BookInfo was constructed via
+     * {@link #BookInfo(String, DictionaryFiles)}, absolute otherwise.
      */
     public String getFileBaseName() {
         int end = filePath.length() - 4;
@@ -295,7 +309,8 @@ public class BookInfo {
     /**
      * Compressed dictionary file path getter.
      *
-     * @return full path to the dictionary data file including ".dict.dz" at the end.
+     * @return path to the dictionary data file including ".dict.dz" at the
+     * end. Root-relative or absolute, matching {@link #getFileBaseName()}.
      */
     public String getPathToDictFile() {
         return getFileBaseName() + ".dict.dz";
