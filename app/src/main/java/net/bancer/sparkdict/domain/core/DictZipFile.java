@@ -1,5 +1,8 @@
 package net.bancer.sparkdict.domain.core;
 
+import net.bancer.sparkdict.logging.ConsoleLogger;
+import net.bancer.sparkdict.logging.Logger;
+
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.EOFException;
@@ -41,6 +44,8 @@ class Chunk {
  * DictZipFile is an abstraction of <dictionary name>.dict.dz file.
  */
 public class DictZipFile implements Closeable {
+
+    private static final String TAG = "DictZipFile";
 
     private static final int FHCRC = 2;
 
@@ -117,13 +122,20 @@ public class DictZipFile implements Closeable {
     private int pointerPosition;
 
     /**
+     * Logger writes messages to logs.
+     */
+    private final Logger logger;
+
+    /**
      * Opens a dictionary .dict.dz file and initialises its decompression state,
      * reading through a channel instead of a filesystem path.
      *
      * @param file Relative path to dictionary's .dict.dz data.
      * @param dictionaryFiles the DictionaryFiles to read .dict.dz file.
+     * @param logger          Logger to write messages to logs.
      */
-    public DictZipFile(String file, DictionaryFiles dictionaryFiles) throws IOException {
+    public DictZipFile(String file, DictionaryFiles dictionaryFiles, Logger logger) throws IOException {
+        this.logger = logger;
         dzFileChannel = dictionaryFiles.openForRead(file);
         initFromChannel(dzFileChannel);
     }
@@ -141,6 +153,17 @@ public class DictZipFile implements Closeable {
         chunks = new ArrayList<>();
         this.readGZipHeader();
     }
+
+    /**
+     * Opens a dictionary .dict.dz file and initialises its decompression state.
+     *
+     * @param file Relative path to dictionary's .dict.dz data.
+     * @param dictionaryFiles the DictionaryFiles to read .dict.dz file.
+     */
+    public DictZipFile(String file, DictionaryFiles dictionaryFiles) throws IOException {
+        this(file, dictionaryFiles, new ConsoleLogger());
+    }
+
 
     /**
      * Reads data from the current position into the specified buffer.
@@ -196,7 +219,7 @@ public class DictZipFile implements Closeable {
             try {
                 dzFileChannel.close();
             } catch (IOException e) {
-                //TODO: log "Cannot close .dict.dz channel"
+                logger.error(TAG, "Cannot close dictionary .dict.dz file", e);
             } finally {
                 dzFileChannel = null;
             }

@@ -2,6 +2,9 @@ package net.bancer.sparkdict.domain.core;
 
 import androidx.annotation.NonNull;
 
+import net.bancer.sparkdict.logging.ConsoleLogger;
+import net.bancer.sparkdict.logging.Logger;
+
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.SeekableByteChannel;
@@ -11,6 +14,8 @@ import java.util.Scanner;
  * BookInfo is an abstraction of <dictionary name>.ifo file.
  */
 public class BookInfo {
+
+    private static final String TAG = "BookInfo";
 
     public static String INFO_FILE_EXTENTION = ".ifo";
 
@@ -90,7 +95,24 @@ public class BookInfo {
 
     private String dictType;
 
+    /**
+     * Logger writes messages to logs.
+     */
+    private final Logger logger;
+
     private final DictionaryFiles dictionaryFiles;
+
+    /**
+     * Constructor.
+     *
+     * @param relativeIfoPath root-relative path to the .ifo document, e.g.
+     *                        {@code "LingvoUniversal (En-Ru)/LingvoUniversal.ifo"}.
+     * @param dictionaryFiles the DictionaryFiles used to both read the .ifo
+     *                        content and resolve this book's sibling files.
+     */
+    public BookInfo(String relativeIfoPath, DictionaryFiles dictionaryFiles) {
+        this(relativeIfoPath, dictionaryFiles, new ConsoleLogger());
+    }
 
     /**
      * Constructor for callers that resolve dictionary files through a
@@ -106,13 +128,15 @@ public class BookInfo {
      *                        {@code "LingvoUniversal (En-Ru)/LingvoUniversal.ifo"}.
      * @param dictionaryFiles the DictionaryFiles used to both read the .ifo
      *                        content and resolve this book's sibling files.
+     * @param logger          Logger to write messages to logs.
      * @throws IllegalArgumentException if relativeIfoPath is null or does
      *                                  not end with .ifo.
      */
-    public BookInfo(String relativeIfoPath, DictionaryFiles dictionaryFiles) {
+    public BookInfo(String relativeIfoPath, DictionaryFiles dictionaryFiles, Logger logger) {
         if (relativeIfoPath == null || !relativeIfoPath.toLowerCase().endsWith(INFO_FILE_EXTENTION)) {
             throw new IllegalArgumentException("relativeIfoPath must have .ifo extension");
         }
+        this.logger = logger;
         filePath = relativeIfoPath;
         int slash = relativeIfoPath.lastIndexOf('/');
         dirPath = slash >= 0 ? relativeIfoPath.substring(0, slash) : "";
@@ -121,7 +145,7 @@ public class BookInfo {
             Scanner input = new Scanner(Channels.newInputStream(channel), "UTF-8");
             parseIfoContent(input);
         } catch (IOException e) {
-            //TODO: "Cannot read info file: " + relativeIfoPath
+            logger.error(TAG, "Cannot read info file: " + relativeIfoPath);
         }
     }
 
