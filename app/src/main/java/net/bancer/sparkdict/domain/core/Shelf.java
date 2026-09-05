@@ -1,5 +1,8 @@
 package net.bancer.sparkdict.domain.core;
 
+import net.bancer.sparkdict.logging.ConsoleLogger;
+import net.bancer.sparkdict.logging.Logger;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -9,6 +12,8 @@ import java.util.HashMap;
  * Shelf is place where all dictionaries (books) are located.
  */
 public class Shelf {
+
+    private static final String TAG = "Shelf";
 
     private ArrayList<Book> books;
 
@@ -20,6 +25,11 @@ public class Shelf {
     private final String[] enabledDicts;
 
     /**
+     * Logger writes messages to logs.
+     */
+    private final Logger logger;
+
+    /**
      * Constructor.
      *
      * @param dictPath     path to the dictionaries.
@@ -28,6 +38,21 @@ public class Shelf {
     public Shelf(String dictPath, String[] enabledDicts) {
         this.dictPath = dictPath;
         this.enabledDicts = enabledDicts;
+        this.logger = new ConsoleLogger();
+        putBooksOnShelf();
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param dictPath     Path to the dictionaries.
+     * @param enabledDicts String array of the enabled dictionaries titles.
+     * @param logger       Logger to write messages to logs.
+     */
+    public Shelf(String dictPath, String[] enabledDicts, Logger logger) {
+        this.dictPath = dictPath;
+        this.enabledDicts = enabledDicts;
+        this.logger = logger;
         putBooksOnShelf();
     }
 
@@ -66,7 +91,7 @@ public class Shelf {
         HashMap<String, Book> booksMap = new HashMap<>();
         ArrayList<File> infoFiles = findDictMetaFiles();
         for (int i = 0; i < infoFiles.size(); i++) {
-            Book dic = new Book(infoFiles.get(i));
+            Book dic = new Book(infoFiles.get(i), logger);
             booksMap.put(dic.getBookName(), dic);
         }
         return booksMap;
@@ -95,9 +120,9 @@ public class Shelf {
                     }
                 }
             }
-        } //else {
-            //TODO: log "Failed to list files in " + dictPath
-        //}
+        } else {
+            logger.error(TAG, "Failed to list files in " + dictPath + " path");
+        }
         return result;
     }
 

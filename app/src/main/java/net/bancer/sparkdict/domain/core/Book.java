@@ -1,6 +1,8 @@
 package net.bancer.sparkdict.domain.core;
 
 import net.bancer.sparkdict.domain.utils.DomainException;
+import net.bancer.sparkdict.logging.ConsoleLogger;
+import net.bancer.sparkdict.logging.Logger;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -14,6 +16,8 @@ import java.util.Vector;
  * entries.
  */
 public class Book implements Iterable<IndexEntry> {
+
+    private static final String TAG = "Book";
 
     /**
      * Extension of the compressed dictionary file: <dictionary name>.dict.dz
@@ -29,6 +33,11 @@ public class Book implements Iterable<IndexEntry> {
      * BookInfo object.
      */
     private final BookInfo bookInfo;
+
+    /**
+     * Logger writes messages to logs.
+     */
+    private final Logger logger;
 
     /**
      * Flag indicating whether the dictionary is enabled (searchable) or not.
@@ -60,7 +69,23 @@ public class Book implements Iterable<IndexEntry> {
         if (infoFile == null) {
             throw new IllegalArgumentException("infoFile must not be null");
         }
-        bookInfo = new BookInfo(infoFile);
+        this.logger = new ConsoleLogger();
+        bookInfo = new BookInfo(infoFile, logger);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param infoFile Book info as java.io.File object
+     * @param logger   Logger to write messages to logs.
+     * @throws IllegalArgumentException if the parameter is null.
+     */
+    public Book(File infoFile, Logger logger) {
+        if (infoFile == null) {
+            throw new IllegalArgumentException("infoFile must not be null");
+        }
+        this.logger = logger;
+        bookInfo = new BookInfo(infoFile, logger);
     }
 
     /**
@@ -87,7 +112,7 @@ public class Book implements Iterable<IndexEntry> {
     /**
      * Converts the first letter of every word in the provided string to upper case.
      *
-     * @param prefix string to be capitalized.
+     * @param prefix string to be capitalised.
      * @return capitalized string.
      */
     private static String capitalizeString(String prefix) {
@@ -160,19 +185,26 @@ public class Book implements Iterable<IndexEntry> {
     private LexicalEntry getLexicalEntry(IndexEntry idxEntry) {
         try {
             if (dzFile == null) {
-                dzFile = new DictZipFile(bookInfo.getFileBaseName() + DICT_FILE_EXTENSION);
+                String file = bookInfo.getFileBaseName() + DICT_FILE_EXTENSION;
+                dzFile = new DictZipFile(file, logger);
             }
             if (resZipFile == null) {
-                File zipFile = new File(bookInfo.getDirPath(), RES_ZIP_NAME);
+                String resZipPath = bookInfo.getDirPath() + "/" + RES_ZIP_NAME;
+                File zipFile = new File(resZipPath);
                 if (zipFile.exists()) {
-                    resZipFile = new ResourcesZipFile(zipFile);
+                    resZipFile = new ResourcesZipFile(zipFile, logger);
                 }
             }
             byte[] buffer = dzFile.read(idxEntry.getWordDataOffset(), idxEntry.getWordDataSize());
             String lemma = idxEntry.getLemma();
-            return new LexicalEntry(lemma, buffer, bookInfo, resZipFile);
+            return new LexicalEntry(lemma, buffer, bookInfo, resZipFile, logger);
         } catch (IOException e) {
-            // TODO: log error
+            String message = String.format(
+                "Failed to read a lexical entry '%s' in %s dictionary",
+                idxEntry,
+                bookInfo.getBookName()
+            );
+            logger.error(TAG, message, e);
             return null;
         }
     }
@@ -216,6 +248,11 @@ public class Book implements Iterable<IndexEntry> {
         LexicalEntry result = null;
         IndexEntriesIterator iterator = (IndexEntriesIterator) iterator();
         if (!iterator.hasNext()) {
+            String message = String.format(
+                "Index entries iterator for %s dictionary has no values. Index file is probably missing",
+                bookInfo.getBookName()
+            );
+            logger.error(TAG, message);
             //TODO: send notification - probably index file is missing.
             return null;
         }
@@ -263,7 +300,11 @@ public class Book implements Iterable<IndexEntry> {
             try {
                 indexEntriesIterator = new IndexEntriesIterator(bookInfo);
             } catch (DomainException e) {
-                // TODO log error
+                String message = String.format(
+                    "Failed to construct index entries iterator for %s dictionary",
+                    bookInfo.getBookName()
+                );
+                logger.error(TAG, message, e);
             }
         }
         return indexEntriesIterator;
@@ -279,6 +320,11 @@ public class Book implements Iterable<IndexEntry> {
         Vector<IndexEntry> result = new Vector<>(IndexEntriesIterator.MAX);
         IndexEntriesIterator iterator = (IndexEntriesIterator) iterator();
         if (!iterator.hasNext()) {
+            String message = String.format(
+                "Index entries iterator for %s dictionary has no values. Index file is probably missing",
+                bookInfo.getBookName()
+            );
+            logger.error(TAG, message);
             //TODO: send notification - probably index file is missing.
             return result;
         }
@@ -298,7 +344,12 @@ public class Book implements Iterable<IndexEntry> {
                         entry = iterator.nextSuggestion(prefixVariation);
                     }
                 } catch (DomainException e) {
-                    // TODO: log error
+                    String message = String.format(
+                        "Failed to find a suggestion for '%s' prefix in %s dictionary",
+                        prefixVariation,
+                        bookInfo.getBookName()
+                    );
+                    logger.error(TAG, message, e);
                 }
             }
         }

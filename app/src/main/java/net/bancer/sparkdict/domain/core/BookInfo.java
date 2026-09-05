@@ -2,6 +2,9 @@ package net.bancer.sparkdict.domain.core;
 
 import androidx.annotation.NonNull;
 
+import net.bancer.sparkdict.logging.ConsoleLogger;
+import net.bancer.sparkdict.logging.Logger;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -10,6 +13,8 @@ import java.util.Scanner;
  * BookInfo is an abstraction of <dictionary name>.ifo file.
  */
 public class BookInfo {
+
+    private static final String TAG = "BookInfo";
 
     public static String INFO_FILE_EXTENTION = ".ifo";
 
@@ -86,12 +91,27 @@ public class BookInfo {
     private String dictType;
 
     /**
+     * Logger writes messages to logs.
+     */
+    private final Logger logger;
+
+    /**
      * Constructor.
      *
      * @param path Full path to .ifo file including extension itself.
      */
     public BookInfo(String path) {
-        this(new File(path));
+        this(new File(path), new ConsoleLogger());
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param path   Full path to .ifo file including extension itself.
+     * @param logger Logger to write messages to logs.
+     */
+    public BookInfo(String path, Logger logger) {
+        this(new File(path), logger);
     }
 
     /**
@@ -100,6 +120,16 @@ public class BookInfo {
      * @param infoFile java.io.File object of <dictionary name>.ifo file.
      */
     public BookInfo(File infoFile) {
+        this(infoFile, new ConsoleLogger());
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param infoFile java.io.File object of <dictionary name>.ifo file.
+     * @param logger   Logger to write messages to logs.
+     */
+    public BookInfo(File infoFile, Logger logger) {
         if (infoFile == null) {
             throw new IllegalArgumentException("infoFile must not be null or empty");
         }
@@ -108,42 +138,51 @@ public class BookInfo {
         }
         filePath = infoFile.toString();
         dirPath = infoFile.getParent();
+        this.logger = logger;
         try {
             Scanner input = new Scanner(infoFile, "UTF-8");
-            input.useDelimiter("\n");
-            while (input.hasNextLine()) {
-                String line = input.nextLine();
-                if (line.contains("version=")) {
-                    version = line.substring(8);
-                } else if (line.contains("bookname=")) {
-                    bookName = line.substring(9);
-                } else if (line.contains("synwordcount=")) {
-                    synWordCount = Integer.parseInt(line.substring(13));
-                } else if (line.contains("wordcount=")) {
-                    wordCount = Integer.parseInt(line.substring(10));
-                } else if (line.contains("idxfilesize=")) {
-                    idxFileSize = Integer.parseInt(line.substring(12));
-                } else if (line.contains("idxoffsetbits=")) {
-                    idxOffsetBits = Integer.parseInt(line.substring(14));
-                } else if (line.contains("author=")) {
-                    author = line.substring(7);
-                } else if (line.contains("email=")) {
-                    email = line.substring(6);
-                } else if (line.contains("website=")) {
-                    website = line.substring(8);
-                } else if (line.contains("description=")) {
-                    description = line.substring(12);
-                } else if (line.contains("date=")) {
-                    date = line.substring(5);
-                } else if (line.contains("sametypesequence=")) {
-                    sameTypeSequence = line.substring(17);
-                    //System.out.println("Same Type Sequence: " + line.substring(17));
-                } else if (line.contains("dicttype=")) {
-                    dictType = line.substring(9);
-                }
-            }
+            parseIfoContent(input);
         } catch (FileNotFoundException e) {
-            //TODO: "Cannot read info file: " + infoFile
+            logger.error(TAG, "Cannot read info file: " + infoFile);
+        }
+    }
+
+    /**
+     * Parses .ifo content, line by line, into this object's fields.
+     *
+     * @param input a Scanner positioned at the start of the .ifo content.
+     */
+    private void parseIfoContent(Scanner input) {
+        input.useDelimiter("\n");
+        while (input.hasNextLine()) {
+            String line = input.nextLine();
+            if (line.contains("version=")) {
+                version = line.substring(8);
+            } else if (line.contains("bookname=")) {
+                bookName = line.substring(9);
+            } else if (line.contains("synwordcount=")) {
+                synWordCount = Integer.parseInt(line.substring(13));
+            } else if (line.contains("wordcount=")) {
+                wordCount = Integer.parseInt(line.substring(10));
+            } else if (line.contains("idxfilesize=")) {
+                idxFileSize = Integer.parseInt(line.substring(12));
+            } else if (line.contains("idxoffsetbits=")) {
+                idxOffsetBits = Integer.parseInt(line.substring(14));
+            } else if (line.contains("author=")) {
+                author = line.substring(7);
+            } else if (line.contains("email=")) {
+                email = line.substring(6);
+            } else if (line.contains("website=")) {
+                website = line.substring(8);
+            } else if (line.contains("description=")) {
+                description = line.substring(12);
+            } else if (line.contains("date=")) {
+                date = line.substring(5);
+            } else if (line.contains("sametypesequence=")) {
+                sameTypeSequence = line.substring(17);
+            } else if (line.contains("dicttype=")) {
+                dictType = line.substring(9);
+            }
         }
     }
 
@@ -265,5 +304,4 @@ public class BookInfo {
     public String getDirPath() {
         return dirPath;
     }
-
 }

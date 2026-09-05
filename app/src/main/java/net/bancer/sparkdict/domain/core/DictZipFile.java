@@ -1,5 +1,8 @@
 package net.bancer.sparkdict.domain.core;
 
+import net.bancer.sparkdict.logging.ConsoleLogger;
+import net.bancer.sparkdict.logging.Logger;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -38,6 +41,8 @@ class Chunk {
  * DictZipFile is an abstraction of <dictionary name>.dict.dz file.
  */
 public class DictZipFile {
+
+    private static final String TAG = "DictZipFile";
 
     private static final int FHCRC = 2;
 
@@ -111,17 +116,34 @@ public class DictZipFile {
     private int pointerPosition;
 
     /**
+     * Logger writes messages to logs.
+     */
+    private final Logger logger;
+
+    /**
      * Opens a dictionary .dict.dz file and initialises its decompression state.
      *
-     * @param dictzipfilename full path to the <dictionary name>.dict.dz file.
+     * @param dictzipfilename Full path to the <dictionary name>.dict.dz file.
+     * @param logger          Logger to write messages to logs.
      */
-    public DictZipFile(String dictzipfilename) throws IOException {
+    public DictZipFile(String dictzipfilename, Logger logger) throws IOException {
+        this.logger = logger;
         dzFile = new RandomAccessFile(dictzipfilename, "r");
         pos = 0;
         pointerPosition = 0;
         chunks = new ArrayList<>();
         this.readGZipHeader();
     }
+
+    /**
+     * Opens a dictionary .dict.dz file and initialises its decompression state.
+     *
+     * @param dictzipfilename Full path to the <dictionary name>.dict.dz file.
+     */
+    public DictZipFile(String dictzipfilename) throws IOException {
+        this(dictzipfilename, new ConsoleLogger());
+    }
+
 
     /**
      * Reads data from the current position into the specified buffer.
@@ -176,7 +198,7 @@ public class DictZipFile {
             try {
                 dzFile.close();
             } catch (IOException e) {
-                //TODO: Log "Cannot close dictionary .dict.dz file"
+                logger.error(TAG, "Cannot close dictionary .dict.dz file", e);
             } finally {
                 dzFile = null;
             }

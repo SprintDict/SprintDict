@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.Bundle;
 import android.view.Gravity;
 import android.widget.Toast;
 
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.Shelf;
+import net.bancer.sparkdict.logging.AndroidLogger;
+import net.bancer.sparkdict.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -34,6 +37,15 @@ public abstract class BaseActivity extends Activity {
     private static final int RECENT_HISTORY_MAX_SIZE = 100;
     private static Shelf shelf;
     private static LinkedList<String> recentHistory;
+
+    private Logger logger;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        logger = new AndroidLogger();
+    }
+
 
     /**
      * Retrieves path to dictionaries from shared preferences.
@@ -157,7 +169,7 @@ public abstract class BaseActivity extends Activity {
     protected void refreshShelf() {
         String dictPath = getDictPathFromPrefs();
         String[] enabledDicts = getEnabledDictsFromPrefs();
-        shelf = new Shelf(dictPath, enabledDicts);
+        shelf = new Shelf(dictPath, enabledDicts, logger);
     }
 
     /**

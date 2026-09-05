@@ -1,6 +1,7 @@
 package net.bancer.sparkdict.domain.core;
 
-import android.util.Log;
+import net.bancer.sparkdict.logging.ConsoleLogger;
+import net.bancer.sparkdict.logging.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,15 +26,37 @@ public class ResourcesZipFile {
     private ZipFile zipFile = null;
 
     /**
+     * Logger writes messages to logs.
+     */
+    private final Logger logger;
+
+    /**
      * Opens a dictionary's res.zip file and initialises its decompression state.
      *
      * @param file full path to the res.zip file.
      */
     public ResourcesZipFile(File file) {
+        logger = new ConsoleLogger();
         try {
             zipFile = new ZipFile(file);
         } catch (IOException e) {
-            Log.e(TAG, "Cannot open resource ZIP: " + file, e);
+            logger.error(TAG, "Cannot open resource ZIP: " + file, e);
+            close();
+        }
+    }
+
+    /**
+     * Opens a dictionary's res.zip file and initialises its decompression state.
+     *
+     * @param file full path to the res.zip file.
+     * @param logger   logger to write messages to logs.
+     */
+    public ResourcesZipFile(File file, Logger logger) {
+        this.logger = logger;
+        try {
+            zipFile = new ZipFile(file);
+        } catch (IOException e) {
+            logger.error(TAG, "Cannot open resource ZIP: " + file, e);
             close();
         }
     }
@@ -66,12 +89,12 @@ public class ResourcesZipFile {
                 offset += bytesRead;
             }
             if (offset != result.length) {
-                Log.e(TAG, "Unexpected end of ZIP entry: " + entryName);
+                logger.error(TAG, "Unexpected end of ZIP entry: " + entryName);
                 return new byte[0];
             }
             return result;
         } catch (IOException e) {
-            Log.e(TAG, "Cannot read ZIP entry: " + entryName, e);
+            logger.error(TAG, "Cannot read ZIP entry: " + entryName, e);
             return new byte[0];
         }
     }
@@ -88,7 +111,7 @@ public class ResourcesZipFile {
             try {
                 zipFile.close();
             } catch (IOException e) {
-                Log.e(TAG, "Cannot close dictionary res.zip file", e);
+                logger.error(TAG, "Cannot close dictionary res.zip file", e);
             } finally {
                 zipFile = null;
             }
