@@ -46,9 +46,14 @@ public class Book implements Iterable<IndexEntry>, Closeable {
     private ResourcesZipFile resZipFile = null;
 
     /**
-     * Index entries iterator.
+     * Index entries iterator, used for exact-lemma searches.
      */
-    private Iterator<IndexEntry> indexEntriesIterator;
+    private IndexEntriesIterator searchIterator;
+
+    /**
+     * Index entries iterator, used for prefix-based suggestion searches.
+     */
+    private IndexEntriesIterator suggestionsIterator;
 
     private final DictionaryFiles dictionaryFiles;
 
@@ -262,19 +267,47 @@ public class Book implements Iterable<IndexEntry>, Closeable {
     }
 
     /**
-     * Returns an Iterator for index entries.
+     * Returns an Iterator for index entries, used for exact-lemma searches
+     * (see {@link #getLexicalEntry(String)}).
+     *
+     * <p>This is intentionally a separate cached instance from the one used by
+     * {@link #getSuggestions(String)} -- IndexEntriesIterator carries mutable
+     * cursor/search state, and the two access patterns (exact-match search vs.
+     * prefix-based suggestion browsing) have different traversal semantics.
+     * Sharing one instance between them, even in a single-threaded world, is
+     * incorrect: whichever access pattern ran most recently silently clobbers
+     * the other's cursor state. Splitting them also removes a genuine data race
+     * that existed when both were driven concurrently from different background
+     * threads -- the suggestion dropdown's executor and the search executor.</p>
      */
     @Override
     @NotNull
     public Iterator<IndexEntry> iterator() {
-        if (indexEntriesIterator == null) {
+        if (searchIterator == null) {
             try {
-                indexEntriesIterator = new IndexEntriesIterator(bookInfo);
+                searchIterator = new IndexEntriesIterator(bookInfo);
             } catch (DomainException e) {
                 // TODO log error
             }
         }
-        return indexEntriesIterator;
+        return searchIterator;
+    }
+
+    /**
+     * Returns the Iterator used for prefix-based suggestion browsing (see
+     * {@link #getSuggestions(String)}), independent from the one returned by
+     * {@link #iterator()} -- see that method's documentation for why they must
+     * not be shared.
+     */
+    private IndexEntriesIterator getSuggestionsIterator() {
+        if (suggestionsIterator == null) {
+            try {
+                suggestionsIterator = new IndexEntriesIterator(bookInfo);
+            } catch (DomainException e) {
+                // TODO log error
+            }
+        }
+        return suggestionsIterator;
     }
 
     /**
@@ -285,7 +318,7 @@ public class Book implements Iterable<IndexEntry>, Closeable {
      */
     public Vector<IndexEntry> getSuggestions(String prefix) {
         Vector<IndexEntry> result = new Vector<>(IndexEntriesIterator.MAX);
-        IndexEntriesIterator iterator = (IndexEntriesIterator) iterator();
+        IndexEntriesIterator iterator = getSuggestionsIterator();
         if (!iterator.hasNext()) {
             //TODO: send notification - probably index file is missing.
             return result;
