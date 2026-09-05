@@ -223,7 +223,7 @@ public class SparkDictActivityTest {
         SharedPreferences preferences = context.getSharedPreferences(SparkDictPreferences.PREFS_NAME, Context.MODE_PRIVATE);
         Map<String, ?> originalPreferences = new HashMap<>(preferences.getAll());
         preferences.edit()
-            .remove(context.getString(R.string.menu_dict_path))
+            .remove(SparkDictPreferences.PREF_DICT_ROOT_URI_NAME)
             .commit();
         return originalPreferences;
     }

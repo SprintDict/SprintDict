@@ -65,6 +65,9 @@ public class SafDictionaryFiles implements DictionaryFiles {
     @Override
     public List<String> findDictionaryMetaFilePaths() {
         List<String> result = new ArrayList<>();
+        if (treeUri == null || treeUri.toString().isEmpty()) {
+            return result;
+        }
         DocumentFile root = DocumentFile.fromTreeUri(context, treeUri);
         if (root == null) {
             return result;

@@ -46,7 +46,7 @@ public abstract class BaseActivity extends Activity {
      * @return path to dictionaries.
      */
     protected String getDictPathFromPrefs() {
-        String key = getString(R.string.menu_dict_path);
+        String key = SparkDictPreferences.PREF_DICT_ROOT_URI_NAME;
         String dictPath = preferences.getString(key);
         return dictPath.trim();
     }
