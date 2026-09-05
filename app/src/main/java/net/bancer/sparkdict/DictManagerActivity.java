@@ -194,24 +194,6 @@ public class DictManagerActivity extends BaseActivity {
     }
 
     /**
-     * Extracts the filesystem path of the folder selected by the user.
-     *
-     * @param uri the URI representing the selected directory
-     * @return the filesystem path of the selected directory
-     */
-    private String extractSelectedFolder(Uri uri) {
-        final String docId = DocumentsContract.getTreeDocumentId(uri);
-        final String[] split = docId.split(":");
-        final String type = split[0];
-        // Get the path that was picked from intent returned by DirectoryPicker
-        String path = split.length > 1 ? split[1] : "";
-        if ("primary".equalsIgnoreCase(type)) {
-            return Environment.getExternalStorageDirectory() + "/" + path;
-        }
-        return "/storage/" + type + "/" + path;
-    }
-
-    /**
      * Saves the dictionary folder selected by the user to {@link SharedPreferences}.
      *
      * <p>Both the filesystem path and the Storage Access Framework URI are persisted.
@@ -225,15 +207,10 @@ public class DictManagerActivity extends BaseActivity {
         if (uri == null) {
             return;
         }
-        String value = this.extractSelectedFolder(uri);
-        // Get the key that identifies the path in SharedPreferences
-        String key = getString(R.string.menu_dict_path);
         // Save the path to SharedPreferences
-        // TODO: remove isSaved after finished migrating to SAF
-        boolean isSaved = preferences.save(key, value);
-        boolean isSavedUri = preferences.save(SparkDictPreferences.PREF_DICT_ROOT_URI_NAME, uri.toString());
+        boolean isSaved = preferences.save(SparkDictPreferences.PREF_DICT_ROOT_URI_NAME, uri.toString());
         String msg;
-        if (isSaved && isSavedUri) { // Create message string for a toast
+        if (isSaved) { // Create message string for a toast
             msg = getString(R.string.dict_path_saved_msg);
             Log.i(TAG, uri + " have been saved to preferences");
         } else {

@@ -19,6 +19,7 @@ import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.Shelf;
 import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
+import net.bancer.sparkdict.storage.SparkDictPreferences;
 
 import java.util.ArrayList;
 import java.util.TreeSet;
@@ -53,7 +54,7 @@ public class SuggestionsProvider extends ContentProvider {
 
     public SuggestionsProvider() {
         //SharedPreferences prefs = getContext().getSharedPreferences("SparkDict", Context.MODE_PRIVATE);
-        //String key = getContext().getString(R.string.menu_dict_path);
+        //String key = SparkDictPreferences.PREF_DICT_ROOT_URI_NAME;
         //String result = prefs.getString(key, "");
     }
 
@@ -74,7 +75,7 @@ public class SuggestionsProvider extends ContentProvider {
         Context context = getContext();
         SharedPreferences prefs = context.getSharedPreferences("SparkDict", Context.MODE_PRIVATE);
 
-        String keyDictPath = context.getString(R.string.menu_dict_path);
+        String keyDictPath = SparkDictPreferences.PREF_DICT_ROOT_URI_NAME;
         String dictPath = prefs.getString(keyDictPath, "");
 
         String keyEnabledDicts = context.getString(R.string.enabled_dicts);
