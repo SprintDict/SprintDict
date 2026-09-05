@@ -1,5 +1,8 @@
 package net.bancer.sparkdict.domain.core;
 
+import net.bancer.sparkdict.logging.ConsoleLogger;
+import net.bancer.sparkdict.logging.Logger;
+
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
@@ -21,6 +24,8 @@ import java.util.zip.Inflater;
  */
 public class ResourcesZipFile implements Closeable {
 
+    private static final String TAG = "ResourcesZipFile";
+
     private static final int EOCD_SIGNATURE = 0x06054b50;
     private static final int CENTRAL_DIRECTORY_SIGNATURE = 0x02014b50;
     private static final int LOCAL_FILE_HEADER_SIGNATURE = 0x04034b50;
@@ -39,17 +44,34 @@ public class ResourcesZipFile implements Closeable {
     private Map<String, ZipEntryInfo> entries;
 
     /**
+     * Logger writes messages to logs.
+     */
+    private final Logger logger;
+
+    /**
      * Opens a dictionary's res.zip file and initialises its decompression state.
      *
      * @param file relative path to the res.zip file.
      * @param dictionaryFiles the DictionaryFiles to read res.zip.
      */
     public ResourcesZipFile(String file, DictionaryFiles dictionaryFiles) {
+        this(file, dictionaryFiles, new ConsoleLogger());
+    }
+
+    /**
+     * Opens a dictionary's res.zip file and initialises its decompression state.
+     *
+     * @param file relative path to the res.zip file.
+     * @param dictionaryFiles the DictionaryFiles to read res.zip.
+     * @param logger   logger to write messages to logs.
+     */
+    public ResourcesZipFile(String file, DictionaryFiles dictionaryFiles, Logger logger) {
+        this.logger = logger;
         try {
             this.resZipFileChannel = dictionaryFiles.openForRead(file);
             initialiseEntries();
         } catch (IOException e) {
-            // res.zip is optional -- not every dictionary has one.
+            logger.error(TAG, "Cannot open resource ZIP: " + file, e);
             close();
         }
     }
@@ -74,7 +96,7 @@ public class ResourcesZipFile implements Closeable {
             }
             return readEntry(entry);
         } catch (IOException e) {
-            //TODO: log "Cannot read ZIP entry: " + entryName
+            logger.error(TAG, "Cannot read ZIP entry: " + entryName, e);
             return new byte[0];
         }
     }
@@ -92,7 +114,7 @@ public class ResourcesZipFile implements Closeable {
             try {
                 resZipFileChannel.close();
             } catch (IOException e) {
-                //TODO: log "Cannot close .dict.dz channel"
+                logger.error(TAG, "Cannot close dictionary res.zip file", e);
             } finally {
                 resZipFileChannel = null;
             }

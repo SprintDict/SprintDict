@@ -1,6 +1,8 @@
 package net.bancer.sparkdict.domain.core;
 
 import net.bancer.sparkdict.domain.utils.DomainException;
+import net.bancer.sparkdict.logging.ConsoleLogger;
+import net.bancer.sparkdict.logging.Logger;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -14,6 +16,8 @@ import java.util.Vector;
  * entries.
  */
 public class Book implements Iterable<IndexEntry>, Closeable {
+
+    private static final String TAG = "Book";
 
     /**
      * Extension of the compressed dictionary file: <dictionary name>.dict.dz
@@ -29,6 +33,11 @@ public class Book implements Iterable<IndexEntry>, Closeable {
      * BookInfo object.
      */
     private final BookInfo bookInfo;
+
+    /**
+     * Logger writes messages to logs.
+     */
+    private final Logger logger;
 
     /**
      * Flag indicating whether the dictionary is enabled (searchable) or not.
@@ -64,7 +73,19 @@ public class Book implements Iterable<IndexEntry>, Closeable {
      * @param dictionaryFiles the DictionaryFiles to associate with this book.
      */
     public Book(String relativeIfoPath, DictionaryFiles dictionaryFiles) {
+        this(relativeIfoPath, dictionaryFiles, new ConsoleLogger());
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param relativeIfoPath root-relative path to the .ifo document.
+     * @param dictionaryFiles the DictionaryFiles to associate with this book.
+     * @param logger   Logger to write messages to logs.
+     */
+    public Book(String relativeIfoPath, DictionaryFiles dictionaryFiles, Logger logger) {
         this.dictionaryFiles = dictionaryFiles;
+        this.logger = logger;
         bookInfo = new BookInfo(relativeIfoPath, dictionaryFiles);
     }
 
@@ -175,17 +196,22 @@ public class Book implements Iterable<IndexEntry>, Closeable {
         try {
             if (dzFile == null) {
                 String file = bookInfo.getFileBaseName() + DICT_FILE_EXTENSION;
-                dzFile = new DictZipFile(file, dictionaryFiles);
+                dzFile = new DictZipFile(file, dictionaryFiles, logger);
             }
             if (resZipFile == null) {
                 String resZipPath = bookInfo.getDirPath() + "/" + RES_ZIP_NAME;
-                resZipFile = new ResourcesZipFile(resZipPath, dictionaryFiles);
+                resZipFile = new ResourcesZipFile(resZipPath, dictionaryFiles, logger);
             }
             byte[] buffer = dzFile.read(idxEntry.getWordDataOffset(), idxEntry.getWordDataSize());
             String lemma = idxEntry.getLemma();
-            return new LexicalEntry(lemma, buffer, bookInfo, resZipFile);
+            return new LexicalEntry(lemma, buffer, bookInfo, resZipFile, logger);
         } catch (IOException e) {
-            // TODO: log error
+            String message = String.format(
+                "Failed to read a lexical entry '%s' in %s dictionary",
+                idxEntry,
+                bookInfo.getBookName()
+            );
+            logger.error(TAG, message, e);
             return null;
         }
     }
@@ -229,6 +255,11 @@ public class Book implements Iterable<IndexEntry>, Closeable {
         LexicalEntry result = null;
         IndexEntriesIterator iterator = (IndexEntriesIterator) iterator();
         if (!iterator.hasNext()) {
+            String message = String.format(
+                "Index entries iterator for %s dictionary has no values. Index file is probably missing",
+                bookInfo.getBookName()
+            );
+            logger.error(TAG, message);
             //TODO: send notification - probably index file is missing.
             return null;
         }
@@ -304,7 +335,11 @@ public class Book implements Iterable<IndexEntry>, Closeable {
             try {
                 suggestionsIterator = new IndexEntriesIterator(bookInfo);
             } catch (DomainException e) {
-                // TODO log error
+                String message = String.format(
+                    "Failed to construct index entries iterator for %s dictionary",
+                    bookInfo.getBookName()
+                );
+                logger.error(TAG, message, e);
             }
         }
         return suggestionsIterator;
@@ -320,6 +355,11 @@ public class Book implements Iterable<IndexEntry>, Closeable {
         Vector<IndexEntry> result = new Vector<>(IndexEntriesIterator.MAX);
         IndexEntriesIterator iterator = getSuggestionsIterator();
         if (!iterator.hasNext()) {
+            String message = String.format(
+                "Index entries iterator for %s dictionary has no values. Index file is probably missing",
+                bookInfo.getBookName()
+            );
+            logger.error(TAG, message);
             //TODO: send notification - probably index file is missing.
             return result;
         }
@@ -339,7 +379,12 @@ public class Book implements Iterable<IndexEntry>, Closeable {
                         entry = iterator.nextSuggestion(prefixVariation);
                     }
                 } catch (DomainException e) {
-                    // TODO: log error
+                    String message = String.format(
+                        "Failed to find a suggestion for '%s' prefix in %s dictionary",
+                        prefixVariation,
+                        bookInfo.getBookName()
+                    );
+                    logger.error(TAG, message, e);
                 }
             }
         }

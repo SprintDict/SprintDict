@@ -9,6 +9,8 @@ import android.widget.Toast;
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.Shelf;
+import net.bancer.sparkdict.logging.AndroidLogger;
+import net.bancer.sparkdict.logging.Logger;
 import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 import net.bancer.sparkdict.storage.SparkDictPreferences;
 
@@ -20,6 +22,11 @@ import java.util.LinkedList;
  * activities.
  */
 public abstract class BaseActivity extends Activity {
+
+    /**
+     * The name of SparkDict shared preferences.
+     */
+    public static final String PREFS_NAME = "SparkDict";
 
     protected SparkDictPreferences preferences;
 
@@ -34,9 +41,12 @@ public abstract class BaseActivity extends Activity {
     private static Shelf shelf;
     private static LinkedList<String> recentHistory;
 
+    private Logger logger;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        logger = new AndroidLogger();
         preferences = new SparkDictPreferences(this);
     }
 
@@ -103,7 +113,7 @@ public abstract class BaseActivity extends Activity {
     protected void refreshShelf() {
         DictionaryFiles dictionaryFiles = createDictionaryFiles();
         String[] enabledDicts = getEnabledDictsFromPrefs();
-        shelf = new Shelf(enabledDicts, dictionaryFiles);
+        shelf = new Shelf(enabledDicts, dictionaryFiles, logger);
     }
 
     /**

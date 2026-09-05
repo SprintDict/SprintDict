@@ -1,5 +1,8 @@
 package net.bancer.sparkdict.domain.core;
 
+import net.bancer.sparkdict.logging.ConsoleLogger;
+import net.bancer.sparkdict.logging.Logger;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -10,6 +13,8 @@ import java.util.List;
  */
 public class Shelf {
 
+    private static final String TAG = "Shelf";
+
     private ArrayList<Book> books;
 
 
@@ -18,6 +23,11 @@ public class Shelf {
      */
     private final String[] enabledDicts;
 
+    /**
+     * Logger writes messages to logs.
+     */
+    private final Logger logger;
+
     private final DictionaryFiles dictionaryFiles;
 
     /**
@@ -25,11 +35,23 @@ public class Shelf {
      *
      * @param enabledDicts string array of the enabled dictionaries titles.
      * @param dictionaryFiles the DictionaryFiles to associate with this shelf.
+     * @param logger       Logger to write messages to logs.
      */
-    public Shelf(String[] enabledDicts, DictionaryFiles dictionaryFiles) {
+    public Shelf(String[] enabledDicts, DictionaryFiles dictionaryFiles, Logger logger) {
         this.enabledDicts = enabledDicts;
         this.dictionaryFiles = dictionaryFiles;
+        this.logger = logger;
         putBooksOnShelf();
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param enabledDicts string array of the enabled dictionaries titles.
+     * @param enabledDicts String array of the enabled dictionaries titles.
+     */
+    public Shelf(String[] enabledDicts, DictionaryFiles dictionaryFiles) {
+        this(enabledDicts, dictionaryFiles, new ConsoleLogger());
     }
 
     /**
@@ -72,7 +94,7 @@ public class Shelf {
         HashMap<String, Book> booksMap = new HashMap<>();
         List<String> ifoPaths = dictionaryFiles.findDictionaryMetaFilePaths();
         for (String ifoPath : ifoPaths) {
-            Book dic = new Book(ifoPath, dictionaryFiles);
+            Book dic = new Book(ifoPath, dictionaryFiles, logger);
             booksMap.put(dic.getBookName(), dic);
         }
         return booksMap;
