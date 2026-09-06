@@ -36,7 +36,7 @@ public abstract class BaseActivity extends Activity {
     private static Shelf shelf;
     private static LinkedList<String> recentHistory;
 
-    private Logger logger;
+    protected Logger logger;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,6 +45,7 @@ public abstract class BaseActivity extends Activity {
         preferences = new SparkDictPreferences(this);
     }
 
+
     /**
      * Retrieves path to dictionaries from shared preferences.
      *
@@ -52,8 +53,11 @@ public abstract class BaseActivity extends Activity {
      */
     protected String getDictPathFromPrefs() {
         String key = SparkDictPreferences.PREF_DICT_ROOT_URI_NAME;
-        String dictPath = preferences.getString(key);
-        return dictPath.trim();
+        String dictPath = preferences.getString(key).trim();
+        if (dictPath.isEmpty()) {
+            logger.error(TAG, "Dictionaries path in preferences is empty");
+        }
+        return dictPath;
     }
 
     /**
