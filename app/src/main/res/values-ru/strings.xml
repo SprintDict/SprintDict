@@ -48,4 +48,5 @@
     <string name="updating_view">Обновление экрана&#8230;</string>
     <string name="dict_cannot_be_indexed">%s словарь не проиндексирован. Пожалуйста, проинформируйте разработчиков.</string>
     <string name="sprint_dict_indexing_notification">Индексация словарей</string>
+    <string name="parsing_definitions">Обработка дефиниций…</string>
 </resources>
