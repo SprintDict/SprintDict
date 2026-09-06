@@ -318,7 +318,11 @@ public class Book implements Iterable<IndexEntry>, Closeable {
             try {
                 searchIterator = new IndexEntriesIterator(bookInfo);
             } catch (DomainException e) {
-                // TODO log error
+                String message = String.format(
+                    "Failed to construct exact-search iterator for %s dictionary",
+                    bookInfo.getBookName()
+                );
+                logger.error(TAG, message, e);
             }
         }
         return searchIterator;
@@ -336,7 +340,7 @@ public class Book implements Iterable<IndexEntry>, Closeable {
                 suggestionsIterator = new IndexEntriesIterator(bookInfo);
             } catch (DomainException e) {
                 String message = String.format(
-                    "Failed to construct index entries iterator for %s dictionary",
+                    "Failed to construct prefix-search iterator for %s dictionary",
                     bookInfo.getBookName()
                 );
                 logger.error(TAG, message, e);
