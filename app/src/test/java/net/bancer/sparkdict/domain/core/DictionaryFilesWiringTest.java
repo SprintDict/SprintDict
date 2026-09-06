@@ -5,10 +5,13 @@ import static org.junit.Assert.assertSame;
 
 import net.bancer.sparkdict.Fixtures;
 
-import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -28,11 +31,80 @@ public class DictionaryFilesWiringTest {
             return Collections.singletonList("Stub/Stub.ifo");
         }
         @Override public SeekableByteChannel openForRead(String path) {
-            return new SeekableInMemoryByteChannel(STUB_IFO_BYTES.clone());
+            return new InMemorySeekableByteChannel(STUB_IFO_BYTES.clone());
         }
         @Override public OutputStream createForWrite(String path) { throw new UnsupportedOperationException(); }
         @Override public boolean delete(String path) { throw new UnsupportedOperationException(); }
     };
+
+    /**
+     * Minimal read-only SeekableByteChannel backed by a byte array, just
+     * enough for BookInfo's .ifo parsing (position + read + size). Write and
+     * truncate are unsupported since nothing in this test needs them.
+     */
+    private static final class InMemorySeekableByteChannel implements SeekableByteChannel {
+
+        private final byte[] data;
+        private int position = 0;
+        private boolean open = true;
+
+        private InMemorySeekableByteChannel(byte[] data) {
+            this.data = data;
+        }
+
+        @Override
+        public int read(ByteBuffer dst) throws IOException {
+            if (!open) {
+                throw new ClosedChannelException();
+            }
+            if (position >= data.length) {
+                return -1;
+            }
+            int length = Math.min(dst.remaining(), data.length - position);
+            dst.put(data, position, length);
+            position += length;
+            return length;
+        }
+
+        @Override
+        public int write(ByteBuffer src) {
+            throw new NonWritableChannelException();
+        }
+
+        @Override
+        public long position() {
+            return position;
+        }
+
+        @Override
+        public SeekableByteChannel position(long newPosition) throws IOException {
+            if (!open) {
+                throw new ClosedChannelException();
+            }
+            position = (int) newPosition;
+            return this;
+        }
+
+        @Override
+        public long size() {
+            return data.length;
+        }
+
+        @Override
+        public SeekableByteChannel truncate(long size) {
+            throw new NonWritableChannelException();
+        }
+
+        @Override
+        public boolean isOpen() {
+            return open;
+        }
+
+        @Override
+        public void close() {
+            open = false;
+        }
+    }
 
     @Test
     public void bookInfoStoresSuppliedDictionaryFiles() {
