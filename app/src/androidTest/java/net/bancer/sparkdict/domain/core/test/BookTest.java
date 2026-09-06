@@ -2,6 +2,7 @@ package net.bancer.sparkdict.domain.core.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -36,11 +37,31 @@ public class BookTest {
     }
 
     @Test
-    public void testGetInfo() {
+    public void testGetInfoFromWordnet() {
         BookInfo bookInfo = book.getInfo();
         assertNotNull(bookInfo);
         assertEquals("WordNet", bookInfo.getBookName());
         assertEquals("n", bookInfo.getSameTypeSequence());
+    }
+
+    @Test
+    public void testGetInfoFromCambridge() {
+        BookInfo bookInfo;
+        Book book = new Book(new File(Mocks.CAMBRIDGE_IFO_PATH));
+        bookInfo = book.getInfo();
+        assertNotNull(bookInfo);
+        assertEquals("Cambridge Advanced Learners Dictionary 3th Ed. (En-En)", bookInfo.getBookName());
+        assertEquals("x", bookInfo.getSameTypeSequence());
+    }
+
+    @Test
+    public void testSetEnabledWordnet() {
+        Book book = new Book(new File(Mocks.WORDNET_IFO_PATH));
+        boolean enabled = book.isEnabled();
+        assertEquals(enabled, book.isEnabled());
+        book.setEnabled(!enabled);
+        assertEquals(!enabled, book.isEnabled());
+        book.setEnabled(enabled);
     }
 
     @Test
@@ -53,22 +74,22 @@ public class BookTest {
     }
 
     @Test
-    public void testGetBookName() {
+    public void testGetBookNameFromWordnet() {
         assertEquals("WordNet", book.getBookName());
     }
 
     @Test
-    public void testToString() {
+    public void testToStringWordnet() {
         assertTrue(book.toString().contains("WordNet"));
     }
 
     @Test
-    public void testGetLexicalEntriesQuantity() {
+    public void testGetLexicalEntriesQuantityFromWordnet() {
         assertEquals(117659, book.getLexicalEntriesQuantity());
     }
 
     @Test
-    public void testGetLexicalEntry() throws DomainException {
+    public void testGetLexicalEntryFromWordnet() throws DomainException {
         LexicalEntry entry = book.getLexicalEntry("15 May Organization");
         String expected = "<i><font color=\"#006600\">n</font></i><br>" +
             "<gloss>a terrorist organization formed in 1979 by a faction " +
@@ -79,7 +100,57 @@ public class BookTest {
     }
 
     @Test
-    public void testGetLexicalEntryWithMultipleIndexEntries() throws DomainException {
+    public void testGetLexicalEntryEmptyFromWordnet() throws DomainException {
+        LexicalEntry entry;
+        Book book = new Book(new File(Mocks.WORDNET_IFO_PATH));
+        entry = book.getLexicalEntry("");
+        assertNull(entry);
+    }
+
+    @Test
+    public void testGetLexicalEntryFromCambridge() throws DomainException {
+        Book book = new Book(new File(Mocks.CAMBRIDGE_IFO_PATH));
+        LexicalEntry entry = book.getLexicalEntry("abacus");
+        book.closeResources();
+        String expected = "<big>abacus</big><br><br><b>abacus</b>" +
+            " <font color=\"#808080\"> </font>" +
+            "<font color=\"#006600\">UK</font>" +
+            " <object data=\"z_uka____012.wav\">z_uka____012.wav</object>" +
+            " <font color=\"#006600\">US</font>" +
+            " <object data=\"z_abacus.wav\">z_abacus.wav</object>" +
+            " <font color=\"#008B8B\">[</font>" +
+            "<font color=\"#008B8B\">ˈæb.ə.kəs</font>" +
+            "<font color=\"#008B8B\">]</font>" +
+            " <font color=\"#FFA500\"> noun </font>" +
+            "&nbsp;&nbsp;<font color=\"#FF4500\">countable</font>" +
+            " <font color=\"#BC8F8F\">[</font>" +
+            "<font color=\"#2F4F4F\"><b>abacuses</b></font>" +
+            "<font color=\"#BC8F8F\">]</font>" +
+            "<br><blockquote>" +
+            "<img src=\"x_abacus.jpg\">" +
+            "<br> a square or rectangular frame holding an arrangement of small balls on metal" +
+            " rods or wires, which is used for counting, adding and subtracting&nbsp;&nbsp;" +
+            "</blockquote>" +
+            "<br><blockquote><blockquote><blockquote>" +
+            "<font color=\"#2F4F4F\"><font color=\"%s\">Thesaurus</font><sup>+</sup>: </font>" +
+            "[Weighing, measuring and counting devices]" +
+            "</blockquote></blockquote></blockquote>";
+        assertEquals(expected, entry.getDefinitions());
+    }
+
+    @Test
+    public void testGetLexicalEntryFromMueller() throws DomainException {
+        LexicalEntry entry;
+        Book book = new Book(new File(Mocks.MUELLER_IFO_PATH));
+        entry = book.getLexicalEntry("abacus");
+        String expected = "ˈæbəkəs\n" +
+            "_n. (_pl. -es [Iz], -ci) 1> _ист. счёты" +
+            "<br><br>2> _архит. абак(а), верхняя часть капители";
+        assertEquals(expected, entry.getDefinitions());
+    }
+
+    @Test
+    public void testGetLexicalEntryWithMultipleIndexEntriesFromWordnet() throws DomainException {
         String expected = "<i><font color=\"#006600\">v</font></i><br>" +
             "<b>&#8226; put away</b><br>" +
             "<b>&#8226; put aside</b><br>" +
@@ -102,14 +173,14 @@ public class BookTest {
     }
 
     @Test
-    public void testIterator() {
+    public void testIteratorFromWordnet() {
         Iterator<IndexEntry> iterator = book.iterator();
         assertNotNull(iterator);
         assertTrue(iterator instanceof IndexEntriesIterator);
     }
 
     @Test
-    public void testGetSuggestions() {
+    public void testGetSuggestionsFromWordnet() {
         Vector<IndexEntry> suggestions = book.getSuggestions(".");
         assertNotNull(suggestions);
         assertEquals(3, suggestions.size());
