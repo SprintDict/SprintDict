@@ -109,6 +109,7 @@ public class SparkDictActivity extends BaseActivity
                 restoreDefinitionsViewsState(savedInstanceState);
                 restoreScrollPosition(savedInstanceState);
                 //String searchStr = savedInstanceState.getString(KEY_SEARCH_STR);
+                // TODO: figure out how to restore properly using LexicalEntryView.expand()
                 restoreHighlight(savedInstanceState);
             }
         } else {
