@@ -33,6 +33,8 @@ public class UnrecognizedTagsHandler implements TagHandler {
 
     private final Context context;
 
+    private Href currentHref;
+
     public UnrecognizedTagsHandler(LexicalEntry lexicalEntry, Context context) {
         this.lexicalEntry = lexicalEntry;
         this.context = context;
@@ -57,7 +59,8 @@ public class UnrecognizedTagsHandler implements TagHandler {
      */
     private void handleObjectStartTag(Editable output) {
         int len = output.length();
-        output.setSpan(new Href(), len, len, Spannable.SPAN_MARK_MARK);
+        currentHref = new Href();
+        output.setSpan(currentHref, len, len, Spannable.SPAN_MARK_MARK);
     }
 
     /**
@@ -68,20 +71,19 @@ public class UnrecognizedTagsHandler implements TagHandler {
      */
     private void handleObjectEndTag(Editable output) {
         int len = output.length();
-        Object obj = getLastSpanObj(output);
-        int where = output.getSpanStart(obj);
-        output.removeSpan(obj);
+        Href href = currentHref;
+        currentHref = null;
+        if (href == null) {
+            return;
+        }
+        int where = output.getSpanStart(href);
+        output.removeSpan(href);
         if (where == len) {
             return;
         }
-        Href h = (Href) obj;
         char[] resourceName = new char[len - where];
         output.getChars(where, len, resourceName, 0);
-        if (h == null) {
-            return;
-        }
-        h.mHref = resourceName;
-        String src = new String(h.mHref);
+        String src = new String(resourceName);
         // remove resource name from output
         output.delete(where, len);
         // insert audio image span
