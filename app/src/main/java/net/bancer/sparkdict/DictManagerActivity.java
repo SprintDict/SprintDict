@@ -203,7 +203,7 @@ public class DictManagerActivity extends BaseActivity {
         // Get the key that identifies the path in SharedPreferences
         String key = getString(R.string.menu_dict_path);
         // Save the path to SharedPreferences
-        boolean isSaved = saveSharedPreference(key, value);
+        boolean isSaved = preferences.save(key, value);
         String msg;
         if (isSaved) { // Create message string for a toast
             msg = getString(R.string.dict_path_saved_msg, value);
@@ -234,7 +234,7 @@ public class DictManagerActivity extends BaseActivity {
                 enabledDicts.append(book.getBookName());
             }
         }
-        boolean isSaved = saveSharedPreference(
+        boolean isSaved = preferences.save(
             getString(R.string.enabled_dicts),
             enabledDicts.toString()
         );
