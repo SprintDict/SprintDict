@@ -31,7 +31,7 @@ import net.bancer.sparkdict.views.helpers.UnrecognizedTagsHandler;
 @SuppressLint("AppCompatCustomView")
 public class DefinitionsView extends EditText {
 
-    private static final int BLOCKQUOTE_INDENT = 40;
+    private static final int BLOCKQUOTE_INDENT = 10;
 
     /**
      * Focused word background colour.
@@ -42,6 +42,11 @@ public class DefinitionsView extends EditText {
      * Colour state list used for highlighting.
      */
     private ColorStateList colorStateList;
+
+    /**
+     * Original definitions text without any highlighting.
+     */
+    private Spanned originalText;
 
     /**
      * Constructor.
@@ -152,8 +157,7 @@ public class DefinitionsView extends EditText {
     }
 
     /**
-     * Parses the HTML definitions of the specified lexical entry and sets the
-     * resulting formatted text as the content of this view.
+     * Parses the HTML definitions of the specified lexical entry.
      *
      * <p>The HTML content is converted into a {@link Spanned} object using
      * {@link Html#fromHtml(String, int, Html.ImageGetter, Html.TagHandler)}.
@@ -162,16 +166,35 @@ public class DefinitionsView extends EditText {
      * adjusted to use indentation instead of Android's default quote styling.</p>
      *
      * @param lexicalEntry lexical entry containing the HTML definitions to display.
+     * @return parsed definition.
      */
-    public void parseHtmlAndSetText(final LexicalEntry lexicalEntry) {
+    public Spanned parseHtml(final LexicalEntry lexicalEntry) {
         String html = lexicalEntry.getDefinitions();
         int maxImageWidth = computeMaxImageWidth();
         Resources resources = getContext().getResources();
         Html.ImageGetter imageGetter = new DictResourceImageGetter(lexicalEntry, maxImageWidth, resources);
         Html.TagHandler tagHandler = new UnrecognizedTagsHandler(lexicalEntry, getContext());
         Spanned parsedHtml = Html.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY, imageGetter, tagHandler);
-        SpannableStringBuilder finalizedHtml = indentBlockquotes(parsedHtml);
-        setText(finalizedHtml, TextView.BufferType.SPANNABLE);
+        return indentBlockquotes(parsedHtml);
+    }
+
+    /**
+     * Sets a previously parsed definition as the content of this view.
+     *
+     * @param parsedHtml parsed definition.
+     */
+    public void setParsedHtml(Spanned parsedHtml) {
+        originalText = parsedHtml;
+        setText(parsedHtml, TextView.BufferType.SPANNABLE);
+    }
+
+    /**
+     * Restores original definitions text without any highlighting.
+     */
+    public void restoreOriginalText() {
+        if (originalText != null) {
+            setText(originalText, TextView.BufferType.SPANNABLE);
+        }
     }
 
     /**

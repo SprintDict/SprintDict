@@ -1,8 +1,12 @@
 package net.bancer.sparkdict.views;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -16,12 +20,17 @@ import net.bancer.sparkdict.R;
 import net.bancer.sparkdict.domain.core.LexicalEntry;
 import net.bancer.sparkdict.storage.SparkDictPreferences;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * LexicalEntryView displays all parts of the lexical entry and handles
  * different transformations of them.
  */
 public class LexicalEntryView extends LinearLayout implements
     View.OnFocusChangeListener, View.OnTouchListener {
+
+    private static final String TAG = "LexicalEntryView";
 
     /**
      * Factor by which the font size is changed after zoom in/out operation.
@@ -57,6 +66,31 @@ public class LexicalEntryView extends LinearLayout implements
      * are expanded or collapsed.
      */
     private ImageView expanderView;
+
+    /**
+     * Progress indicator displayed while the definitions are being parsed.
+     */
+    private LinearLayout definitionsProgressContainer;
+
+    /**
+     * Executor used to parse definitions outside the main application thread.
+     */
+    private static final ExecutorService definitionsExecutor = Executors.newSingleThreadExecutor();
+
+    /**
+     * Handler used to update views on the main application thread.
+     */
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    /**
+     * Indicates whether the definitions have already been parsed.
+     */
+    private boolean definitionsLoaded;
+
+    /**
+     * Indicates whether the definitions are currently being parsed.
+     */
+    private boolean definitionsLoading;
 
     /**
      * Flag to indicate if the procedure of highlighting a word that was
@@ -95,7 +129,6 @@ public class LexicalEntryView extends LinearLayout implements
         this.lexicalEntry = lexicalEntry;
         dictTitleView.setText(lexicalEntry.getDictTitle());
         lemmaView.setText(lexicalEntry.getLemma());
-        definitionsView.parseHtmlAndSetText(lexicalEntry);
     }
 
     /**
@@ -115,6 +148,8 @@ public class LexicalEntryView extends LinearLayout implements
         lemmaView.setOnTouchListener(this);
 
         definitionsView = findViewById(R.id.definitions_body);
+        definitionsProgressContainer = findViewById(R.id.definitions_progress_container);
+
         definitionsView.setOnClickListener((OnClickListener) getContext());
         definitionsView.setOnFocusChangeListener(this);
         definitionsView.setOnTouchListener(this);
@@ -252,15 +287,47 @@ public class LexicalEntryView extends LinearLayout implements
         expanderView.setImageResource(R.drawable.expander_ic_minimized);
         lemmaView.setVisibility(View.GONE);
         definitionsView.setVisibility(View.GONE);
+        definitionsProgressContainer.setVisibility(View.GONE);
     }
 
     /**
-     * Expands definitions of this lexical entry.
+     * Expands this lexical entry and loads its definitions if necessary.
+     *
+     * <p>Definitions are parsed asynchronously to avoid blocking the main UI
+     * thread. A loading indicator is displayed while the definitions are being
+     * parsed.</p>
      */
     void expand() {
         expanderView.setImageResource(R.drawable.expander_ic_maximized);
         lemmaView.setVisibility(View.VISIBLE);
-        definitionsView.setVisibility(View.VISIBLE);
+        if (definitionsLoaded) {
+            definitionsView.setVisibility(View.VISIBLE);
+            return;
+        }
+        if (definitionsLoading) {
+            return;
+        }
+        definitionsLoading = true;
+        definitionsProgressContainer.setVisibility(View.VISIBLE);
+        definitionsExecutor.execute(() -> {
+            try {
+                final Spanned parsedHtml = definitionsView.parseHtml(lexicalEntry);
+                mainHandler.post(() -> {
+                    definitionsView.setParsedHtml(parsedHtml);
+                    definitionsLoaded = true;
+                    definitionsLoading = false;
+                    definitionsProgressContainer.setVisibility(View.GONE);
+                    definitionsView.setVisibility(View.VISIBLE);
+                });
+            } catch (RuntimeException e) {
+                mainHandler.post(() -> {
+                    definitionsLoading = false;
+                    definitionsProgressContainer.setVisibility(View.GONE);
+                    definitionsView.setVisibility(View.GONE);
+                    Log.e(TAG, "Cannot parse lexical entry " + lexicalEntry.getLemma(), e);
+                });
+            }
+        });
     }
 
     /**
@@ -270,12 +337,11 @@ public class LexicalEntryView extends LinearLayout implements
      * @return        `true` if at least one word occurrence was found.
      */
     public boolean highlightWord(String word) {
-        if (definitionsView.getVisibility() == View.VISIBLE) {
+        if (definitionsLoaded && definitionsView.getVisibility() == View.VISIBLE) {
             highlightingDone = true;
             return definitionsView.highlightAllInstancesOfWord(word);
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
@@ -283,7 +349,9 @@ public class LexicalEntryView extends LinearLayout implements
      */
     public void removeHighlighting() {
         highlightingDone = false;
-        definitionsView.parseHtmlAndSetText(lexicalEntry);
+        if (definitionsLoaded) {
+            definitionsView.restoreOriginalText();
+        }
     }
 
     /**
