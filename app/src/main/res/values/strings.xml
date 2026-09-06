@@ -48,4 +48,5 @@
     <string name="updating_view">Updating View&#8230;</string>
     <string name="dict_cannot_be_indexed">%s dictionary cannot be indexed. Please, report to developers.</string>
     <string name="sprint_dict_indexing_notification">Indexing dictionaries</string>
+    <string name="parsing_definitions">Parsing definitions…</string>
 </resources>
