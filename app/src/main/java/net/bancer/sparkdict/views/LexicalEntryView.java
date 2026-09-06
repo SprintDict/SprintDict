@@ -174,7 +174,7 @@ public class LexicalEntryView extends LinearLayout implements
      * Transforms article's text size. If `scaleFactor` is more than 1 the text
      * size increases, if it is less than 1 then decreases.
      *
-     * @param scaleFactor Float value multiplying by which the text size must be change.
+     * @param scaleFactor Float value multiplying by which the text size must be changed.
      */
     private void transformTextSizes(float scaleFactor) {
         int dictionaryTitleSize = (int) (dictTitleView.getTextSize() * scaleFactor);
@@ -313,7 +313,7 @@ public class LexicalEntryView extends LinearLayout implements
     /**
      * Searches in the definitions view text for the index of a word or phrase
      * provided as the `word` parameter. The search of the string starts from
-     * the specified offset and moves towards the end of this string..
+     * the specified offset and moves towards the end of this string.
      *
      * @param word  word or phrase to find.
      * @param start the starting offset.
@@ -331,7 +331,7 @@ public class LexicalEntryView extends LinearLayout implements
     /**
      * Searches in the definitions view text for the last index of a word or phrase
      * provided as the `word` parameter. The search of the string starts from
-     * the specified offset and moves towards the beginning of this string..
+     * the specified offset and moves towards the beginning of this string.
      *
      * @param word  word or phrase to find.
      * @param start the starting offset.

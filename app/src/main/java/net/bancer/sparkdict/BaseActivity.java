@@ -24,16 +24,11 @@ import java.util.LinkedList;
 public abstract class BaseActivity extends Activity {
 
     /**
-     * The name of SparkDict shared preferences.
-     */
-    public static final String PREFS_NAME = "SparkDict";
-
-    protected SparkDictPreferences preferences;
-
-    /**
      * Tag to identify SparkDict (for debug).
      */
     protected static final String TAG = "SparkDict";
+
+    protected SparkDictPreferences preferences;
 
     private static final String RECENT_HISTORY_PREF_KEY = "recent.history";
     private static final String RECENT_HISTORY_WORDS_SEPARATOR = "::";
@@ -44,7 +39,7 @@ public abstract class BaseActivity extends Activity {
     private Logger logger;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         logger = new AndroidLogger();
         preferences = new SparkDictPreferences(this);
