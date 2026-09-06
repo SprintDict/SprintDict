@@ -45,8 +45,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * concurrent pressure rather than only in a single crafted scenario.</p>
  */
 public class BookConcurrencyTest {
+
     private static final String KNOWN_LEMMA = "abacus";
-    private static final String SUGGESTION_PREFIX = "abac";
+
     private static final int SEARCH_ITERATIONS = 100;
 
     /**
