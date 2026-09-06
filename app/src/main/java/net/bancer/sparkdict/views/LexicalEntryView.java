@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 public class LexicalEntryView extends LinearLayout implements
     View.OnFocusChangeListener, View.OnTouchListener {
 
-    private static final String TAG = "Book";
+    private static final String TAG = "LexicalEntryView";
 
     /**
      * Factor by which the font size is changed after zoom in/out operation.

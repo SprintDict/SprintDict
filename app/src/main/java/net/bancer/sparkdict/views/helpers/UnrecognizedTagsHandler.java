@@ -33,6 +33,9 @@ public class UnrecognizedTagsHandler implements TagHandler {
 
     private final Context context;
 
+    /**
+     * Currently processed image or audio element.
+     */
     private Href currentHref;
 
     public UnrecognizedTagsHandler(LexicalEntry lexicalEntry, Context context) {
