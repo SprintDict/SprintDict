@@ -108,7 +108,7 @@ public class SparkDictActivityTest {
             .perform(typeText("go"));
         onView(withId(R.id.searchTextView))
             .perform(pressImeActionButton());
-        Thread.sleep(2000);
+        Thread.sleep(3000);
         // check that the spinning will is not displayed any more
         onView(withId(R.id.search_progress))
             .check(matches(not(isDisplayed())));

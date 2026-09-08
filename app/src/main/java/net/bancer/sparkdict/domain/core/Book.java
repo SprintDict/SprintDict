@@ -192,7 +192,7 @@ public class Book implements Iterable<IndexEntry>, Closeable {
      * @param idxEntry index entry for what the lexical entry is requested.
      * @return LexicalEntry object or `null`.
      */
-    private LexicalEntry getLexicalEntry(IndexEntry idxEntry) {
+    public LexicalEntry getLexicalEntry(IndexEntry idxEntry) {
         try {
             if (dzFile == null) {
                 String file = bookInfo.getFileBaseName() + DICT_FILE_EXTENSION;

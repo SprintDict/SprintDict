@@ -2,7 +2,7 @@ package net.bancer.sparkdict.domain.core;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -19,6 +19,7 @@ public class SparkDictIndexTest {
 
     @Before
     public void setUp() {
+        Fixtures.deleteSparkDictIndex();
         dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);
     }
 
@@ -72,11 +73,40 @@ public class SparkDictIndexTest {
     public void buildIndexCreatesIndexWithExpectedSize() throws IOException {
         BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
-        index.buildIndex();
+        int indexedCount = index.buildIndex();
+        assertEquals(108121, indexedCount);
         assertEquals(bookInfo.getWordCount(), index.getSize());
-        assertNotNull(index.getIndexEntry(0));
-        assertNotNull(index.getIndexEntry(index.getSize() - 1));
-        assertTrue(index.delete());
+        for (int i = 0; i < indexedCount; i++) {
+            IndexEntry indexEntry = index.getIndexEntry(i);
+            String lemma = indexEntry.getLemma();
+            assertFalse(lemma.isEmpty());
+            assertTrue(indexEntry.getWordDataSize() > 0);
+        }
+        index.delete();
+    }
+
+    @Test(timeout = 27000)
+    public void buildIndexAllIndexedWordsHaveLexicalEntries() throws IOException {
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
+        Book book = new Book(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
+        SparkDictIndex index = new SparkDictIndex(bookInfo);
+        int indexedCount = index.buildIndex();
+        assertEquals(108121, indexedCount);
+        assertEquals(bookInfo.getWordCount(), index.getSize());
+        for (int i = 0; i < indexedCount; i++) {
+            IndexEntry indexEntry = index.getIndexEntry(i);
+            String lemma = indexEntry.getLemma();
+            assertFalse(lemma.isEmpty());
+            assertTrue(indexEntry.getWordDataSize() > 0);
+            LexicalEntry lexicalEntry = book.getLexicalEntry(indexEntry);
+            assertEquals(lexicalEntry.getLemma(), lemma);
+            // Check that definitions contain lemma, skipping lemmas consisting of more than one word.
+            if (!lemma.contains(" ") && !lemma.contains("&")) {
+                assertTrue(lexicalEntry.getDefinitions().toLowerCase().contains(lemma.toLowerCase()));
+            }
+        }
+        book.close();
+        index.delete();
     }
 
     @Test
