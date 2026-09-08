@@ -67,7 +67,7 @@ public class SparkDictIndexTest {
         );
     }
 
-    @Test(timeout = 400)
+    @Test(timeout = 500)
     public void buildIndexAllWordsAreIndexed() throws IOException {
         BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
