@@ -33,8 +33,6 @@ public class SparkDictIndex implements IObservable {
 
     private final Vector<IObserver> observers;
 
-    private int articlesIndexed = 0;
-
     private final StarDictIndex starDictIndex;
 
     private final DictionaryFiles dictionaryFiles;
@@ -42,6 +40,8 @@ public class SparkDictIndex implements IObservable {
     private SeekableByteChannel sparkDictReadOnlyFile = null;
 
     private final byte[] sparkDictbuffer;
+
+    private int articlesIndexed = 0;
 
     /**
      * Constructor.
@@ -61,10 +61,10 @@ public class SparkDictIndex implements IObservable {
      * Adopted from: <a href="http://stackoverflow.com/questions/7619058/convert-a-byte-array-to-integer-in-java-and-vise-versa">...</a>
      *
      * @param value integer to be converted into array of bytes.
-     * @return    4-bytes array representing the provided integer.
+     * @return 4-bytes array representing the provided integer.
      */
     public static byte[] intToByteArray(int value) {
-        return new byte[] {
+        return new byte[]{
             (byte) (value >>> 24),
             (byte) (value >>> 16),
             (byte) (value >>> 8),
@@ -78,7 +78,7 @@ public class SparkDictIndex implements IObservable {
      * Adopted from: <a href="http://stackoverflow.com/questions/7619058/convert-a-byte-array-to-integer-in-java-and-vise-versa">...</a>
      *
      * @param b 4-bytes array
-     * @return    integer that was encoded by the provided array of bytes.
+     * @return integer that was encoded by the provided array of bytes.
      */
     public static int byteArrayToInt(byte[] b) {
         return (b[0] << 24)
@@ -91,15 +91,16 @@ public class SparkDictIndex implements IObservable {
      * Inspects <dictionary name>.idx file and creates new <dictionary
      * name>.sparkdict.idx file.
      *
+     * @return int Number of indexed articles.
      * @throws IOException If an I/O error occurs while reading the StarDict index
-	 *     or writing the SparkDict index.
+     *                     or writing the SparkDict index.
      */
-    public void buildIndex() throws IOException {
+    public int buildIndex() throws IOException {
         try (
             SeekableByteChannel starDictIdx = dictionaryFiles.openForRead(starDictIndex.getFileName());
             OutputStream sparkDictIdx = dictionaryFiles.createForWrite(starDictIndex.getFileBaseName() + FILE_EXTENSION)
         ) {
-            parseBookIndex(starDictIndex, starDictIdx, sparkDictIdx);
+            return parseBookIndex(starDictIndex, starDictIdx, sparkDictIdx);
         }
     }
 
@@ -116,14 +117,16 @@ public class SparkDictIndex implements IObservable {
      * @param bookIndex StarDict index to parse.
      * @param starDictIdx channel to StarDict index file.
      * @param sparkDictIdx SparkDict output to be written to file.
+     * @return int Number of indexed articles.
      * @throws IOException If an I/O error occurs while reading the StarDict index
      * or writing the SparkDict index.
      */
-    private void parseBookIndex(
+    private int parseBookIndex(
         StarDictIndex bookIndex,
         SeekableByteChannel starDictIdx,
         OutputStream sparkDictIdx
     ) throws IOException {
+        articlesIndexed = 0;
         long starDictPointer = 0;
         byte[] starDictIdxBuffer = new byte[BUFFER_SIZE];
         starDictIdx.position(starDictPointer);
@@ -149,6 +152,9 @@ public class SparkDictIndex implements IObservable {
             starDictIdx.position(starDictPointer);
             sizeRead = starDictIdx.read(ByteBuffer.wrap(starDictIdxBuffer, 0, BUFFER_SIZE));
         }
+        starDictIdx.close();
+        sparkDictIdx.close();
+        return articlesIndexed;
     }
 
     private void writePointerToSparkdictIndex(long pointer, OutputStream sparkDictIdx) throws IOException {
@@ -199,6 +205,19 @@ public class SparkDictIndex implements IObservable {
             sparkDictReadOnlyFile = dictionaryFiles.openForRead(uri);
         }
         return sparkDictReadOnlyFile;
+    }
+
+    public void close() {
+        if (sparkDictReadOnlyFile != null) {
+            try {
+                sparkDictReadOnlyFile.close();
+            } catch (IOException e) {
+                // log if appropriate
+            } finally {
+                sparkDictReadOnlyFile = null;
+            }
+        }
+        starDictIndex.close();
     }
 
     /**

@@ -142,8 +142,9 @@ public class BookInfo {
         dirPath = slash >= 0 ? relativeIfoPath.substring(0, slash) : "";
         this.dictionaryFiles = dictionaryFiles;
         try (SeekableByteChannel channel = dictionaryFiles.openForRead(relativeIfoPath)) {
-            Scanner input = new Scanner(Channels.newInputStream(channel), "UTF-8");
-            parseIfoContent(input);
+            try (Scanner input = new Scanner(Channels.newInputStream(channel), "UTF-8")) {
+                parseIfoContent(input);
+            }
         } catch (IOException e) {
             logger.error(TAG, "Cannot read info file: " + relativeIfoPath);
         }
