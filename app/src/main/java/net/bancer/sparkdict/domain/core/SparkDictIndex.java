@@ -32,13 +32,13 @@ public class SparkDictIndex implements IObservable {
 
     private final Vector<IObserver> observers;
 
-    private int articlesIndexed = 0;
-
     private final StarDictIndex starDictIndex;
 
-    private RandomAccessFile sparkDictReadOnlyFile = null;
-
     private final byte[] sparkDictbuffer;
+
+    private int articlesIndexed = 0;
+
+    private RandomAccessFile sparkDictReadOnlyFile = null;
 
     /**
      * Constructor.
@@ -57,10 +57,10 @@ public class SparkDictIndex implements IObservable {
      * Adopted from: <a href="http://stackoverflow.com/questions/7619058/convert-a-byte-array-to-integer-in-java-and-vise-versa">...</a>
      *
      * @param value integer to be converted into array of bytes.
-     * @return    4-bytes array representing the provided integer.
+     * @return 4-bytes array representing the provided integer.
      */
     public static byte[] intToByteArray(int value) {
-        return new byte[] {
+        return new byte[]{
             (byte) (value >>> 24),
             (byte) (value >>> 16),
             (byte) (value >>> 8),
@@ -74,7 +74,7 @@ public class SparkDictIndex implements IObservable {
      * Adopted from: <a href="http://stackoverflow.com/questions/7619058/convert-a-byte-array-to-integer-in-java-and-vise-versa">...</a>
      *
      * @param b 4-bytes array
-     * @return    integer that was encoded by the provided array of bytes.
+     * @return integer that was encoded by the provided array of bytes.
      */
     public static int byteArrayToInt(byte[] b) {
         return (b[0] << 24)
@@ -87,24 +87,27 @@ public class SparkDictIndex implements IObservable {
      * Inspects <dictionary name>.idx file and creates new <dictionary
      * name>.sparkdict.idx file.
      *
+     * @return int Number of indexed articles.
      * @throws IOException If an I/O error occurs while reading the StarDict index
-	 *     or writing the SparkDict index.
+     *                     or writing the SparkDict index.
      */
-    public void buildIndex() throws IOException {
-        parseBookIndex(starDictIndex);
+    public int buildIndex() throws IOException {
+        return parseBookIndex(starDictIndex);
     }
 
-	/**
-	 * Parses the StarDict index file and creates the corresponding SparkDict index file.
-	 *
-	 * <p>The generated SparkDict index contains pointers to each lexical entry in the
-	 * StarDict index file.</p>
-	 *
-	 * @param bookIndex StarDict index to parse.
-	 * @throws IOException If an I/O error occurs while reading the StarDict index
-	 *     or writing the SparkDict index.
-	 */
-    private void parseBookIndex(StarDictIndex bookIndex) throws IOException {
+    /**
+     * Parses the StarDict index file and creates the corresponding SparkDict index file.
+     *
+     * <p>The generated SparkDict index contains pointers to each lexical entry in the
+     * StarDict index file.</p>
+     *
+     * @param bookIndex StarDict index to parse.
+     * @return int Number of indexed articles.
+     * @throws IOException If an I/O error occurs while reading the StarDict index
+     *                     or writing the SparkDict index.
+     */
+    private int parseBookIndex(StarDictIndex bookIndex) throws IOException {
+        articlesIndexed = 0;
         long starDictPointer = 0;
         byte[] starDictIdxBuffer = new byte[BUFFER_SIZE];
         RandomAccessFile starDictIdx = new RandomAccessFile(bookIndex.getFileName(), "r");
@@ -139,6 +142,8 @@ public class SparkDictIndex implements IObservable {
             sizeRead = starDictIdx.read(starDictIdxBuffer, 0, BUFFER_SIZE);
         }
         starDictIdx.close();
+        sparkDictIdx.close();
+        return articlesIndexed;
     }
 
     private void writePointerToSparkdictIndex(long pointer, RandomAccessFile spardictIdx) throws IOException {
@@ -176,15 +181,15 @@ public class SparkDictIndex implements IObservable {
         }
     }
 
-	/**
-	 * Returns the SparkDict index file opened for read-only access.
-	 *
-	 * <p>The file is opened lazily on the first call and the same
-	 * {@link RandomAccessFile} instance is returned on subsequent calls.</p>
-	 *
-	 * @return SparkDict index file opened for reading.
-	 * @throws FileNotFoundException If the SparkDict index file cannot be opened.
-	 */
+    /**
+     * Returns the SparkDict index file opened for read-only access.
+     *
+     * <p>The file is opened lazily on the first call and the same
+     * {@link RandomAccessFile} instance is returned on subsequent calls.</p>
+     *
+     * @return SparkDict index file opened for reading.
+     * @throws FileNotFoundException If the SparkDict index file cannot be opened.
+     */
     private RandomAccessFile getSparkDictReadOnlyFile() throws FileNotFoundException {
         if (sparkDictReadOnlyFile == null) {
             String uri = starDictIndex.getFileBaseName() + SparkDictIndex.FILE_EXTENSION;
@@ -193,11 +198,24 @@ public class SparkDictIndex implements IObservable {
         return sparkDictReadOnlyFile;
     }
 
+    public void close() {
+        if (sparkDictReadOnlyFile != null) {
+            try {
+                sparkDictReadOnlyFile.close();
+            } catch (IOException e) {
+                // log if appropriate
+            } finally {
+                sparkDictReadOnlyFile = null;
+            }
+        }
+        starDictIndex.close();
+    }
+
     /**
      * Gets the quantity of index entries.
      *
      * @return the quantity of index entries in the <dictionary name>.sparkdict.idx file.
-     * @throws IOException If the SparkDict index file cannot be accessed.
+     * @throws IOException           If the SparkDict index file cannot be accessed.
      * @throws FileNotFoundException If the SparkDict index file cannot be opened.
      */
     public long getSize() throws FileNotFoundException, IOException {
@@ -211,7 +229,7 @@ public class SparkDictIndex implements IObservable {
      * @param id sequence number of the index entry.
      * @return IndexEntry that is number `id` counting from the beginning of the
      * index file.
-     * @throws IOException If the SparkDict index file cannot be accessed.
+     * @throws IOException           If the SparkDict index file cannot be accessed.
      * @throws FileNotFoundException If the SparkDict index file cannot be opened.
      */
     public IndexEntry getIndexEntry(long id) throws FileNotFoundException,

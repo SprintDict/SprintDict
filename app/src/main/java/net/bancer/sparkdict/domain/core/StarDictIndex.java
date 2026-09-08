@@ -76,6 +76,19 @@ public class StarDictIndex {
         return starDictFile;
     }
 
+    public void close() {
+        if (starDictFile != null) {
+            try {
+                starDictFile.close();
+            } catch (IOException e) {
+                // log if appropriate
+            } finally {
+                starDictFile = null;
+            }
+        }
+    }
+
+
     /**
      * Retrieves index entry that starts at the provided position in
      * <dictionary name>.dict file.

@@ -22,7 +22,7 @@ public class Book implements Iterable<IndexEntry> {
     /**
      * Extension of the compressed dictionary file: <dictionary name>.dict.dz
      */
-    private static final String DICT_FILE_EXTENSION = ".dict.dz";
+    public static final String DICT_FILE_EXTENSION = ".dict.dz";
 
     /**
      * ZIP archive containing dictionary resources such as audio files and pictures.
@@ -187,7 +187,7 @@ public class Book implements Iterable<IndexEntry> {
      * @param idxEntry index entry for what the lexical entry is requested.
      * @return LexicalEntry object or `null`.
      */
-    private LexicalEntry getLexicalEntry(IndexEntry idxEntry) {
+    public LexicalEntry getLexicalEntry(IndexEntry idxEntry) {
         try {
             if (dzFile == null) {
                 String file = bookInfo.getFileBaseName() + DICT_FILE_EXTENSION;
