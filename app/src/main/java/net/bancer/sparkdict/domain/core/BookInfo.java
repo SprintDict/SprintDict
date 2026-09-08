@@ -139,8 +139,7 @@ public class BookInfo {
         filePath = infoFile.toString();
         dirPath = infoFile.getParent();
         this.logger = logger;
-        try {
-            Scanner input = new Scanner(infoFile, "UTF-8");
+        try (Scanner input = new Scanner(infoFile, "UTF-8")) {
             parseIfoContent(input);
         } catch (FileNotFoundException e) {
             logger.error(TAG, "Cannot read info file: " + infoFile);

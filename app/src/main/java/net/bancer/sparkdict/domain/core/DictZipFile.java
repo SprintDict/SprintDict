@@ -428,8 +428,11 @@ public class DictZipFile {
         byte[] buff = new byte[size];
         this.dzFile.read(buff);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        InflaterOutputStream gz = new InflaterOutputStream(bos, new Inflater(true));
+        Inflater inflater = new Inflater(true);
+        InflaterOutputStream gz = new InflaterOutputStream(bos, inflater);
         gz.write(buff);
+        gz.close();
+        inflater.end();
         return bos.toByteArray();
     }
 
