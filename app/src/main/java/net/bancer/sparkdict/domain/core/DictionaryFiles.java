@@ -60,4 +60,23 @@ public interface DictionaryFiles {
      * @return {@code true} if the file existed and was deleted.
      */
     boolean delete(String path);
+
+    /**
+     * Checks whether the specified file exists, without opening it.
+     *
+     * <p>The default implementation opens and immediately closes the file,
+     * which is correct but wasteful -- implementations that can check
+     * existence more cheaply (see {@code SafDictionaryFiles}) should override
+     * this.</p>
+     *
+     * @param path path of the file to check.
+     * @return {@code true} if the file exists and can be resolved.
+     */
+    default boolean exists(String path) {
+        try (SeekableByteChannel ignored = openForRead(path)) {
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
 }

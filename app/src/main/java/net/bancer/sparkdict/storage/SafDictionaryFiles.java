@@ -90,6 +90,15 @@ public class SafDictionaryFiles implements DictionaryFiles {
     }
 
     @Override
+    public boolean exists(String path) {
+        try {
+            return resolve(path, false) != null;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    @Override
     public SeekableByteChannel openForRead(String path) throws IOException {
         DocumentFile file = resolve(path, false);
         if (file == null) {
