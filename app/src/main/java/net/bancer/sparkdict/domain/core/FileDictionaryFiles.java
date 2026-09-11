@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -65,6 +66,11 @@ public class FileDictionaryFiles implements DictionaryFiles {
         //TODO: log "Failed to list files in " + rootPath
         //}
         return result;
+    }
+
+    @Override
+    public boolean exists(String path) {
+        return Files.exists(resolve(path));
     }
 
     @Override

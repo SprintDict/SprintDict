@@ -200,7 +200,9 @@ public class Book implements Iterable<IndexEntry>, Closeable {
             }
             if (resZipFile == null) {
                 String resZipPath = bookInfo.getDirPath() + "/" + RES_ZIP_NAME;
-                resZipFile = new ResourcesZipFile(resZipPath, dictionaryFiles, logger);
+                if (dictionaryFiles.exists(resZipPath)) {
+                    resZipFile = new ResourcesZipFile(resZipPath, dictionaryFiles, logger);
+                }
             }
             byte[] buffer = dzFile.read(idxEntry.getWordDataOffset(), idxEntry.getWordDataSize());
             String lemma = idxEntry.getLemma();
