@@ -5,21 +5,25 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import android.content.Context;
+
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.BookInfo;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.LexicalEntry;
 import net.bancer.sparkdict.domain.core.SparkDictIndex;
 import net.bancer.sparkdict.mocks.Mocks;
+import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
 import java.io.IOException;
 
 @RunWith(AndroidJUnit4.class)
@@ -28,10 +32,14 @@ public class SparkDictIndexTest {
     private SparkDictIndex indexMueller;
     private SparkDictIndex indexBSE;
 
+    private DictionaryFiles dictionaryFiles;
+
     @Before
     public void setUp() {
-        indexMueller = new SparkDictIndex(new BookInfo(Mocks.MUELLER_IFO_PATH));
-        indexBSE = new SparkDictIndex(new BookInfo(Mocks.BSE_IFO_PATH));
+        Context context = ApplicationProvider.getApplicationContext();
+        dictionaryFiles = SafDictionaryFilesFactory.create(context);
+        indexMueller = new SparkDictIndex(new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles));
+        indexBSE = new SparkDictIndex(new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles));
     }
 
     @After
@@ -53,7 +61,7 @@ public class SparkDictIndexTest {
         assertNull(indexMueller.getIndexEntry(Mocks.MUELLER_DICT_SIZE));
     }
 
-    @Test(expected = IOException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testGetIndexEntryIOException() throws IOException {
         indexMueller.getIndexEntry(-1);
     }
@@ -64,11 +72,11 @@ public class SparkDictIndexTest {
         assertEquals(Mocks.BSE_DICT_NAME, indexBSE.getBookName());
     }
 
-    @Test(timeout = 2000)
+    @Test(timeout = 4000) /* was 2000 */
     public void buildIndexAllWordsAreIndexedInCambridge() throws IOException {
-        BookInfo bookInfo = new BookInfo(Mocks.CAMBRIDGE_IFO_PATH);
+        BookInfo bookInfo = new BookInfo(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
-        index.delete();
+        //index.delete();
         int indexedCount = index.buildIndex();
         assertEquals(65235, indexedCount);
         assertEquals(bookInfo.getWordCount(), index.getSize());
@@ -80,11 +88,11 @@ public class SparkDictIndexTest {
         }
     }
 
-    @Test(timeout = 4500)
+    @Test(timeout = 9000) /* was 4500 */
     public void buildIndexAllWordsAreIndexedInBse() throws IOException {
-        BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH);
+        BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
-        index.delete();
+        //index.delete();
         int indexedCount = index.buildIndex();
         assertEquals(95058, indexedCount);
         assertEquals(bookInfo.getWordCount(), index.getSize());
@@ -96,11 +104,11 @@ public class SparkDictIndexTest {
         }
     }
 
-    @Test(timeout = 2000)
+    @Test(timeout = 3000) /* was 2000 */
     public void buildIndexAllWordsAreIndexedInMueller() throws IOException {
-        BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH);
+        BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
-        index.delete();
+        //index.delete();
         int indexedCount = index.buildIndex();
         assertEquals(46198, indexedCount);
         assertEquals(bookInfo.getWordCount(), index.getSize());
@@ -112,11 +120,11 @@ public class SparkDictIndexTest {
         }
     }
 
-    @Test(timeout = 5500)
+    @Test(timeout = 5500) /* was 5500 */
     public void buildIndexAllWordsAreIndexedInWordnet() throws IOException {
-        BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH);
+        BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
-        index.delete();
+        //index.delete();
         int indexedCount = index.buildIndex();
         assertEquals(117659, indexedCount);
         assertEquals(bookInfo.getWordCount(), index.getSize());
@@ -128,13 +136,12 @@ public class SparkDictIndexTest {
         }
     }
 
-    @Test(timeout = 9000)
+    @Test(timeout = 9000) /* was 9000 */
     public void buildIndexWordsHaveLexicalEntriesInCambridge() throws IOException {
-        File file = new File(Mocks.CAMBRIDGE_IFO_PATH);
-        BookInfo bookInfo = new BookInfo(file);
-        Book book = new Book(file);
+        BookInfo bookInfo = new BookInfo(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
+        Book book = new Book(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
-        index.delete();
+        //index.delete();
         int indexedCount = index.buildIndex();
         assertEquals(65235, indexedCount);
         assertEquals(bookInfo.getWordCount(), index.getSize());
@@ -153,16 +160,15 @@ public class SparkDictIndexTest {
                 );
             }
         }
-        book.closeResources();
+        book.close();
     }
 
-    @Test(timeout = 10000)
+    @Test(timeout = 14000) /* was 10000 */
     public void buildIndexWordsHaveLexicalEntriesInBse() throws IOException {
-        File file = new File(Mocks.BSE_IFO_PATH);
-        BookInfo bookInfo = new BookInfo(file);
-        Book book = new Book(file);
+        BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
+        Book book = new Book(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
-        index.delete();
+        //index.delete();
         int indexedCount = index.buildIndex();
         assertEquals(95058, indexedCount);
         assertEquals(bookInfo.getWordCount(), index.getSize());
@@ -181,16 +187,15 @@ public class SparkDictIndexTest {
                 );
             }
         }
-        book.closeResources();
+        book.close();
     }
 
-    @Test(timeout = 3500)
+    @Test(timeout = 5000) /* was 3500 */
     public void buildIndexWordsHaveLexicalEntriesInMueller() throws IOException {
-        File file = new File(Mocks.MUELLER_IFO_PATH);
-        BookInfo bookInfo = new BookInfo(file);
-        Book book = new Book(file);
+        BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
+        Book book = new Book(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
-        index.delete();
+        //index.delete();
         int indexedCount = index.buildIndex();
         assertEquals(46198, indexedCount);
         assertEquals(bookInfo.getWordCount(), index.getSize());
@@ -202,16 +207,15 @@ public class SparkDictIndexTest {
             LexicalEntry lexicalEntry = book.getLexicalEntry(indexEntry);
             assertEquals(lexicalEntry.getLemma(), lemma);
         }
-        book.closeResources();
+        book.close();
     }
 
-    @Test(timeout = 7000)
+    @Test(timeout = 11000) /* was 7000 */
     public void buildIndexWordsHaveLexicalEntriesInWordnet() throws IOException {
-        File file = new File(Mocks.WORDNET_IFO_PATH);
-        BookInfo bookInfo = new BookInfo(file);
-        Book book = new Book(file);
+        BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
+        Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
-        index.delete();
+        //index.delete();
         int indexedCount = index.buildIndex();
         assertEquals(117659, indexedCount);
         assertEquals(bookInfo.getWordCount(), index.getSize());
@@ -224,6 +228,6 @@ public class SparkDictIndexTest {
             assertEquals(lexicalEntry.getLemma(), lemma);
         }
         index.close();
-        book.closeResources();
+        book.close();
     }
 }

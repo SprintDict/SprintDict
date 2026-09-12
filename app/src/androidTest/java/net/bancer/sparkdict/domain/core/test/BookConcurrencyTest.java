@@ -1,18 +1,27 @@
-package net.bancer.sparkdict.domain.core;
+package net.bancer.sparkdict.domain.core.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-import net.bancer.sparkdict.Fixtures;
+import android.content.Context;
+
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import net.bancer.sparkdict.domain.core.Book;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
+import net.bancer.sparkdict.domain.core.IndexEntry;
+import net.bancer.sparkdict.domain.core.LexicalEntry;
+import net.bancer.sparkdict.domain.core.Shelf;
 import net.bancer.sparkdict.domain.utils.DomainException;
+import net.bancer.sparkdict.mocks.Mocks;
+import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import java.io.IOException;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -30,23 +39,30 @@ import java.util.concurrent.atomic.AtomicInteger;
  * SeekableByteChannel is an InterruptibleChannel -- interrupting a thread
  * blocked in a channel read closes that channel outright. Book used to
  * share a single IndexEntriesIterator (and therefore a single underlying
- * channel) between suggestion lookups and exact-match search, so a
- * suggestion lookup's self-inflicted interruption could close the channel
- * the search path was about to use too.
+ * channel and cursor) between suggestion lookups and exact-match search, so
+ * a suggestion lookup's self-inflicted interruption -- or simply its cursor
+ * mutations -- could interfere with the search path on the same Book.
  *
  * <p>This test drives both access patterns concurrently and deliberately:
  * one thread repeatedly submits and cancels-with-interrupt suggestion
- * lookups, mimicking rapid keystrokes; a second, never-interrupted thread
- * repeatedly performs exact-match lookups on the same Book at the same
- * time. It asserts the exact-match path never fails because of the
- * suggestion path's self-interruption -- proving the per-access-pattern
- * iterator split actually isolates the two channels, and that the
- * reopen-on-ClosedChannelException recovery holds up under real
- * concurrent pressure rather than only in a single crafted scenario.</p>
+ * lookups for a changing prefix each time, mimicking a user actually typing
+ * several different words letter by letter; a second, never-interrupted
+ * thread repeatedly performs exact-match lookups on the same Book at the
+ * same time. It asserts the exact-match path never fails or returns wrong
+ * content because of the concurrent suggestion activity.</p>
+ *
+ * <p>Note this remains, by nature, a probabilistic test: a clean run does
+ * not prove the underlying design is race-free, only that this run's
+ * scheduling didn't happen to expose it. The prefix sequence below is
+ * chosen specifically to make every submission do real, cursor-heavy work
+ * (see IndexEntriesIterator#nextSuggestion) rather than mostly hitting its
+ * cheap already-matched fast path, to make the race window as wide as
+ * realistically possible.</p>
  */
+@RunWith(AndroidJUnit4.class)
 public class BookConcurrencyTest {
 
-    private static final String KNOWN_LEMMA = "abacus";
+    private static final String KNOWN_LEMMA = "15 May Organization";
 
     private static final int SEARCH_ITERATIONS = 100;
 
@@ -68,25 +84,15 @@ public class BookConcurrencyTest {
 
     private DictionaryFiles dictionaryFiles;
 
-    private Book gcide;
-
-    @BeforeClass
-    public static void setUpBeforeClass() throws IOException {
-        Fixtures.buildSparkDictIndex();
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() {
-        Fixtures.deleteSparkDictIndex();
-    }
-
+    private Book wordNet;
 
     @Before
     public void setUp() {
-        dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);
+        Context context = ApplicationProvider.getApplicationContext();
+        dictionaryFiles = SafDictionaryFilesFactory.create(context);
         Shelf shelf = new Shelf(new String[0], dictionaryFiles);
-        gcide = findBookByName(shelf, "GNU Collaborative International Dictionary of English");
-        assertNotNull("Expected to find GCIDE dictionary", gcide);
+        wordNet = findBookByName(shelf, Mocks.WORDNET_DICT_NAME);
+        assertNotNull("Expected to find WordNet under Mocks.ROOT_PATH", wordNet);
     }
 
     @Test
@@ -115,7 +121,7 @@ public class BookConcurrencyTest {
                 }
                 currentTask = suggestionExecutor.submit(() -> {
                     try {
-                        gcide.getSuggestions(prefix);
+                        wordNet.getSuggestions(prefix);
                     } catch (RuntimeException e) {
                         // Being interrupted mid-lookup may surface as a
                         // wrapped/unchecked failure depending on exactly
@@ -144,7 +150,7 @@ public class BookConcurrencyTest {
             }
             for (int i = 0; i < SEARCH_ITERATIONS; i++) {
                 try {
-                    LexicalEntry entry = gcide.getLexicalEntry(KNOWN_LEMMA);
+                    LexicalEntry entry = wordNet.getLexicalEntry(KNOWN_LEMMA);
                     if (entry != null && KNOWN_LEMMA.equals(entry.getLemma())) {
                         searchSuccesses.incrementAndGet();
                     } else {
@@ -178,21 +184,13 @@ public class BookConcurrencyTest {
         // isolation, not about IndexEntriesIterator's resume-from-cursor
         // bookkeeping under interruption, which is a separate concern.
         Shelf freshShelf = new Shelf(new String[0], dictionaryFiles);
-        Book freshWordNet = findBookByName(freshShelf, "GNU Collaborative International Dictionary of English");
+        Book freshWordNet = findBookByName(freshShelf, Mocks.WORDNET_DICT_NAME);
         assertNotNull(freshWordNet);
-        Vector<IndexEntry> suggestions = freshWordNet.getSuggestions("abac");
-        assertEquals(11, suggestions.size());
-        assertEquals("abaca", suggestions.get(0).getLemma());
-        assertEquals("abacinate", suggestions.get(1).getLemma());
-        assertEquals("abacination", suggestions.get(2).getLemma());
-        assertEquals("abaciscus", suggestions.get(3).getLemma());
-        assertEquals("abacist", suggestions.get(4).getLemma());
-        assertEquals("aback", suggestions.get(5).getLemma());
-        assertEquals("abactinal", suggestions.get(6).getLemma());
-        assertEquals("abaction", suggestions.get(7).getLemma());
-        assertEquals("abactor", suggestions.get(8).getLemma());
-        assertEquals("abaculus", suggestions.get(9).getLemma());
-        assertEquals("abacus", suggestions.get(10).getLemma());
+        Vector<IndexEntry> suggestions = freshWordNet.getSuggestions(".");
+        assertFalse(suggestions.isEmpty());
+        assertEquals(".22 caliber", suggestions.get(0).getLemma());
+        assertEquals(".38 caliber", suggestions.get(1).getLemma());
+        assertEquals(".45 caliber", suggestions.get(2).getLemma());
     }
 
     private Book findBookByName(Shelf shelf, String name) {

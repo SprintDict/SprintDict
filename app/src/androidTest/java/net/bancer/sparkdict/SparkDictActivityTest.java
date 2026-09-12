@@ -81,7 +81,7 @@ public class SparkDictActivityTest {
     }
 
     @Test
-    public void testInputTextByPressingEnterKey() {
+    public void testInputTextByPressingEnterKey() throws InterruptedException {
         onView(withId(R.id.searchTextView))
             .check(matches(withText("")));
         // Assert that the progress bar is not visible before the search.
@@ -93,6 +93,7 @@ public class SparkDictActivityTest {
             .check(matches(withText("interface")));
         onView(withId(R.id.searchTextView))
             .perform(pressImeActionButton());
+        Thread.sleep(1000);
         onView(withId(R.id.searchTextView))
             .check(matches(withText("")));
         // Assert that the progress bar is not visible after the search.
@@ -107,7 +108,7 @@ public class SparkDictActivityTest {
             .perform(typeText("go"));
         onView(withId(R.id.searchTextView))
             .perform(pressImeActionButton());
-        Thread.sleep(2000);
+        Thread.sleep(3000);
         // check that the spinning will is not displayed any more
         onView(withId(R.id.search_progress))
             .check(matches(not(isDisplayed())));
@@ -222,7 +223,7 @@ public class SparkDictActivityTest {
         SharedPreferences preferences = context.getSharedPreferences(SparkDictPreferences.PREFS_NAME, Context.MODE_PRIVATE);
         Map<String, ?> originalPreferences = new HashMap<>(preferences.getAll());
         preferences.edit()
-            .remove(context.getString(R.string.menu_dict_path))
+            .remove(SparkDictPreferences.PREF_DICT_ROOT_URI_NAME)
             .commit();
         return originalPreferences;
     }

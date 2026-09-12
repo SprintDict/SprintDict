@@ -7,9 +7,11 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import net.bancer.sparkdict.domain.core.Book;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.Shelf;
 import net.bancer.sparkdict.logging.AndroidLogger;
 import net.bancer.sparkdict.logging.Logger;
+import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 import net.bancer.sparkdict.storage.SparkDictPreferences;
 
 import java.util.ArrayList;
@@ -50,7 +52,7 @@ public abstract class BaseActivity extends Activity {
      * @return path to dictionaries.
      */
     protected String getDictPathFromPrefs() {
-        String key = getString(R.string.menu_dict_path);
+        String key = SparkDictPreferences.PREF_DICT_ROOT_URI_NAME;
         String dictPath = preferences.getString(key).trim();
         if (dictPath.isEmpty()) {
             logger.error(TAG, "Dictionaries path in preferences is empty");
@@ -108,9 +110,18 @@ public abstract class BaseActivity extends Activity {
      * always up-to-date.
      */
     protected void refreshShelf() {
-        String dictPath = getDictPathFromPrefs();
+        DictionaryFiles dictionaryFiles = createDictionaryFiles();
         String[] enabledDicts = getEnabledDictsFromPrefs();
-        shelf = new Shelf(dictPath, enabledDicts, logger);
+        shelf = new Shelf(enabledDicts, dictionaryFiles, logger);
+    }
+
+    /**
+     * Creates the {@link DictionaryFiles} used to resolve dictionary files.
+     *
+     * @return the DictionaryFiles to use.
+     */
+    private DictionaryFiles createDictionaryFiles() {
+        return SafDictionaryFilesFactory.create(this);
     }
 
     /**

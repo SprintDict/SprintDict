@@ -5,40 +5,48 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import android.content.Context;
+
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.BookInfo;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.IndexEntriesIterator;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.LexicalEntry;
 import net.bancer.sparkdict.domain.utils.DomainException;
 import net.bancer.sparkdict.mocks.Mocks;
+import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.Vector;
 
 @RunWith(AndroidJUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BookTest {
 
-    private Book book;
-
-    private Book bse;
+    private DictionaryFiles dictionaryFiles;
 
     @Before
     public void setUp() {
-        book = new Book(new File(Mocks.ROOT_PATH + "/wordnet/wordnet.ifo"));
-        bse = new Book(new File(Mocks.ROOT_PATH + "/bse/rus_bse.ifo"));
+        Context context = ApplicationProvider.getApplicationContext();
+        dictionaryFiles = SafDictionaryFilesFactory.create(context);
     }
 
     @Test
     public void testGetInfoFromWordnet() {
-        BookInfo bookInfo = book.getInfo();
+        BookInfo bookInfo;
+        try (Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            bookInfo = book.getInfo();
+        }
         assertNotNull(bookInfo);
         assertEquals("WordNet", bookInfo.getBookName());
         assertEquals("n", bookInfo.getSameTypeSequence());
@@ -47,8 +55,9 @@ public class BookTest {
     @Test
     public void testGetInfoFromCambridge() {
         BookInfo bookInfo;
-        Book book = new Book(new File(Mocks.CAMBRIDGE_IFO_PATH));
-        bookInfo = book.getInfo();
+        try (Book book = new Book(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            bookInfo = book.getInfo();
+        }
         assertNotNull(bookInfo);
         assertEquals("Cambridge Advanced Learners Dictionary 3th Ed. (En-En)", bookInfo.getBookName());
         assertEquals("x", bookInfo.getSameTypeSequence());
@@ -56,41 +65,42 @@ public class BookTest {
 
     @Test
     public void testSetEnabledWordnet() {
-        Book book = new Book(new File(Mocks.WORDNET_IFO_PATH));
-        boolean enabled = book.isEnabled();
-        assertEquals(enabled, book.isEnabled());
-        book.setEnabled(!enabled);
-        assertEquals(!enabled, book.isEnabled());
-        book.setEnabled(enabled);
-    }
-
-    @Test
-    public void testSetEnabled() {
-        boolean enabled = book.isEnabled();
-        assertEquals(enabled, book.isEnabled());
-        book.setEnabled(!enabled);
-        assertEquals(!enabled, book.isEnabled());
-        book.setEnabled(enabled);
+        try (Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            boolean enabled = book.isEnabled();
+            assertEquals(enabled, book.isEnabled());
+            book.setEnabled(!enabled);
+            assertEquals(!enabled, book.isEnabled());
+            book.setEnabled(enabled);
+        }
     }
 
     @Test
     public void testGetBookNameFromWordnet() {
-        assertEquals("WordNet", book.getBookName());
+        try (Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            assertEquals("WordNet", book.getBookName());
+        }
     }
 
     @Test
     public void testToStringWordnet() {
-        assertTrue(book.toString().contains("WordNet"));
+        try (Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            assertTrue(book.toString().contains("WordNet"));
+        }
     }
 
     @Test
     public void testGetLexicalEntriesQuantityFromWordnet() {
-        assertEquals(117659, book.getLexicalEntriesQuantity());
+        try (Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            assertEquals(117659, book.getLexicalEntriesQuantity());
+        }
     }
 
     @Test
     public void testGetLexicalEntryFromWordnet() throws DomainException {
-        LexicalEntry entry = book.getLexicalEntry("15 May Organization");
+        LexicalEntry entry;
+        try (Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            entry = book.getLexicalEntry("15 May Organization");
+        }
         String expected = "<i><font color=\"#006600\">n</font></i><br>" +
             "<gloss>a terrorist organization formed in 1979 by a faction " +
             "of the Popular Front for the Liberation of Palestine but " +
@@ -102,16 +112,17 @@ public class BookTest {
     @Test
     public void testGetLexicalEntryEmptyFromWordnet() throws DomainException {
         LexicalEntry entry;
-        Book book = new Book(new File(Mocks.WORDNET_IFO_PATH));
-        entry = book.getLexicalEntry("");
+        try (Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            entry = book.getLexicalEntry("");
+        }
         assertNull(entry);
     }
 
     @Test
     public void testGetLexicalEntryFromCambridge() throws DomainException {
-        Book book = new Book(new File(Mocks.CAMBRIDGE_IFO_PATH));
+        Book book = new Book(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
         LexicalEntry entry = book.getLexicalEntry("abacus");
-        book.closeResources();
+        book.close();
         String expected = "<big>abacus</big><br><br><b>abacus</b>" +
             " <font color=\"#808080\"> </font>" +
             "<font color=\"#006600\">UK</font>" +
@@ -141,8 +152,9 @@ public class BookTest {
     @Test
     public void testGetLexicalEntryFromMueller() throws DomainException {
         LexicalEntry entry;
-        Book book = new Book(new File(Mocks.MUELLER_IFO_PATH));
-        entry = book.getLexicalEntry("abacus");
+        try (Book book = new Book(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            entry = book.getLexicalEntry("abacus");
+        }
         String expected = "ˈæbəkəs\n" +
             "_n. (_pl. -es [Iz], -ci) 1> _ист. счёты" +
             "<br><br>2> _архит. абак(а), верхняя часть капители";
@@ -151,6 +163,7 @@ public class BookTest {
 
     @Test
     public void testGetLexicalEntryWithMultipleIndexEntriesFromWordnet() throws DomainException {
+        Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         String expected = "<i><font color=\"#006600\">v</font></i><br>" +
             "<b>&#8226; put away</b><br>" +
             "<b>&#8226; put aside</b><br>" +
@@ -169,19 +182,26 @@ public class BookTest {
             "their toys&quot;; &quot;the students put away their " +
             "notebooks&quot;</gloss>";
         LexicalEntry entry = book.getLexicalEntry("put away");
+        book.close();
         assertEquals(expected, entry.getDefinitions());
     }
 
     @Test
     public void testIteratorFromWordnet() {
-        Iterator<IndexEntry> iterator = book.iterator();
+        Iterator<IndexEntry> iterator;
+        try (Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            iterator = book.iterator();
+        }
         assertNotNull(iterator);
         assertTrue(iterator instanceof IndexEntriesIterator);
     }
 
     @Test
     public void testGetSuggestionsFromWordnet() {
-        Vector<IndexEntry> suggestions = book.getSuggestions(".");
+        Vector<IndexEntry> suggestions;
+        try (Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            suggestions = book.getSuggestions(".");
+        }
         assertNotNull(suggestions);
         assertEquals(3, suggestions.size());
         assertEquals(".22 caliber", suggestions.get(0).getLemma());
@@ -191,15 +211,18 @@ public class BookTest {
 
     @Test
     public void testGetSuggestionsBSE() {
-        Vector<IndexEntry> suggestions = bse.getSuggestions("Собат");
-        assertNotNull(suggestions);
-        assertEquals("Собат", suggestions.get(0).getLemma());
+        Vector<IndexEntry> suggestions;
+        try (Book bse = new Book(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            suggestions = bse.getSuggestions("Собат");
+            assertNotNull(suggestions);
+            assertEquals("Собат", suggestions.get(0).getLemma());
 
-        suggestions = bse.getSuggestions("собат");
-        assertNotNull(suggestions);
-        assertEquals("Собат", suggestions.get(0).getLemma());
+            suggestions = bse.getSuggestions("собат");
+            assertNotNull(suggestions);
+            assertEquals("Собат", suggestions.get(0).getLemma());
 
-        suggestions = bse.getSuggestions("СОБАТ");
+            suggestions = bse.getSuggestions("СОБАТ");
+        }
         assertNotNull(suggestions);
         assertEquals("Собат", suggestions.get(0).getLemma());
     }

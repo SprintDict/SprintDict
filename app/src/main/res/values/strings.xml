@@ -22,8 +22,8 @@
     <string name="select_all">Select All</string>
     <string name="unselect_all">Unselect All</string>
     <string name="dict_manager_hint">Select dictionaries to enable them</string>
-    <string name="dict_path_saved_msg">%s is saved as default folder with dictionaries.</string>
-    <string name="dict_path_not_saved_msg">Cannot save %s. Try again later.</string>
+    <string name="dict_path_saved_msg">Your selected path is saved.</string>
+    <string name="dict_path_not_saved_msg">Cannot save the selected path.</string>
     <string name="enabled_dicts_saved">SUCCESS. Selected dictionaries are enabled.</string>
     <string name="enabled_dicsts_not_saved">FAILURE. Selected dictionaries are not enabled. Try again.</string>
     <string name="enabled_dicts">Enabled Dictionaries</string>

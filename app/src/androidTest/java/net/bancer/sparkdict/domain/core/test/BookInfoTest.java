@@ -4,25 +4,34 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import android.content.Context;
+
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import net.bancer.sparkdict.domain.core.BookInfo;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.mocks.Mocks;
+import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.io.File;
 
 @RunWith(AndroidJUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BookInfoTest {
 
-    private BookInfo muellerBookInfo;
+    private DictionaryFiles dictionaryFiles;
 
     @Before
     public void setUp() {
-        muellerBookInfo = new BookInfo(new File(Mocks.MUELLER_IFO_PATH));
+        Context context = ApplicationProvider.getApplicationContext();
+        dictionaryFiles = SafDictionaryFilesFactory.create(context);
     }
 
     @Test
@@ -55,7 +64,7 @@ public class BookInfoTest {
 
     @Test
     public void testBookInfoString() {
-        BookInfo bseBookInfo = new BookInfo(Mocks.BSE_IFO_PATH);
+        BookInfo bseBookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         assertNotNull(bseBookInfo);
         assertEquals("2.4.2", bseBookInfo.getVersion());
         assertEquals(95058, bseBookInfo.getWordCount());
@@ -67,7 +76,8 @@ public class BookInfoTest {
     }
 
     @Test
-    public void testBookInfoFile() {
+    public void testBookInfoFileMueller() {
+        BookInfo muellerBookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         assertNotNull(muellerBookInfo);
         assertEquals("2.4.2", muellerBookInfo.getVersion());
         assertEquals(46198, muellerBookInfo.getWordCount());
@@ -78,17 +88,44 @@ public class BookInfoTest {
     }
 
     @Test
+    public void testBookInfoFileWordnet() {
+        BookInfo muellerBookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
+        assertNotNull(muellerBookInfo);
+        assertEquals("3.0.0", muellerBookInfo.getVersion());
+        assertEquals(117659, muellerBookInfo.getWordCount());
+        assertEquals(2186342, muellerBookInfo.getIdxFileSize());
+        assertEquals("WordNet", muellerBookInfo.getBookName());
+        assertEquals("2007.09.10", muellerBookInfo.getDate());
+        assertEquals("n", muellerBookInfo.getSameTypeSequence());
+    }
+
+    @Test
+    public void testBookInfoFileCambridge() {
+        BookInfo muellerBookInfo = new BookInfo(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
+        assertNotNull(muellerBookInfo);
+        assertEquals("2.4.2", muellerBookInfo.getVersion());
+        assertEquals(65235, muellerBookInfo.getWordCount());
+        assertEquals(1377344, muellerBookInfo.getIdxFileSize());
+        assertEquals("Cambridge Advanced Learners Dictionary 3th Ed. (En-En)", muellerBookInfo.getBookName());
+        assertEquals("2011.05.22", muellerBookInfo.getDate());
+        assertEquals("x", muellerBookInfo.getSameTypeSequence());
+    }
+
+    @Test
     public void testToString() {
+        BookInfo muellerBookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         assertTrue(muellerBookInfo.toString().contains("Dictionary name: Mueller7GPL"));
     }
 
     @Test
     public void testGetFileBaseName() {
+        BookInfo muellerBookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH, dictionaryFiles);
         assertEquals(Mocks.MUELLER_BASE_PATH, muellerBookInfo.getFileBaseName());
     }
 
     @Test
     public void testGetPathToDictFile() {
+        BookInfo muellerBookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH, dictionaryFiles);
         assertEquals(Mocks.MUELLER_BASE_PATH + Mocks.DICT_EXT, muellerBookInfo.getPathToDictFile());
     }
 }

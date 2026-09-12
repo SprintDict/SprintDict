@@ -10,14 +10,16 @@ import net.bancer.sparkdict.Fixtures;
 import net.bancer.sparkdict.domain.utils.DomainException;
 
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class LexicalEntryTest {
+
+    private DictionaryFiles dictionaryFiles;
 
     @BeforeClass
     public static void setUpBeforeClass() throws IOException {
@@ -33,34 +35,37 @@ public class LexicalEntryTest {
         Fixtures.deleteDummyMultiDictIndex();
     }
 
+    @Before
+    public void setUp() {
+        dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);
+    }
+
     private LexicalEntry getGcideLexicalEntry(String lemma) throws Exception {
-        String ifoFile = Fixtures.GCIDE_IFO_FILE;
-        BookInfo bookInfo = new BookInfo(ifoFile);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         byte[] buffer = getLexicalEntry(lemma, bookInfo);
         return new LexicalEntry(lemma, buffer, bookInfo);
     }
 
     private LexicalEntry getDummTmLexicalEntry(String lemma) throws Exception {
-        String ifoFile = Fixtures.DUMMY_TM_IFO_FILE;
-        BookInfo bookInfo = new BookInfo(ifoFile);
+        BookInfo bookInfo = new BookInfo(Fixtures.DUMMY_TM_IFO_FILE, dictionaryFiles);
         byte[] buffer = getLexicalEntry(lemma, bookInfo);
         return new LexicalEntry(lemma, buffer, bookInfo);
     }
 
     private LexicalEntry getDummMultiLexicalEntry(String lemma) throws Exception {
-        String ifoFile = Fixtures.DUMMY_MULTI_IFO_FILE;
-        BookInfo bookInfo = new BookInfo(ifoFile);
+        BookInfo bookInfo = new BookInfo(Fixtures.DUMMY_MULTI_IFO_FILE, dictionaryFiles);
         byte[] buffer = getLexicalEntry(lemma, bookInfo);
-        ResourcesZipFile resZip = new ResourcesZipFile(new File(Fixtures.DUMMY_MULTI_RES_ZIP_FILE));
+        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE, dictionaryFiles);
         return new LexicalEntry(lemma, buffer, bookInfo, resZip);
     }
 
     @NonNull
-    private static byte[] getLexicalEntry(String lemma, BookInfo bookInfo) throws DomainException, IOException {
+    private byte[] getLexicalEntry(String lemma, BookInfo bookInfo) throws DomainException, IOException {
         IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
         IndexEntry indexEntry = iterator.findIndexEntry(lemma);
         assertEquals(lemma, indexEntry.getLemma());
-        DictZipFile dictZipFile = new DictZipFile(bookInfo.getPathToDictFile());
+        String file = bookInfo.getFileBaseName() + Book.DICT_FILE_EXTENSION;
+        DictZipFile dictZipFile = new DictZipFile(file, dictionaryFiles);
         byte[] buffer;
         try {
             int offset = indexEntry.getWordDataOffset();
@@ -220,7 +225,7 @@ public class LexicalEntryTest {
 
     @Test
     public void constructorWithDefinitionsSetsFields() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         byte[] dataBlocks = "definition".getBytes(StandardCharsets.UTF_8);
         LexicalEntry entry = new LexicalEntry("abacus", dataBlocks, bookInfo);
         assertEquals("abacus", entry.getLemma());
@@ -317,4 +322,20 @@ public class LexicalEntryTest {
         assertNotNull(image);
         assertTrue(image.length > 0);
     }
+    @Test
+    public void getResourceDummyMultiEntryViaChannelConstructor() throws Exception {
+        BookInfo bookInfo = new BookInfo(Fixtures.DUMMY_MULTI_IFO_FILE, dictionaryFiles);
+        byte[] buffer = getLexicalEntry("aplander", bookInfo);
+        String lemma;
+        byte[] image;
+        ResourcesZipFile resZip = new ResourcesZipFile(Fixtures.DUMMY_MULTI_RES_ZIP_FILE, dictionaryFiles);
+        LexicalEntry entry = new LexicalEntry("aplander", buffer, bookInfo, resZip);
+        lemma = entry.getLemma();
+        image = entry.getResource("pic/aplander.jpg"); // must run before the channel closes
+        resZip.close();
+        assertEquals("aplander", lemma);
+        assertNotNull(image);
+        assertTrue(image.length > 0);
+    }
+
 }
