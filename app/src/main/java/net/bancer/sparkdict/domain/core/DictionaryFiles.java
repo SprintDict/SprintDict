@@ -1,7 +1,10 @@
 package net.bancer.sparkdict.domain.core;
 
+import net.bancer.sparkdict.domain.utils.InMemorySeekableByteChannel;
+
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.util.List;
 
@@ -41,6 +44,53 @@ public interface DictionaryFiles {
      * @throws IOException if the file cannot be opened.
      */
     SeekableByteChannel openForRead(String path) throws IOException;
+
+    /**
+     * Reads a file fully into memory and returns a SeekableByteChannel backed
+     * by that in-memory copy, rather than one backed by a live connection to
+     * the file's storage.
+     *
+     * <p>Intended for small files that are read many times over an object's
+     * lifetime with random access -- index files such as .idx/.sparkdict.idx
+     * -- where a per-operation cost (e.g. a Binder round-trip to a Storage
+     * Access Framework provider) can dominate when many small reads are made.
+     * Loading once and serving all subsequent reads from memory turns many
+     * small provider round-trips into a single bulk one.
+     *
+     * <p><b>Must never be used for large files</b> -- dictionary data
+     * (.dict.dz) or resource archives (res.zip) can be hundreds of megabytes
+     * or more. Those must keep using {@link #openForRead}, which streams
+     * without ever materialising the whole file; see the earlier decision not
+     * to copy res.zip for exactly this reason.
+     *
+     * <p>A channel returned by this method can never throw
+     * {@link java.nio.channels.ClosedChannelException} due to an external
+     * cause (e.g. a Storage Access Framework provider process dying) -- it
+     * holds no live connection to anything once this method returns.
+     *
+     * @param path path of the file to read.
+     * @return a SeekableByteChannel backed by an in-memory copy of the file's
+     *         entire contents.
+     * @throws IOException if the file cannot be read.
+     */
+    default SeekableByteChannel readFully(String path) throws IOException {
+        byte[] data;
+        try (SeekableByteChannel channel = openForRead(path)) {
+            long size = channel.size();
+            if (size > Integer.MAX_VALUE) {
+                throw new IOException("File too large to read fully into memory: " + path);
+            }
+            ByteBuffer buffer = ByteBuffer.allocate((int) size);
+            while (buffer.hasRemaining()) {
+                int bytesRead = channel.read(buffer);
+                if (bytesRead == -1) {
+                    throw new IOException("Unexpected end of file while reading: " + path);
+                }
+            }
+            data = buffer.array();
+        }
+        return new InMemorySeekableByteChannel(data);
+    }
 
     /**
      * Opens a sequential output stream to create or overwrite the specified
