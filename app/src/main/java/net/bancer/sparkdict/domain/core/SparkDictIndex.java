@@ -202,7 +202,7 @@ public class SparkDictIndex implements IObservable {
     private synchronized SeekableByteChannel getSparkDictReadOnlyFile() throws IOException {
         if (sparkDictReadOnlyFile == null) {
             String uri = starDictIndex.getFileBaseName() + SparkDictIndex.FILE_EXTENSION;
-            sparkDictReadOnlyFile = dictionaryFiles.openForRead(uri);
+            sparkDictReadOnlyFile = dictionaryFiles.readFully(uri);
         }
         return sparkDictReadOnlyFile;
     }
