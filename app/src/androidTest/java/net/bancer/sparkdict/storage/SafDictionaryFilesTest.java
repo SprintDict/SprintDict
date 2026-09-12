@@ -74,11 +74,11 @@ public class SafDictionaryFilesTest {
 
     @Test
     public void findDictionaryMetaFilePathsMuellerFolder() {
-        String uriString = "content://com.android.externalstorage.documents/tree/primary%3A" + Mocks.ROOT_FOLDER + Mocks.MUELLER_FOLDER;
+        String uriString = "content://com.android.externalstorage.documents/tree/primary%3A" + Mocks.ROOT_FOLDER + "/" + Mocks.MUELLER_FOLDER;
         Uri treeUri = Uri.parse(uriString);
         SafDictionaryFiles dictionaryFiles = new SafDictionaryFiles(context, treeUri);
         List<String> paths = dictionaryFiles.findDictionaryMetaFilePaths();
-        assertEquals(0, paths.size());
+        assertEquals(4, paths.size());
     }
 
     @Test
@@ -168,7 +168,7 @@ public class SafDictionaryFilesTest {
             fail("Expected IOException");
         } catch (IOException e) {
             assertEquals(
-                "Expected a 'folder/name' path, got: " + "Mueller7GPL" + BookInfo.INFO_FILE_EXTENTION,
+                "Mueller7GPL" + BookInfo.INFO_FILE_EXTENTION,
                 e.getMessage()
             );
         }
@@ -229,7 +229,7 @@ public class SafDictionaryFilesTest {
             fail("Expected IOException");
         } catch (IOException e) {
             assertEquals(
-                "Expected a 'folder/name' path, got: invalid-file",
+                "Cannot create or find document: invalid-file",
                 e.getMessage()
             );
         }

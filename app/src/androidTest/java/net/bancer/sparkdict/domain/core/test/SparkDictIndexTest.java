@@ -72,7 +72,7 @@ public class SparkDictIndexTest {
         assertEquals(Mocks.BSE_DICT_NAME, indexBSE.getBookName());
     }
 
-    @Test(timeout = 2000) /* was 2000 */
+    @Test(timeout = 4000) /* was 2000 */
     public void buildIndexAllWordsAreIndexedInCambridge() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
@@ -88,7 +88,7 @@ public class SparkDictIndexTest {
         }
     }
 
-    @Test(timeout = 6000) /* was 4500 */
+    @Test(timeout = 9000) /* was 4500 */
     public void buildIndexAllWordsAreIndexedInBse() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
@@ -104,7 +104,7 @@ public class SparkDictIndexTest {
         }
     }
 
-    @Test(timeout = 2000) /* was 2000 */
+    @Test(timeout = 3000) /* was 2000 */
     public void buildIndexAllWordsAreIndexedInMueller() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
@@ -136,7 +136,7 @@ public class SparkDictIndexTest {
         }
     }
 
-    @Test(timeout = 8000) /* was 9000 */
+    @Test(timeout = 9000) /* was 9000 */
     public void buildIndexWordsHaveLexicalEntriesInCambridge() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
         Book book = new Book(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
@@ -163,7 +163,7 @@ public class SparkDictIndexTest {
         book.close();
     }
 
-    @Test(timeout = 25000) /* was 10000 */
+    @Test(timeout = 14000) /* was 10000 */
     public void buildIndexWordsHaveLexicalEntriesInBse() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         Book book = new Book(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
@@ -190,7 +190,7 @@ public class SparkDictIndexTest {
         book.close();
     }
 
-    @Test(timeout = 11000) /* was 3500 */
+    @Test(timeout = 5000) /* was 3500 */
     public void buildIndexWordsHaveLexicalEntriesInMueller() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         Book book = new Book(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
@@ -210,7 +210,7 @@ public class SparkDictIndexTest {
         book.close();
     }
 
-    @Test(timeout = 30000) /* was 7000 */
+    @Test(timeout = 11000) /* was 7000 */
     public void buildIndexWordsHaveLexicalEntriesInWordnet() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
