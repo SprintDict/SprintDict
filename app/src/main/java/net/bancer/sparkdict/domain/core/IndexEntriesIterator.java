@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -53,12 +54,15 @@ public class IndexEntriesIterator implements Iterator<IndexEntry> {
      * @param bookInfo BookInfo object.
      * @param logger   Logger to write messages to logs.
      * @throws DomainException If the SparkDict index file cannot be opened or read.
+     * @throws ClosedByInterruptException If the prefix search was cancelled as the user kept typing more in the search field.
      */
-    public IndexEntriesIterator(BookInfo bookInfo, Logger logger) throws DomainException {
+    public IndexEntriesIterator(BookInfo bookInfo, Logger logger) throws DomainException, ClosedByInterruptException {
         this.logger = logger;
         sparkDictIndex = new SparkDictIndex(bookInfo);
         try {
             size = sparkDictIndex.getSize();
+        } catch (ClosedByInterruptException e) {
+            throw e;
         } catch (IOException e) {
             String message = String.format(
                 "Cannot get quantity of `%s` dictionary SparkDictIndex entries.",
@@ -73,8 +77,9 @@ public class IndexEntriesIterator implements Iterator<IndexEntry> {
      *
      * @param bookInfo BookInfo object.
      * @throws DomainException If the SparkDict index file cannot be opened or read.
+     * @throws ClosedByInterruptException If the prefix search was cancelled as the user kept typing more in the search field.
      */
-    public IndexEntriesIterator(BookInfo bookInfo) throws DomainException {
+    public IndexEntriesIterator(BookInfo bookInfo) throws DomainException, ClosedByInterruptException {
         this(bookInfo, new ConsoleLogger());
     }
 
@@ -126,6 +131,14 @@ public class IndexEntriesIterator implements Iterator<IndexEntry> {
         cursor++;
         try {
             return sparkDictIndex.getIndexEntry(cursor);
+        } catch (ClosedByInterruptException e) {
+            // The calling thread was interrupted mid-read -- almost certainly a
+            // stale lookup being cancelled as the user keeps typing or searching
+            // again, not a real failure. Restore the interrupt flag rather than
+            // logging this as an error; the caller (Book) already treats a
+            // restored interrupt as its signal to abandon the current lookup
+            // quietly.
+            Thread.currentThread().interrupt();
         } catch (IOException e) {
             String message = String.format(
                 "Cannot get next index entry of `%s` dictionary SparkDictIndex; cursor: %s, size: %s",
@@ -156,12 +169,15 @@ public class IndexEntriesIterator implements Iterator<IndexEntry> {
      * @param prefix start of the lemma to be matched against.
      * @return index entry starting with provided prefix.
      * @throws DomainException If an error occurs while reading an index entry.
+     * @throws ClosedByInterruptException If the prefix search was cancelled as the user kept typing more in the search field.
      */
-    public IndexEntry nextSuggestion(String prefix) throws DomainException {
+    public IndexEntry nextSuggestion(String prefix) throws DomainException, ClosedByInterruptException {
         if (!prefix.equals(lastSearchedSuggestion)) {
             IndexEntry entry;
             try {
                 entry = findFirstMatchedByPrefix(prefix);
+            } catch (ClosedByInterruptException e) {
+                throw e;
             } catch (IOException e) {
                 String message = String.format(
                     "Cannot get next suggestion from `%s` dictionary SparkDictIndex; cursor: %s, size: %s",

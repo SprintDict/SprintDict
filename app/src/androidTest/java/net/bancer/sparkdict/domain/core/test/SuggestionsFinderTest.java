@@ -19,6 +19,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.nio.channels.ClosedByInterruptException;
+
 @RunWith(AndroidJUnit4.class)
 public class SuggestionsFinderTest extends TestCase {
 
@@ -36,7 +38,7 @@ public class SuggestionsFinderTest extends TestCase {
     }
 
     @Test
-    public void testNext() throws DomainException {
+    public void testNext() throws DomainException, ClosedByInterruptException {
         IndexEntry indexEntry;
         indexEntry = muellerFinder.nextSuggestion("A");
         assertEquals("A", indexEntry.getLemma());

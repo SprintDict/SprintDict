@@ -77,7 +77,8 @@ public class StarDictIndex {
      */
     private synchronized SeekableByteChannel getStarDictFile() throws IOException {
         if (starDictFile == null) {
-            starDictFile = bookInfo.getDictionaryFiles().readFully(fileName);
+            //starDictFile = bookInfo.getDictionaryFiles().readFully(fileName);
+            starDictFile = bookInfo.getDictionaryFiles().openForRead(fileName);
         }
         return starDictFile;
     }

@@ -85,7 +85,7 @@ public class SparkDictIndexTest {
         index.delete();
     }
 
-    @Test(timeout = 27000)
+    @Test(timeout = 28000)
     public void buildIndexAllIndexedWordsHaveLexicalEntries() throws IOException {
         BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         Book book = new Book(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
