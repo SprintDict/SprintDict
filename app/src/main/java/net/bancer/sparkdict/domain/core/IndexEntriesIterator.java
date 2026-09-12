@@ -4,6 +4,8 @@ import net.bancer.sparkdict.domain.utils.DomainException;
 import net.bancer.sparkdict.logging.ConsoleLogger;
 import net.bancer.sparkdict.logging.Logger;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
@@ -74,6 +76,25 @@ public class IndexEntriesIterator implements Iterator<IndexEntry> {
      */
     public IndexEntriesIterator(BookInfo bookInfo) throws DomainException {
         this(bookInfo, new ConsoleLogger());
+    }
+
+    @Override
+    @NotNull
+    public String toString() {
+        return String.format(
+            "[count: %s, cursor: %s, lastSearchedSuggestion: %s]",
+            count,
+            cursor,
+            lastSearchedSuggestion
+        );
+    }
+
+    /**
+     * Resets the state of the iterator.
+     */
+    public void reset() {
+        count = 0;
+        cursor = -1;
     }
 
     /**
