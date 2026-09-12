@@ -252,10 +252,12 @@ public class Book implements Iterable<IndexEntry> {
     public LexicalEntry getLexicalEntry(String lemma) throws DomainException {
         LexicalEntry result = null;
         IndexEntriesIterator iterator = (IndexEntriesIterator) iterator();
+        iterator.reset();
         if (!iterator.hasNext()) {
             String message = String.format(
-                "Index entries iterator for %s dictionary has no values. Index file is probably missing",
-                bookInfo.getBookName()
+                "Index entries iterator for %s dictionary has no values. Index file is probably missing. Iterator: %s",
+                bookInfo.getBookName(),
+                iterator
             );
             logger.error(TAG, message);
             //TODO: send notification - probably index file is missing.
@@ -273,7 +275,11 @@ public class Book implements Iterable<IndexEntry> {
                 }
                 result.setDefinitions(definitions);
             }
-            indexEntry = iterator.next();
+            if (iterator.hasNext()) {
+                indexEntry = iterator.next();
+            } else {
+                indexEntry = null;
+            }
         }
         return result;
     }
@@ -314,7 +320,7 @@ public class Book implements Iterable<IndexEntry> {
     public Iterator<IndexEntry> iterator() {
         if (searchIterator == null) {
             try {
-                searchIterator = new IndexEntriesIterator(bookInfo);
+                searchIterator = new IndexEntriesIterator(bookInfo, logger);
             } catch (DomainException e) {
                 String message = String.format(
                     "Failed to construct exact-search iterator for %s dictionary",
@@ -335,7 +341,7 @@ public class Book implements Iterable<IndexEntry> {
     private IndexEntriesIterator getSuggestionsIterator() {
         if (suggestionsIterator == null) {
             try {
-                suggestionsIterator = new IndexEntriesIterator(bookInfo);
+                suggestionsIterator = new IndexEntriesIterator(bookInfo, logger);
             } catch (DomainException e) {
                 String message = String.format(
                     "Failed to construct prefix-search iterator for %s dictionary",
@@ -356,10 +362,12 @@ public class Book implements Iterable<IndexEntry> {
     public Vector<IndexEntry> getSuggestions(String prefix) {
         Vector<IndexEntry> result = new Vector<>(IndexEntriesIterator.MAX);
         IndexEntriesIterator iterator = getSuggestionsIterator();
+        iterator.reset();
         if (!iterator.hasNext()) {
             String message = String.format(
-                "Index entries iterator for %s dictionary has no values. Index file is probably missing",
-                bookInfo.getBookName()
+                "Suggestions iterator for %s dictionary has no values. Index file is probably missing. Iterator: %s",
+                bookInfo.getBookName(),
+                iterator
             );
             logger.error(TAG, message);
             //TODO: send notification - probably index file is missing.

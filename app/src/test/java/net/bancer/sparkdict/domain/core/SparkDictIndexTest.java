@@ -103,6 +103,12 @@ public class SparkDictIndexTest {
             if (!lemma.contains(" ") && !lemma.contains("&")) {
                 assertTrue(lexicalEntry.getDefinitions().toLowerCase().contains(lemma.toLowerCase()));
             }
+            if (i == 0) {
+                assertEquals("-able", lemma);
+            }
+            if (i == indexedCount - 1) {
+                assertEquals("zythum", lemma);
+            }
         }
         book.closeResources();
         index.delete();

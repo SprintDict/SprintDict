@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import net.bancer.sparkdict.Fixtures;
+import net.bancer.sparkdict.domain.utils.DomainException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -43,5 +44,40 @@ public class BookTest {
         assertEquals("abactor", suggestions.get(8).getLemma());
         assertEquals("abaculus", suggestions.get(9).getLemma());
         assertEquals("abacus", suggestions.get(10).getLemma());
+    }
+
+    @Test
+    public void testGetLexicalEntryFirst() throws DomainException {
+        Book book = new Book(new File(Fixtures.GCIDE_IFO_FILE));
+        LexicalEntry lexicalEntry = book.getLexicalEntry("-able");
+        assertEquals("-able", lexicalEntry.getLemma());
+        String definitions = "<p><b style=\"color: #00b\">-able</b> <i>(-ȧbl)</i>." +
+            " [F. <span style=\"color: #8B4513\">-able</span>," +
+            " L. <span style=\"color: #8B4513\">-abilis</span>.]" +
+            " An adjective suffix now usually in a passive sense; able to be; fit to be;" +
+            " expressing capacity or worthiness in a passive sense;" +
+            " as, <span style=\"color: 33a\">mov<i>able</i>, able to be moved; amend<i>able</i>," +
+            " able to be amended; blam<i>able</i>, fit to be blamed; sal<i>able</i>.</span></p>" +
+            "<p>The form <altsp><span style=\"color: #00b\">-ible</span></altsp> is used in the same sense.</p>" +
+            "<p>☞ It is difficult to say when we are not to use -<i>able</i> instead of <i>-ible</i>." +
+            " “Yet a rule may be laid down as to when we are to use it. To all verbs, then, from" +
+            " the Anglo-Saxon, to all based on the uncorrupted infinitival stems of Latin verbs" +
+            " of the first conjugation, and to all substantives, whencesoever sprung," +
+            " we annex -<i>able</i> only.”&nbsp;&nbsp;<small>Fitzed. Hall.</small></p>";
+        assertEquals(definitions, lexicalEntry.getDefinitions());
+    }
+
+    @Test
+    public void testGetLexicalEntryLast() throws DomainException {
+        Book book = new Book(new File(Fixtures.GCIDE_IFO_FILE));
+        LexicalEntry lexicalEntry = book.getLexicalEntry("zythum");
+        assertEquals("zythum", lexicalEntry.getLemma());
+        String definitions = "<p>Ø<b style=\"color: #00b\">Zythum</b> <i>(zĭthŭm)</i>," +
+            " <i style=\"color: #a00\">n.</i>" +
+            " [L., fr. Gr. ζῦθος a kind of beer; -- so called by the Egyptians.]" +
+            " A kind of ancient malt beverage; a liquor made from malt and wheat." +
+            "&nbsp;&nbsp;<altsp>[Written also <asp>zythem</asp>.]</altsp></p>" +
+            "<p><!-- End of definitions section of the dictionary --></p>";
+        assertEquals(definitions, lexicalEntry.getDefinitions());
     }
 }

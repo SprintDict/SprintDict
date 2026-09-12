@@ -161,7 +161,8 @@ public class IndexEntryTest {
     }
 
     @Test
-    public void toStringReturnsLemma() {
-        assertEquals(LEMMA, entry.toString());
+    public void toStringReturnsDetails() {
+        String expected = "[lemma: Example, lengthInBytes: 7, wordDataOffset: 123, wordDataSize: 456]";
+        assertEquals(expected, entry.toString());
     }
 }
