@@ -216,7 +216,13 @@ public class IndexEntry implements Comparable<IndexEntry> {
     @Override
 	@NonNull
     public String toString() {
-        return lemma;
+        return String.format(
+            "[lemma: %s, lengthInBytes: %s, wordDataOffset: %s, wordDataSize: %s]",
+            lemma,
+            lengthInBytes,
+            wordDataOffset,
+            wordDataSize
+        );
     }
 
     /**

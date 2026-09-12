@@ -27,10 +27,9 @@ import java.util.concurrent.Future;
  * IndexEntriesAdapter synchronises the visible list of suggestions with
  * the list of IndexEntry objects that match the user input.
  */
-public class IndexEntriesAdapter extends ArrayAdapter<IndexEntry>
-    implements TextWatcher {
+public class IndexEntriesAdapter extends ArrayAdapter<String> implements TextWatcher {
 
-    private final Vector<IndexEntry> entries;
+    private final Vector<String> entries;
 
     /**
      * Executor used to retrieve index entries in a background thread.
@@ -60,7 +59,7 @@ public class IndexEntriesAdapter extends ArrayAdapter<IndexEntry>
      * @param context caller context.
      * @param entries empty container for IndexEntries.
      */
-    public IndexEntriesAdapter(Context context, Vector<IndexEntry> entries) {
+    public IndexEntriesAdapter(Context context, Vector<String> entries) {
         super(context, R.layout.list_item, entries);
         this.entries = entries;
     }
@@ -197,16 +196,16 @@ public class IndexEntriesAdapter extends ArrayAdapter<IndexEntry>
         private void onProgressUpdate(Vector<IndexEntry> suggestions) {
             synchronized (entries) {
                 for (int i = entries.size() - 1; i >= 0; i--) {
-                    if (!entries.get(i).getLemma().toLowerCase().startsWith(search.toLowerCase())) {
+                    if (!entries.get(i).toLowerCase().startsWith(search.toLowerCase())) {
                         entries.remove(i);
                     }
                 }
                 if (!suggestions.isEmpty()) {
                     Collections.sort(suggestions);
                     for (IndexEntry entry : suggestions) {
-                        int key = Collections.binarySearch(entries, entry);
+                        int key = Collections.binarySearch(entries, entry.getLemma());
                         if (key < 0) {
-                            entries.add(-(key) - 1, entry);
+                            entries.add(-(key) - 1, entry.getLemma());
                         }
                     }
                 }
