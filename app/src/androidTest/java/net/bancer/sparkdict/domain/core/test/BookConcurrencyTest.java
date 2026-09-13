@@ -3,6 +3,7 @@ package net.bancer.sparkdict.domain.core.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 
@@ -84,19 +85,18 @@ public class BookConcurrencyTest {
 
     private DictionaryFiles dictionaryFiles;
 
-    private Book wordNet;
-
     @Before
     public void setUp() {
         Context context = ApplicationProvider.getApplicationContext();
         dictionaryFiles = SafDictionaryFilesFactory.create(context);
-        Shelf shelf = new Shelf(new String[0], dictionaryFiles);
-        wordNet = findBookByName(shelf, Mocks.WORDNET_DICT_NAME);
-        assertNotNull("Expected to find WordNet under Mocks.ROOT_PATH", wordNet);
     }
 
     @Test
     public void searchSurvivesConcurrentlyCancelledSuggestionLookups() throws Exception {
+        Shelf shelf = new Shelf(new String[0], dictionaryFiles);
+        Book wordNet = findBookByName(shelf, Mocks.WORDNET_DICT_NAME);
+        assertNotNull("Expected to find WordNet under Mocks.ROOT_PATH", wordNet);
+
         AtomicBoolean keepTyping = new AtomicBoolean(true);
         AtomicInteger searchFailures = new AtomicInteger(0);
         AtomicInteger searchSuccesses = new AtomicInteger(0);
@@ -130,6 +130,7 @@ public class BookConcurrencyTest {
                     }
                 });
                 try {
+                    //noinspection BusyWait
                     Thread.sleep(5);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -165,11 +166,16 @@ public class BookConcurrencyTest {
         typingSimulator.start();
         searcher.start();
         searcher.join(30_000);
+        assertFalse("Searcher did not terminate", searcher.isAlive());
         keepTyping.set(false);
         typingSimulator.join(5_000);
+        assertFalse("Typing simulator did not terminate", typingSimulator.isAlive());
 
         suggestionExecutor.shutdownNow();
-        suggestionExecutor.awaitTermination(5, TimeUnit.SECONDS);
+        assertTrue(
+            "Suggestion executor did not terminate",
+            suggestionExecutor.awaitTermination(5, TimeUnit.SECONDS)
+        );
 
         assertEquals(
             "Exact-match search should never fail or return unexpected content "
@@ -191,8 +197,11 @@ public class BookConcurrencyTest {
         assertEquals(".22 caliber", suggestions.get(0).getLemma());
         assertEquals(".38 caliber", suggestions.get(1).getLemma());
         assertEquals(".45 caliber", suggestions.get(2).getLemma());
+        shelf.closeResources();
+        freshShelf.closeResources();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private Book findBookByName(Shelf shelf, String name) {
         for (Book book : shelf.getBooks()) {
             if (name.equals(book.getBookName())) {

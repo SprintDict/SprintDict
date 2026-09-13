@@ -13,6 +13,7 @@ import android.net.Uri;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.BookInfo;
 import net.bancer.sparkdict.mocks.Mocks;
 
@@ -207,7 +208,7 @@ public class SafDictionaryFilesTest {
     @Test
     public void createForWriteCreatesFileWithExactName()
         throws IOException {
-        String fileName = "SafDictionaryFilesTest-" + System.currentTimeMillis() + ".dict.dz";
+        String fileName = "SafDictionaryFilesTest-" + System.currentTimeMillis() + Book.DICT_FILE_EXTENSION;
         String path = "mueller/" + fileName;
         temporaryFile = new File(Mocks.MUELLER_DICT_PATH, fileName);
         try (OutputStream output = dictionaryFiles.createForWrite(path)) {

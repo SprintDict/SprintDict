@@ -35,10 +35,10 @@ import java.util.Map;
  * "for free" that this class must handle explicitly: any provider call can
  * throw {@link SecurityException} if the tree Uri's permission was never
  * granted, or has since been revoked (e.g. the user revoked storage access
- * via system Settings while this object is still alive). Every provider
- * call is wrapped accordingly, treating a denied permission the same as
- * "not found" rather than letting an unchecked exception escape methods
- * whose contract otherwise looks like ordinary I/O.</p>
+ * via system Settings while this object is still alive). Provider operations
+ * that can access the selected tree are handled accordingly, treating a denied
+ * permission as "not found" or an I/O failure depending on the operation, rather
+ * than letting an unchecked {@link SecurityException} escape unexpectedly.</p>
  *
  * <p>Folder/file lookups cache the resolved document ID for this object's
  * lifetime. The cache does not watch for external changes to the tree --
@@ -58,22 +58,51 @@ public class SafDictionaryFiles implements DictionaryFiles {
     private final Uri treeUri;
     private final Logger logger;
 
-    /** Caches folder name -> its document ID, to avoid repeat root scans. */
+    /**
+     * Caches folder names to document IDs to avoid repeated root queries.
+     */
     private final Map<String, String> folderCache = new HashMap<>();
 
-    /** Caches "folder/file" -> its document ID, to avoid repeat folder scans. */
+    /**
+     * Caches root-relative file paths to document IDs to avoid repeated provider queries.
+     */
     private final Map<String, String> fileCache = new HashMap<>();
 
+    /**
+     * Creates a dictionary file store using a {@link ConsoleLogger}.
+     *
+     * @param context context used to access the Storage Access Framework
+     * @param treeUri persisted SAF tree URI representing the dictionary root
+     */
     public SafDictionaryFiles(Context context, Uri treeUri) {
         this(context, treeUri, new ConsoleLogger());
     }
 
+    /**
+     * Creates a dictionary file store using the specified logger.
+     *
+     * @param context context used to access the Storage Access Framework
+     * @param treeUri persisted SAF tree URI representing the dictionary root
+     * @param logger logger used to report storage access errors
+     */
     public SafDictionaryFiles(Context context, Uri treeUri, Logger logger) {
         this.context = context.getApplicationContext();
         this.treeUri = treeUri;
         this.logger = logger;
     }
 
+    /**
+     * Finds dictionary metadata files in the immediate child folders of the
+     * selected tree and populates the folder and file caches while scanning
+     * those folders.
+     *
+     * <p>A dictionary metadata file is identified by the
+     * {@link BookInfo#INFO_FILE_EXTENTION} extension.</p>
+     *
+     * @return root-relative paths to all dictionary metadata files, or an empty
+     *         list if the tree URI is not available or its contents cannot be
+     *         accessed
+     */
     @Override
     public List<String> findDictionaryMetaFilePaths() {
         List<String> result = new ArrayList<>();
@@ -161,6 +190,8 @@ public class SafDictionaryFiles implements DictionaryFiles {
      * not already exist, it is created. The parent folder is expected to
      * already exist and is never created here.
      *
+     * @param path root-relative {@code "folder/name"} path
+     * @param create whether a missing file should be created
      * @return the file's document ID, or {@code null} if it does not
      * exist and {@code create} is {@code false}, its folder does not
      * exist, or access is denied.
@@ -212,6 +243,10 @@ public class SafDictionaryFiles implements DictionaryFiles {
     /**
      * Resolves a folder name directly under the tree root to its document
      * ID, using and populating the folder cache. Never creates a folder.
+     *
+     * @param folderName name of the folder directly under the tree root
+     * @return the folder's document ID, or {@code null} if the folder does not
+     * exist or access is denied
      */
     private String resolveFolder(String folderName) {
         String cached = folderCache.get(folderName);
@@ -234,6 +269,10 @@ public class SafDictionaryFiles implements DictionaryFiles {
      * a single query. Treats a permission denial the same as "no
      * children" -- see class documentation -- rather than propagating an
      * unchecked exception, matching what DocumentFile did implicitly.
+     *
+     * @param parentDocumentId document ID of the parent whose children should be listed
+     * @return the immediate children of the parent, or an empty list if the
+     * query returns no rows, returns {@code null}, or access is denied
      */
     private List<ChildDocument> queryChildren(String parentDocumentId) {
         List<ChildDocument> result = new ArrayList<>();
@@ -264,11 +303,21 @@ public class SafDictionaryFiles implements DictionaryFiles {
         return result;
     }
 
+    /**
+     * Information about a document returned by a SAF child-document query.
+     */
     private static final class ChildDocument {
         private final String documentId;
         private final String name;
         private final boolean isDirectory;
 
+        /**
+         * Creates information about a child document.
+         *
+         * @param documentId document ID assigned by the storage provider
+         * @param name display name of the document
+         * @param isDirectory whether the document represents a directory
+         */
         private ChildDocument(String documentId, String name, boolean isDirectory) {
             this.documentId = documentId;
             this.name = name;

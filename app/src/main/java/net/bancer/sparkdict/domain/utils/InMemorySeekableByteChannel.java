@@ -23,6 +23,12 @@ public class InMemorySeekableByteChannel implements SeekableByteChannel {
     private int position = 0;
     private boolean open = true;
 
+    /**
+     * Creates a channel backed by the supplied byte array.
+     * The array must not be modified while the channel is in use.
+     *
+     * @param data Channel data (file contents).
+     */
     public InMemorySeekableByteChannel(byte[] data) {
         this.data = data;
     }

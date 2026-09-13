@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
  */
 public class StarDictIndex {
 
+    public static final String IDX_EXT = ".idx";
+
     /**
      * Byte used to separate data type from data itself in <dictionary name>.dict file.
      */
@@ -60,7 +62,7 @@ public class StarDictIndex {
     private StarDictIndex(String dictionaryFileBaseName, int idxOffsetBits) {
         this.lexicalEntryOffsetFieldSizeInBytes = idxOffsetBits / BITS_IN_BYTE;
         this.lexicalEntrySizeFieldInBytes = 4; // = 32/8
-        this.fileName = dictionaryFileBaseName + ".idx";
+        this.fileName = dictionaryFileBaseName + IDX_EXT;
     }
 
     private byte[] getStarDictBuffer() {

@@ -26,7 +26,7 @@ public class StarDictIndexTest {
         BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         StarDictIndex index = new StarDictIndex(bookInfo);
         assertEquals(
-            bookInfo.getFileBaseName() + ".idx",
+            bookInfo.getFileBaseName() + StarDictIndex.IDX_EXT,
             index.getFileName()
         );
     }
@@ -114,7 +114,7 @@ public class StarDictIndexTest {
     public void channelConstructorDoesNotAffectMetadataGetters() {
         BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         StarDictIndex index = new StarDictIndex(bookInfo);
-        assertEquals(bookInfo.getFileBaseName() + ".idx", index.getFileName());
+        assertEquals(bookInfo.getFileBaseName() + StarDictIndex.IDX_EXT, index.getFileName());
         assertEquals(bookInfo.getFileBaseName(), index.getFileBaseName());
         assertEquals(bookInfo, index.getBookInfo());
         assertEquals(4, index.getLexicalEntryOffsetFieldSizeInBytes());

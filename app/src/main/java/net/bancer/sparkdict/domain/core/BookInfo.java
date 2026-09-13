@@ -314,7 +314,7 @@ public class BookInfo {
      * end. Root-relative or absolute, matching {@link #getFileBaseName()}.
      */
     public String getPathToDictFile() {
-        return getFileBaseName() + ".dict.dz";
+        return getFileBaseName() + Book.DICT_FILE_EXTENSION;
     }
 
     public String getDirPath() {

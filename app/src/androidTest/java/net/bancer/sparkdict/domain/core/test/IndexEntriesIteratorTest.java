@@ -42,60 +42,60 @@ public class IndexEntriesIteratorTest {
     @Test
     public void testHasNextInBse() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
-        iteratorBSE.findIndexEntry("Яя (река)");
-        assertTrue(iteratorBSE.hasNext());
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        iterator.findIndexEntry("Яя (река)");
+        assertTrue(iterator.hasNext());
     }
 
     @Test
     public void testHasNextInCambridge() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
-        iteratorWordnet.findIndexEntry("abacus");
-        assertTrue(iteratorWordnet.hasNext());
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        iterator.findIndexEntry("abacus");
+        assertTrue(iterator.hasNext());
     }
 
     @Test
     public void testHasNextInMueller() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
-        iteratorWordnet.findIndexEntry("abacus");
-        assertTrue(iteratorWordnet.hasNext());
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        iterator.findIndexEntry("abacus");
+        assertTrue(iterator.hasNext());
     }
 
     @Test
     public void testHasNextInWordnet() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
-        iteratorWordnet.findIndexEntry("15 May Organization");
-        assertTrue(iteratorWordnet.hasNext());
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        iterator.findIndexEntry("15 May Organization");
+        assertTrue(iterator.hasNext());
     }
 
     @Test
     public void testHasNextOnLastElement() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
-        IndexEntry entry = iteratorBSE.findIndexEntry("Яёи культура");
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        IndexEntry entry = iterator.findIndexEntry("Яёи культура");
         assertEquals("Яёи культура", entry.getLemma());
-        assertFalse(iteratorBSE.hasNext());
+        assertFalse(iterator.hasNext());
     }
 
     @Test
     public void testNext() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
-        iteratorWordnet.findIndexEntry("15 May Organization");
-        IndexEntry entry = iteratorWordnet.next();
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        iterator.findIndexEntry("15 May Organization");
+        IndexEntry entry = iterator.next();
         assertEquals("1530s", entry.getLemma());
     }
 
     @Test
     public void testNextUntilLastInBse() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = null;
-        while (iteratorBSE.hasNext()) {
-            entry = iteratorBSE.next();
+        while (iterator.hasNext()) {
+            entry = iterator.next();
         }
         assertNotNull(entry);
         assertEquals("Яёи культура", entry.getLemma());
@@ -104,10 +104,10 @@ public class IndexEntriesIteratorTest {
     @Test
     public void testNextUntilLastInCambridge() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = null;
-        while (iteratorBSE.hasNext()) {
-            entry = iteratorBSE.next();
+        while (iterator.hasNext()) {
+            entry = iterator.next();
         }
         assertNotNull(entry);
         assertEquals("↑Zoos and wildlife reserves", entry.getLemma());
@@ -116,10 +116,10 @@ public class IndexEntriesIteratorTest {
     @Test
     public void testNextUntilLastInMueller() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = null;
-        while (iteratorBSE.hasNext()) {
-            entry = iteratorBSE.next();
+        while (iterator.hasNext()) {
+            entry = iterator.next();
         }
         assertNotNull(entry);
         assertEquals("усил.", entry.getLemma());
@@ -128,10 +128,10 @@ public class IndexEntriesIteratorTest {
     @Test
     public void testNextUntilLastInWordnet() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = null;
-        while (iteratorBSE.hasNext()) {
-            entry = iteratorBSE.next();
+        while (iterator.hasNext()) {
+            entry = iterator.next();
         }
         assertNotNull(entry);
         assertEquals("zymotic", entry.getLemma());
@@ -140,113 +140,119 @@ public class IndexEntriesIteratorTest {
     @Test(expected = UnsupportedOperationException.class)
     public void testRemove() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
-        iteratorWordnet.remove();
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        iterator.remove();
     }
 
     @Test
     public void testNextSuggestion() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
-        IndexEntry entry = iteratorWordnet.nextSuggestion(".");
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        IndexEntry entry = iterator.nextSuggestion(".");
         assertEquals(".22 caliber", entry.getLemma());
     }
 
     @Test
     public void testNextSuggestionBSE() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
-        IndexEntry entry = iteratorBSE.nextSuggestion("Собат");
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        IndexEntry entry = iterator.nextSuggestion("Собат");
         assertEquals("Собат", entry.getLemma());
 
-        entry = iteratorBSE.nextSuggestion("собат");
+        entry = iterator.nextSuggestion("собат");
         assertNull(entry);
 
-        entry = iteratorBSE.nextSuggestion("СОБАТ");
+        entry = iterator.nextSuggestion("СОБАТ");
         assertNull(entry);
 
-        entry = iteratorBSE.nextSuggestion("...Биоз");
+        entry = iterator.nextSuggestion("...Биоз");
         assertEquals("...Биоз", entry.getLemma());
 
-        entry = iteratorBSE.nextSuggestion("Яёи культура");
+        entry = iterator.nextSuggestion("Яёи культура");
         assertEquals("Яёи культура", entry.getLemma());
     }
 
     @Test
-    public void testFindIndexEntry() throws DomainException, ClosedByInterruptException {
-        BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
-        IndexEntry entry = iteratorWordnet.findIndexEntry("15 May Organization");
-        assertNotNull(entry);
-        assertEquals("15 May Organization", entry.getLemma());
-        assertEquals(906, entry.getWordDataOffset());
-        assertEquals(213, entry.getWordDataSize());
-
-        bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
-        entry = iteratorBSE.findIndexEntry(Mocks.BSE_INDEX_ENTRY_SOBAT.getLemma());
+    public void testFindIndexEntryBse() throws DomainException, ClosedByInterruptException {
+        BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        IndexEntry entry = iterator.findIndexEntry(Mocks.BSE_INDEX_ENTRY_SOBAT.getLemma());
         assertNotNull(entry);
         assertEquals(Mocks.BSE_INDEX_ENTRY_SOBAT.getLemma(), entry.getLemma());
     }
 
     @Test
-    public void testFindIndexEntryFirst() throws DomainException, ClosedByInterruptException {
+    public void testFindIndexEntryWordnet() throws DomainException, ClosedByInterruptException {
+        BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        IndexEntry entry = iterator.findIndexEntry("15 May Organization");
+        assertNotNull(entry);
+        assertEquals("15 May Organization", entry.getLemma());
+        assertEquals(906, entry.getWordDataOffset());
+        assertEquals(213, entry.getWordDataSize());
+    }
+
+    @Test
+    public void testFindIndexEntryFirstBse() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = iteratorBSE.findIndexEntry(Mocks.BSE_INDEX_ENTRY_FIRST.getLemma());
         assertEquals(Mocks.BSE_INDEX_ENTRY_FIRST.getLemma(), entry.getLemma());
+    }
 
-        bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
+    @Test
+    public void testFindIndexEntryFirstMueller() throws DomainException, ClosedByInterruptException {
+        BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorMueller = new IndexEntriesIterator(bookInfo);
-        entry = iteratorMueller.findIndexEntry(Mocks.MUELLER_INDEX_ENTRY_FIRST.getLemma());
+        IndexEntry entry = iteratorMueller.findIndexEntry(Mocks.MUELLER_INDEX_ENTRY_FIRST.getLemma());
         assertEquals(Mocks.MUELLER_INDEX_ENTRY_FIRST.getLemma(), entry.getLemma());
     }
 
     @Test
     public void testFindIndexEntryLast() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
-        IndexEntry entry = iteratorBSE.findIndexEntry(Mocks.BSE_INDEX_ENTRY_LAST.getLemma());
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        IndexEntry entry = iterator.findIndexEntry(Mocks.BSE_INDEX_ENTRY_LAST.getLemma());
         assertEquals(Mocks.BSE_INDEX_ENTRY_LAST.getLemma(), entry.getLemma());
     }
 
     @Test
     public void testFindIndexEntryLastInBse() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
-        IndexEntry entry = iteratorBSE.findIndexEntry("Яёи культура");
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        IndexEntry entry = iterator.findIndexEntry("Яёи культура");
         assertEquals("Яёи культура", entry.getLemma());
     }
 
     @Test
     public void testFindIndexEntryLastInCambridge() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
-        IndexEntry entry = iteratorBSE.findIndexEntry("↑Zoos and wildlife reserves");
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        IndexEntry entry = iterator.findIndexEntry("↑Zoos and wildlife reserves");
         assertEquals("↑Zoos and wildlife reserves", entry.getLemma());
     }
 
     @Test
     public void testFindIndexEntryLastInMueller() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
-        IndexEntry entry = iteratorBSE.findIndexEntry("усил.");
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        IndexEntry entry = iterator.findIndexEntry("усил.");
         assertEquals("усил.", entry.getLemma());
     }
 
     @Test
     public void testFindIndexEntryLastInWordnet() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
-        IndexEntry entry = iteratorBSE.findIndexEntry("zymotic");
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        IndexEntry entry = iterator.findIndexEntry("zymotic");
         assertEquals("zymotic", entry.getLemma());
     }
 
     @Test
     public void testFindIndexEntryNonUnique() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
-        IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
-        IndexEntry entry = iteratorWordnet.findIndexEntry("put away");
+        IndexEntriesIterator iterator = new IndexEntriesIterator(bookInfo);
+        IndexEntry entry = iterator.findIndexEntry("put away");
         assertNotNull(entry);
         assertEquals("put away", entry.getLemma());
         assertEquals(12519419, entry.getWordDataOffset());

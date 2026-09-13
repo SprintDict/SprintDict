@@ -47,7 +47,6 @@ public class BookTest {
         try (Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles)) {
             bookInfo = book.getInfo();
         }
-        assertNotNull(bookInfo);
         assertEquals("WordNet", bookInfo.getBookName());
         assertEquals("n", bookInfo.getSameTypeSequence());
     }
@@ -58,7 +57,6 @@ public class BookTest {
         try (Book book = new Book(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles)) {
             bookInfo = book.getInfo();
         }
-        assertNotNull(bookInfo);
         assertEquals("Cambridge Advanced Learners Dictionary 3th Ed. (En-En)", bookInfo.getBookName());
         assertEquals("x", bookInfo.getSameTypeSequence());
     }
@@ -67,10 +65,10 @@ public class BookTest {
     public void testSetEnabledWordnet() {
         try (Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles)) {
             boolean enabled = book.isEnabled();
-            assertEquals(enabled, book.isEnabled());
             book.setEnabled(!enabled);
-            assertEquals(!enabled, book.isEnabled());
+            boolean actual = book.isEnabled();
             book.setEnabled(enabled);
+            assertEquals(!enabled, actual);
         }
     }
 
@@ -120,9 +118,10 @@ public class BookTest {
 
     @Test
     public void testGetLexicalEntryFromCambridge() throws DomainException {
-        Book book = new Book(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
-        LexicalEntry entry = book.getLexicalEntry("abacus");
-        book.close();
+        LexicalEntry entry;
+        try (Book book = new Book(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            entry = book.getLexicalEntry("abacus");
+        }
         String expected = "<big>abacus</big><br><br><b>abacus</b>" +
             " <font color=\"#808080\"> </font>" +
             "<font color=\"#006600\">UK</font>" +
@@ -163,7 +162,10 @@ public class BookTest {
 
     @Test
     public void testGetLexicalEntryWithMultipleIndexEntriesFromWordnet() throws DomainException {
-        Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
+        LexicalEntry entry;
+        try (Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles)) {
+            entry = book.getLexicalEntry("put away");
+        }
         String expected = "<i><font color=\"#006600\">v</font></i><br>" +
             "<b>&#8226; put away</b><br>" +
             "<b>&#8226; put aside</b><br>" +
@@ -181,8 +183,6 @@ public class BookTest {
             "<gloss>stop using; &quot;the children were told to put away " +
             "their toys&quot;; &quot;the students put away their " +
             "notebooks&quot;</gloss>";
-        LexicalEntry entry = book.getLexicalEntry("put away");
-        book.close();
         assertEquals(expected, entry.getDefinitions());
     }
 
@@ -194,6 +194,7 @@ public class BookTest {
         }
         assertNotNull(iterator);
         assertTrue(iterator instanceof IndexEntriesIterator);
+        assertTrue(iterator.hasNext());
     }
 
     @Test
@@ -222,8 +223,8 @@ public class BookTest {
             assertEquals("Собат", suggestions.get(0).getLemma());
 
             suggestions = bse.getSuggestions("СОБАТ");
+            assertNotNull(suggestions);
+            assertEquals("Собат", suggestions.get(0).getLemma());
         }
-        assertNotNull(suggestions);
-        assertEquals("Собат", suggestions.get(0).getLemma());
     }
 }

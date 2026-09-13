@@ -15,6 +15,7 @@ public final class Fixtures {
     public static final String GCIDE_IFO_FILE = TEST_DATA_PATH + GCIDE_IFO_FILE_RELATIVE;
     public static final String GCIDE_IDX_FILE = TEST_DATA_PATH + GCIDE_DICT_FOLDER + "/stardict.idx";
     public static final String GCIDE_DICT_DZ_FILE = GCIDE_DICT_FOLDER + "/stardict.dict.dz";
+    public static final String GCIDE_DICT_DZ_FILE_FULL_PATH = TEST_DATA_PATH + GCIDE_DICT_DZ_FILE;
     public static final String ALL_FIELDS_IFO_FILE = TEST_DATA_PATH + "all-fields-ifo/stardict.ifo";
 
     public static final String DUMMY_TM_DICT_FOLDER = "dummy-dict-tm-type";
