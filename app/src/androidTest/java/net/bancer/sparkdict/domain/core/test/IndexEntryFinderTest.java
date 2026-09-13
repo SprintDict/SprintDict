@@ -19,6 +19,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.nio.channels.ClosedByInterruptException;
+
 @RunWith(AndroidJUnit4.class)
 public class IndexEntryFinderTest extends TestCase {
 
@@ -31,7 +33,7 @@ public class IndexEntryFinderTest extends TestCase {
     }
 
     @Test
-    public void testBinarySearchInMueller() throws DomainException {
+    public void testBinarySearchInMueller() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorMueller = new IndexEntriesIterator(bookInfo);
         IndexEntry ie = iteratorMueller.findIndexEntry("abacus");
@@ -51,7 +53,7 @@ public class IndexEntryFinderTest extends TestCase {
     }
 
     @Test
-    public void testBinarySearchInBse() throws DomainException {
+    public void testBinarySearchInBse() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry ie = iteratorBSE.findIndexEntry("...Биоз"); //first

@@ -16,6 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -37,14 +38,14 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test(expected = DomainException.class)
-    public void constructorThrowsDomainExceptionWhenPathDoesNotExist() throws DomainException {
+    public void constructorThrowsDomainExceptionWhenPathDoesNotExist() throws DomainException, ClosedByInterruptException {
         new IndexEntriesIterator(
             new BookInfo("/path/that/does/not/exist/stardict.ifo", dictionaryFiles)
         );
     }
 
     @Test
-    public void constructorThrowsDomainExceptionWhenIndexFileDoesNotExist() {
+    public void constructorThrowsDomainExceptionWhenIndexFileDoesNotExist() throws ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(
             Fixtures.TEST_DATA_PATH + "all-fields-ifo/stardict.ifo",
             dictionaryFiles
@@ -62,7 +63,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Before
-    public void setUp() throws DomainException {
+    public void setUp() throws DomainException, ClosedByInterruptException {
         dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);
         BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
         iterator = new IndexEntriesIterator(bookInfo);
@@ -121,7 +122,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void nextSuggestionReturnsFirstMatchingEntry() throws DomainException {
+    public void nextSuggestionReturnsFirstMatchingEntry() throws DomainException, ClosedByInterruptException {
         IndexEntry entry = iterator.nextSuggestion("aard");
         assertNotNull(entry);
         assertEquals("aard-wolf", entry.getLemma());
@@ -129,7 +130,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void nextSuggestionReturnsSubsequentMatchingEntries() throws DomainException {
+    public void nextSuggestionReturnsSubsequentMatchingEntries() throws DomainException, ClosedByInterruptException {
         IndexEntry first = iterator.nextSuggestion("aard");
         assertNotNull(first);
         assertEquals("aard-wolf", first.getLemma());
@@ -142,13 +143,13 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void nextSuggestionReturnsNullWhenPrefixDoesNotMatch() throws DomainException {
+    public void nextSuggestionReturnsNullWhenPrefixDoesNotMatch() throws DomainException, ClosedByInterruptException {
         assertNull(iterator.nextSuggestion("this-prefix-does-not-exist"));
     }
 
     @Test
     public void nextSuggestionStartsFromBeginningWhenPrefixChanges()
-        throws DomainException {
+        throws DomainException, ClosedByInterruptException {
         IndexEntry first = iterator.nextSuggestion("aard");
         assertNotNull(first);
         assertEquals("aard-wolf", first.getLemma());
@@ -160,7 +161,7 @@ public class IndexEntriesIteratorTest {
 
     @Test
     public void nextSuggestionDoesNotReturnMoreThanMaximumSuggestions()
-        throws DomainException {
+        throws DomainException, ClosedByInterruptException {
         int suggestionCount = 0;
         while (iterator.nextSuggestion("a") != null) {
             suggestionCount++;
@@ -170,7 +171,7 @@ public class IndexEntriesIteratorTest {
 
     @Test
     public void nextSuggestionReturnsNullWhenThereAreNoMoreMatchingEntries()
-        throws DomainException {
+        throws DomainException, ClosedByInterruptException {
         String prefix = "a";
         IndexEntry entry;
         do {
@@ -180,7 +181,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void nextSuggestionRestoresCursorWhenNextEntryDoesNotMatch() throws DomainException {
+    public void nextSuggestionRestoresCursorWhenNextEntryDoesNotMatch() throws DomainException, ClosedByInterruptException {
         IndexEntry first = iterator.nextSuggestion("abaculus");
         assertEquals("abaculus", first.getLemma());
         IndexEntry next = iterator.nextSuggestion("abaculus");

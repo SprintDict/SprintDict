@@ -25,6 +25,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+import java.nio.channels.ClosedByInterruptException;
+
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class IndexEntriesIteratorTest {
@@ -38,7 +40,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testHasNextInBse() throws DomainException {
+    public void testHasNextInBse() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         iteratorBSE.findIndexEntry("Яя (река)");
@@ -46,7 +48,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testHasNextInCambridge() throws DomainException {
+    public void testHasNextInCambridge() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
         iteratorWordnet.findIndexEntry("abacus");
@@ -54,7 +56,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testHasNextInMueller() throws DomainException {
+    public void testHasNextInMueller() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
         iteratorWordnet.findIndexEntry("abacus");
@@ -62,7 +64,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testHasNextInWordnet() throws DomainException {
+    public void testHasNextInWordnet() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
         iteratorWordnet.findIndexEntry("15 May Organization");
@@ -70,7 +72,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testHasNextOnLastElement() throws DomainException {
+    public void testHasNextOnLastElement() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = iteratorBSE.findIndexEntry("Яёи культура");
@@ -79,7 +81,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testNext() throws DomainException {
+    public void testNext() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
         iteratorWordnet.findIndexEntry("15 May Organization");
@@ -88,7 +90,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testNextUntilLastInBse() throws DomainException {
+    public void testNextUntilLastInBse() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = null;
@@ -100,7 +102,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testNextUntilLastInCambridge() throws DomainException {
+    public void testNextUntilLastInCambridge() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = null;
@@ -112,7 +114,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testNextUntilLastInMueller() throws DomainException {
+    public void testNextUntilLastInMueller() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = null;
@@ -124,7 +126,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testNextUntilLastInWordnet() throws DomainException {
+    public void testNextUntilLastInWordnet() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = null;
@@ -136,14 +138,14 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testRemove() throws DomainException {
+    public void testRemove() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
         iteratorWordnet.remove();
     }
 
     @Test
-    public void testNextSuggestion() throws DomainException {
+    public void testNextSuggestion() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = iteratorWordnet.nextSuggestion(".");
@@ -151,7 +153,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testNextSuggestionBSE() throws DomainException {
+    public void testNextSuggestionBSE() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = iteratorBSE.nextSuggestion("Собат");
@@ -171,7 +173,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testFindIndexEntry() throws DomainException {
+    public void testFindIndexEntry() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = iteratorWordnet.findIndexEntry("15 May Organization");
@@ -188,7 +190,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testFindIndexEntryFirst() throws DomainException {
+    public void testFindIndexEntryFirst() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = iteratorBSE.findIndexEntry(Mocks.BSE_INDEX_ENTRY_FIRST.getLemma());
@@ -201,7 +203,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testFindIndexEntryLast() throws DomainException {
+    public void testFindIndexEntryLast() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = iteratorBSE.findIndexEntry(Mocks.BSE_INDEX_ENTRY_LAST.getLemma());
@@ -209,7 +211,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testFindIndexEntryLastInBse() throws DomainException {
+    public void testFindIndexEntryLastInBse() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = iteratorBSE.findIndexEntry("Яёи культура");
@@ -217,7 +219,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testFindIndexEntryLastInCambridge() throws DomainException {
+    public void testFindIndexEntryLastInCambridge() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.CAMBRIDGE_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = iteratorBSE.findIndexEntry("↑Zoos and wildlife reserves");
@@ -225,7 +227,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testFindIndexEntryLastInMueller() throws DomainException {
+    public void testFindIndexEntryLastInMueller() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = iteratorBSE.findIndexEntry("усил.");
@@ -233,7 +235,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testFindIndexEntryLastInWordnet() throws DomainException {
+    public void testFindIndexEntryLastInWordnet() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorBSE = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = iteratorBSE.findIndexEntry("zymotic");
@@ -241,7 +243,7 @@ public class IndexEntriesIteratorTest {
     }
 
     @Test
-    public void testFindIndexEntryNonUnique() throws DomainException {
+    public void testFindIndexEntryNonUnique() throws DomainException, ClosedByInterruptException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         IndexEntriesIterator iteratorWordnet = new IndexEntriesIterator(bookInfo);
         IndexEntry entry = iteratorWordnet.findIndexEntry("put away");

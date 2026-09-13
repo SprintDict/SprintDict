@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -210,7 +211,7 @@ public class Book implements Iterable<IndexEntry>, Closeable {
         } catch (IOException e) {
             String message = String.format(
                 "Failed to read a lexical entry '%s' in %s dictionary",
-                idxEntry,
+                idxEntry.getLemma(),
                 bookInfo.getBookName()
             );
             logger.error(TAG, message, e);
@@ -325,6 +326,15 @@ public class Book implements Iterable<IndexEntry>, Closeable {
         if (searchIterator == null) {
             try {
                 searchIterator = new IndexEntriesIterator(bookInfo, logger);
+            } catch (ClosedByInterruptException e) {
+                // The calling thread was interrupted mid-read -- almost certainly a
+                // stale lookup being cancelled as the user started searching another word,
+                // not a real failure.
+                // Retrying is pointless: the interrupt status persists on this
+                // thread, so a retry would fail identically. Restore the interrupt
+                // flag and propagate so the caller can recognise this as a
+                // cancellation rather than an error.
+                Thread.currentThread().interrupt();
             } catch (DomainException e) {
                 String message = String.format(
                     "Failed to construct exact-search iterator for %s dictionary",
@@ -346,6 +356,15 @@ public class Book implements Iterable<IndexEntry>, Closeable {
         if (suggestionsIterator == null) {
             try {
                 suggestionsIterator = new IndexEntriesIterator(bookInfo, logger);
+            } catch (ClosedByInterruptException e) {
+                // The calling thread was interrupted mid-read -- almost certainly a
+                // stale suggestion lookup being cancelled as the user keeps typing
+                // (see IndexEntriesAdapter#onTextChanged), not a real failure.
+                // Retrying is pointless: the interrupt status persists on this
+                // thread, so a retry would fail identically. Restore the interrupt
+                // flag and propagate so the caller can recognise this as a
+                // cancellation rather than an error.
+                Thread.currentThread().interrupt();
             } catch (DomainException e) {
                 String message = String.format(
                     "Failed to construct prefix-search iterator for %s dictionary",
@@ -392,6 +411,15 @@ public class Book implements Iterable<IndexEntry>, Closeable {
                         result.add(entry);
                         entry = iterator.nextSuggestion(prefixVariation);
                     }
+                } catch (ClosedByInterruptException e) {
+                    // The calling thread was interrupted mid-read -- almost certainly a
+                    // stale suggestion lookup being cancelled as the user keeps typing
+                    // (see IndexEntriesAdapter#onTextChanged), not a real failure.
+                    // Retrying is pointless: the interrupt status persists on this
+                    // thread, so a retry would fail identically. Restore the interrupt
+                    // flag and propagate so the caller can recognise this as a
+                    // cancellation rather than an error.
+                    Thread.currentThread().interrupt();
                 } catch (DomainException e) {
                     String message = String.format(
                         "Failed to find a suggestion for '%s' prefix in %s dictionary",

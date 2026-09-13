@@ -1,5 +1,7 @@
 package net.bancer.sparkdict.domain.core;
 
+import android.util.Log;
+
 import net.bancer.sparkdict.domain.utils.InMemorySeekableByteChannel;
 
 import java.io.IOException;
@@ -74,6 +76,7 @@ public interface DictionaryFiles {
      * @throws IOException if the file cannot be read.
      */
     default SeekableByteChannel readFully(String path) throws IOException {
+        long startTime = System.nanoTime();
         byte[] data;
         try (SeekableByteChannel channel = openForRead(path)) {
             long size = channel.size();
@@ -89,7 +92,10 @@ public interface DictionaryFiles {
             }
             data = buffer.array();
         }
-        return new InMemorySeekableByteChannel(data);
+        InMemorySeekableByteChannel channel = new InMemorySeekableByteChannel(data);
+        long elapsedTime = System.nanoTime() - startTime;
+        Log.d("DictionaryFiles", "Finished reading " + path + " in " + (elapsedTime / 1_000_000) + " ms");
+        return channel;
     }
 
     /**
