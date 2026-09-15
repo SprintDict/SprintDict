@@ -20,8 +20,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
-import java.io.File;
-
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BookInfoTest {
@@ -36,30 +34,11 @@ public class BookInfoTest {
 
     @Test
     public void testPreConditions() {
-        File dir = new File(Mocks.ROOT_PATH);
-        assertTrue(Mocks.ROOT_PATH + " does not exists", dir.exists());
-        assertTrue(Mocks.ROOT_PATH + " is not a directory", dir.isDirectory());
-        assertTrue(Mocks.ROOT_PATH + " is not readable", dir.canRead());
+        boolean muellerIfoExists = dictionaryFiles.exists(Mocks.MUELLER_IFO_PATH_RELATIVE);
+        assertTrue(Mocks.MUELLER_IFO_PATH_RELATIVE + " does not exists", muellerIfoExists);
 
-        File muellerDir = new File(Mocks.MUELLER_DICT_PATH);
-        assertTrue(muellerDir + " does not exists", muellerDir.exists());
-        assertTrue(muellerDir + " is not a directory", muellerDir.isDirectory());
-        assertTrue(muellerDir + " is not readable", muellerDir.canRead());
-
-        File muellerIfo = new File(Mocks.MUELLER_IFO_PATH);
-        assertTrue(muellerIfo + " does not exists", muellerIfo.exists());
-        assertTrue(muellerIfo + " is not a file", muellerIfo.isFile());
-        assertTrue(muellerIfo + " is not readable", muellerIfo.canRead());
-
-        File bseDir = new File(Mocks.BSE_DICT_PATH);
-        assertTrue(bseDir + " does not exists", bseDir.exists());
-        assertTrue(bseDir + " is not a directory", bseDir.isDirectory());
-        assertTrue(bseDir + " is not readable", bseDir.canRead());
-
-        File bseIfo = new File(Mocks.BSE_IFO_PATH);
-        assertTrue(bseIfo + " does not exists", bseIfo.exists());
-        assertTrue(bseIfo + " is not a file", bseIfo.isFile());
-        assertTrue(bseIfo + " is not readable", bseIfo.canRead());
+        boolean bseIfoExists = dictionaryFiles.exists(Mocks.BSE_IFO_PATH_RELATIVE);
+        assertTrue(Mocks.BSE_IFO_PATH_RELATIVE + " does not exists", bseIfoExists);
     }
 
     @Test

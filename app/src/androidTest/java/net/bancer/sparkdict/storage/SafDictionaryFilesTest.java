@@ -27,12 +27,10 @@ import org.junit.runners.MethodSorters;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
@@ -43,7 +41,8 @@ public class SafDictionaryFilesTest {
     Context context;
 
     private SafDictionaryFiles dictionaryFiles;
-    private File temporaryFile;
+
+    private String temporaryFile;
 
     @Before
     public void setUp() {
@@ -56,10 +55,10 @@ public class SafDictionaryFilesTest {
 
     @After
     public void tearDown() {
-        if (temporaryFile != null && temporaryFile.exists()) {
+        if (temporaryFile != null && dictionaryFiles.exists(temporaryFile)) {
             assertTrue(
                 "Could not delete temporary test file: " + temporaryFile,
-                temporaryFile.delete()
+                dictionaryFiles.delete(temporaryFile)
             );
         }
     }
@@ -129,12 +128,7 @@ public class SafDictionaryFilesTest {
 
     @Test
     public void openForReadSupportsSeeking() throws IOException {
-        File file = new File(Mocks.MUELLER_IFO_PATH);
-        assertTrue(
-            "Test dictionary file does not exist: " + file,
-            file.isFile()
-        );
-        byte[] expected = readBytes(file);
+        byte[] expected = readAllBytes(Mocks.MUELLER_IFO_PATH_RELATIVE);
         assertTrue(expected.length > 4);
         try (SeekableByteChannel channel = dictionaryFiles.openForRead(Mocks.MUELLER_IFO_PATH_RELATIVE)) {
             channel.position(2);
@@ -154,7 +148,7 @@ public class SafDictionaryFilesTest {
     public void openForReadThrowsFileNotFoundExceptionForMissingFile() {
         try {
             dictionaryFiles.openForRead(
-                "mueller/does-not-exist-" + System.currentTimeMillis()
+                Mocks.MUELLER_FOLDER + "/does-not-exist-" + System.currentTimeMillis()
             );
             fail("Expected FileNotFoundException");
         } catch (IOException e) {
@@ -176,51 +170,49 @@ public class SafDictionaryFilesTest {
     }
 
     @Test
-    public void createForWriteCreatesFileInExistingDirectory()
-        throws IOException {
-        String path = "mueller/" + TEMP_FILE_NAME;
-        temporaryFile = new File(Mocks.MUELLER_DICT_PATH, TEMP_FILE_NAME);
+    public void createForWriteCreatesFileInExistingDirectory() throws IOException {
+        String path = Mocks.MUELLER_FOLDER + "/" + TEMP_FILE_NAME;
         byte[] expected = {1, 2, 3, 4, 5};
         try (OutputStream output = dictionaryFiles.createForWrite(path)) {
             output.write(expected);
         }
-        assertTrue(temporaryFile.isFile());
-        assertArrayEquals(expected, readBytes(temporaryFile));
+        assertTrue(dictionaryFiles.exists(path));
+        try (SeekableByteChannel channel = dictionaryFiles.openForRead(path)) {
+            ByteBuffer buffer = ByteBuffer.allocate(expected.length);
+            while (buffer.hasRemaining()) {
+                int read = channel.read(buffer);
+                assertTrue("Unexpected end of file while verifying written bytes", read != -1);
+            }
+            assertArrayEquals(expected, buffer.array());
+        }
     }
 
     @Test
-    public void createForWriteOverwritesExistingTemporaryFile()
-        throws IOException {
-        String path = "mueller/" + TEMP_FILE_NAME;
-        temporaryFile = new File(Mocks.MUELLER_DICT_PATH, TEMP_FILE_NAME);
+    public void createForWriteOverwritesExistingTemporaryFile() throws IOException {
+        String path = Mocks.MUELLER_FOLDER + "/" + TEMP_FILE_NAME;
+        temporaryFile = path;
         byte[] first = {1, 2, 3, 4};
         byte[] second = {5, 6};
         try (OutputStream output = dictionaryFiles.createForWrite(path)) {
             output.write(first);
         }
-        assertArrayEquals(first, readBytes(temporaryFile));
+        assertArrayEquals(first, readAllBytes(path));
         try (OutputStream output = dictionaryFiles.createForWrite(path)) {
             output.write(second);
         }
-        assertArrayEquals(second, readBytes(temporaryFile));
+        assertArrayEquals(second, readAllBytes(path));
     }
 
     @Test
-    public void createForWriteCreatesFileWithExactName()
-        throws IOException {
+    public void createForWriteCreatesFileWithExactName() throws IOException {
         String fileName = "SafDictionaryFilesTest-" + System.currentTimeMillis() + Book.DICT_FILE_EXTENSION;
-        String path = "mueller/" + fileName;
-        temporaryFile = new File(Mocks.MUELLER_DICT_PATH, fileName);
+        String path = Mocks.MUELLER_FOLDER + "/" + fileName;
+        temporaryFile = path;
         try (OutputStream output = dictionaryFiles.createForWrite(path)) {
             output.write(1);
         }
-        assertTrue(temporaryFile.isFile());
-        assertFalse(
-            new File(
-                Mocks.MUELLER_DICT_PATH,
-                fileName + ".dict"
-            ).exists()
-        );
+        assertTrue(dictionaryFiles.exists(path));
+        assertFalse(dictionaryFiles.exists(Mocks.MUELLER_FOLDER + "/" + fileName + ".dict"));
     }
 
     @Test
@@ -240,22 +232,20 @@ public class SafDictionaryFilesTest {
     public void deleteReturnsFalseForMissingFile() {
         assertFalse(
             dictionaryFiles.delete(
-                "mueller/does-not-exist-" + System.currentTimeMillis()
+                Mocks.MUELLER_FOLDER + "/does-not-exist-" + System.currentTimeMillis()
             )
         );
     }
 
     @Test
     public void deleteDeletesTemporaryFile() throws IOException {
-        String path = "mueller/" + TEMP_FILE_NAME;
-        temporaryFile = new File(Mocks.MUELLER_DICT_PATH, TEMP_FILE_NAME);
+        String path = Mocks.MUELLER_FOLDER + "/" + TEMP_FILE_NAME;
         try (OutputStream output = dictionaryFiles.createForWrite(path)) {
             output.write(1);
         }
-        assertTrue(temporaryFile.exists());
+        assertTrue(dictionaryFiles.exists(path));
         assertTrue(dictionaryFiles.delete(path));
-        assertFalse(temporaryFile.exists());
-        temporaryFile = null;
+        assertFalse(dictionaryFiles.exists(path));
     }
 
     @Test
@@ -267,37 +257,20 @@ public class SafDictionaryFilesTest {
     public void deleteDoesNotDeleteExistingDictionaryFile() {
         assertFalse(
             dictionaryFiles.delete(
-                "mueller/does-not-exist-" + System.currentTimeMillis()
+                Mocks.MUELLER_FOLDER + "/does-not-exist-" + System.currentTimeMillis()
             )
         );
         assertTrue(new File(Mocks.MUELLER_IFO_PATH).isFile());
     }
 
-    private byte[] readFirstBytes(File file, int size) throws IOException {
-        byte[] data = new byte[size];
-        try (InputStream input = Files.newInputStream(file.toPath())) {
-            int offset = 0;
-            while (offset < data.length) {
-                int count = input.read(
-                    data,
-                    offset,
-                    data.length - offset
-                );
-                if (count == -1) {
-                    break;
-                }
-                offset += count;
+    private byte[] readAllBytes(String path) throws IOException {
+        try (SeekableByteChannel channel = dictionaryFiles.openForRead(path)) {
+            ByteBuffer buffer = ByteBuffer.allocate((int) channel.size());
+            while (buffer.hasRemaining()) {
+                int read = channel.read(buffer);
+                assertTrue("Unexpected end of file while reading: " + path, read != -1);
             }
-            if (offset != data.length) {
-                byte[] result = new byte[offset];
-                System.arraycopy(data, 0, result, 0, offset);
-                return result;
-            }
+            return buffer.array();
         }
-        return data;
-    }
-
-    private byte[] readBytes(File file) throws IOException {
-        return readFirstBytes((file), (int) file.length());
     }
 }
