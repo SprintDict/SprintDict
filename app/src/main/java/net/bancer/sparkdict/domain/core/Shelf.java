@@ -3,10 +3,10 @@ package net.bancer.sparkdict.domain.core;
 import net.bancer.sparkdict.logging.ConsoleLogger;
 import net.bancer.sparkdict.logging.Logger;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Shelf is place where all dictionaries (books) are located.
@@ -17,7 +17,6 @@ public class Shelf {
 
     private ArrayList<Book> books;
 
-    private final String dictPath;
 
     /**
      * Array containing titles of enabled dictionaries.
@@ -29,31 +28,30 @@ public class Shelf {
      */
     private final Logger logger;
 
+    private final DictionaryFiles dictionaryFiles;
+
     /**
      * Constructor.
      *
-     * @param dictPath     path to the dictionaries.
      * @param enabledDicts string array of the enabled dictionaries titles.
+     * @param dictionaryFiles the DictionaryFiles to associate with this shelf.
+     * @param logger       Logger to write messages to logs.
      */
-    public Shelf(String dictPath, String[] enabledDicts) {
-        this.dictPath = dictPath;
+    public Shelf(String[] enabledDicts, DictionaryFiles dictionaryFiles, Logger logger) {
         this.enabledDicts = enabledDicts;
-        this.logger = new ConsoleLogger();
+        this.dictionaryFiles = dictionaryFiles;
+        this.logger = logger;
         putBooksOnShelf();
     }
 
     /**
      * Constructor.
      *
-     * @param dictPath     Path to the dictionaries.
+     * @param enabledDicts string array of the enabled dictionaries titles.
      * @param enabledDicts String array of the enabled dictionaries titles.
-     * @param logger       Logger to write messages to logs.
      */
-    public Shelf(String dictPath, String[] enabledDicts, Logger logger) {
-        this.dictPath = dictPath;
-        this.enabledDicts = enabledDicts;
-        this.logger = logger;
-        putBooksOnShelf();
+    public Shelf(String[] enabledDicts, DictionaryFiles dictionaryFiles) {
+        this(enabledDicts, dictionaryFiles, new ConsoleLogger());
     }
 
     /**
@@ -84,46 +82,26 @@ public class Shelf {
     /**
      * Constructs Book objects and puts them into a HashMap.
      *
+     * <p>Discovery now goes uniformly through {@code dictionaryFiles} for
+     * both backends, instead of a File-specific scan -- see
+     * {@code FileDictionaryFiles#findDictionaryMetaFilePaths()} and
+     * {@code SafDictionaryFiles#findDictionaryMetaFilePaths()}.</p>
+     *
      * @return HashMap of all books.
      */
     private HashMap<String, Book> constructBooksMap() {
         // Use hashmap in order to make later sorting easier
         HashMap<String, Book> booksMap = new HashMap<>();
-        ArrayList<File> infoFiles = findDictMetaFiles();
-        for (int i = 0; i < infoFiles.size(); i++) {
-            Book dic = new Book(infoFiles.get(i), logger);
+        List<String> ifoPaths = dictionaryFiles.findDictionaryMetaFilePaths();
+        for (String ifoPath : ifoPaths) {
+            Book dic = new Book(ifoPath, dictionaryFiles, logger);
             booksMap.put(dic.getBookName(), dic);
         }
         return booksMap;
     }
 
-    /**
-     * Finds dictionary metadata files in the configured dictionary path.
-     * {@code .ifo} files. If the dictionary path or one of its subdirectories
-     * cannot be listed, the corresponding entries are skipped.</p>
-     *
-     * @return a list of dictionary metadata files
-     */
-    private ArrayList<File> findDictMetaFiles() {
-        ArrayList<File> result = new ArrayList<>();
-        File[] dictFolders = new File(dictPath).listFiles();
-        if (dictFolders != null) {
-            for (File dictFolder : dictFolders) {
-                if (dictFolder.isDirectory()) {
-                    File[] dictFiles = dictFolder.listFiles();
-                    if (dictFiles != null) {
-                        for (File file : dictFiles) {
-                            if (file.toString().endsWith(BookInfo.INFO_FILE_EXTENTION)) {
-                                result.add(file);
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            logger.error(TAG, "Failed to list files in " + dictPath + " path");
-        }
-        return result;
+    public DictionaryFiles getDictionaryFiles() {
+        return dictionaryFiles;
     }
 
     /**
@@ -155,7 +133,7 @@ public class Shelf {
      */
     public void closeResources() {
         for (Book book : getBooks()) {
-            book.closeResources();
+            book.close();
         }
     }
 }
