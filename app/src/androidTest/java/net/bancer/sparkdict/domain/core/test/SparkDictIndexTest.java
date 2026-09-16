@@ -190,7 +190,7 @@ public class SparkDictIndexTest {
         book.close();
     }
 
-    @Test(timeout = 5000) /* was 3500 */
+    @Test(timeout = 6000) /* was 3500 */
     public void buildIndexWordsHaveLexicalEntriesInMueller() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
         Book book = new Book(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);

@@ -39,13 +39,21 @@ public class ResourcesZipFile implements Closeable {
     private static final int ZIP64_EOCD_LOCATOR_SIGNATURE = 0x07064b50;
     private static final int ZIP64_EOCD_SIGNATURE = 0x06064b50;
     private static final int ZIP64_EOCD_LOCATOR_SIZE = 20;
+    private static final int ZIP64_EOCD_RECORD_FIXED_SIZE = 56;
+    private static final int LOCAL_FILE_HEADER_FIXED_SIZE = 30;
     private static final int ZIP64_MAGIC_SHORT = 0xFFFF;
     private static final long ZIP64_MAGIC = 0xFFFFFFFFL;
+    private static final int INFLATE_BUFFER_SIZE = 8192;
 
     /**
      * Relative path to the res.zip file.
      */
     private final String file;
+
+    /**
+     * Logger writes messages to logs.
+     */
+    private final Logger logger;
 
     /**
      * ZIP archive containing the dictionary resources (audio and pictures).
@@ -55,14 +63,10 @@ public class ResourcesZipFile implements Closeable {
     private Map<String, ZipEntryInfo> entries;
 
     /**
-     * Logger writes messages to logs.
-     */
-    private final Logger logger;
-
-    /**
-     * Opens a dictionary's res.zip file and initialises its decompression state.
+     * Opens a dictionary's res.zip file and initialises its decompression
+     * state, using a default {@link ConsoleLogger}.
      *
-     * @param file relative path to the res.zip file.
+     * @param file            relative path to the res.zip file.
      * @param dictionaryFiles the DictionaryFiles to read res.zip.
      */
     public ResourcesZipFile(String file, DictionaryFiles dictionaryFiles) {
@@ -72,9 +76,9 @@ public class ResourcesZipFile implements Closeable {
     /**
      * Opens a dictionary's res.zip file and initialises its decompression state.
      *
-     * @param file relative path to the res.zip file.
+     * @param file            relative path to the res.zip file.
      * @param dictionaryFiles the DictionaryFiles to read res.zip.
-     * @param logger   logger to write messages to logs.
+     * @param logger          logger to write messages to logs.
      */
     public ResourcesZipFile(String file, DictionaryFiles dictionaryFiles, Logger logger) {
         this.file = file;
@@ -89,6 +93,46 @@ public class ResourcesZipFile implements Closeable {
     }
 
     /**
+     * Reads a big-endian... actually little-endian signed 32-bit integer
+     * from the buffer's current position, advancing it by 4 bytes.
+     */
+    private static int getInt(ByteBuffer buffer) {
+        return buffer.getInt();
+    }
+
+    /**
+     * Reads a little-endian signed 32-bit integer at the specified offset,
+     * without moving the buffer's position.
+     */
+    private static int getIntAt(ByteBuffer buffer, int offset) {
+        return buffer.getInt(offset);
+    }
+
+    /**
+     * Reads a little-endian 16-bit field as an unsigned value, advancing
+     * the buffer's position by 2 bytes.
+     */
+    private static int getUnsignedShort(ByteBuffer buffer) {
+        return Short.toUnsignedInt(buffer.getShort());
+    }
+
+    /**
+     * Reads a little-endian 32-bit field as an unsigned value, advancing
+     * the buffer's position by 4 bytes.
+     */
+    private static long getUnsignedInt(ByteBuffer buffer) {
+        return Integer.toUnsignedLong(buffer.getInt());
+    }
+
+    /**
+     * Advances the buffer's position by the specified number of bytes
+     * without reading them.
+     */
+    private static void skip(ByteBuffer buffer, int bytes) {
+        buffer.position(buffer.position() + bytes);
+    }
+
+    /**
      * Retrieves a resource from an already opened ZIP archive.
      *
      * <p>The resource is expected to be located under the {@code res/} directory
@@ -97,7 +141,7 @@ public class ResourcesZipFile implements Closeable {
      *
      * @param resourceName name of the resource to retrieve.
      * @return resource contents as a byte array, or an empty byte array if the
-     *         specified entry does not exist or cannot be read.
+     * specified entry does not exist or cannot be read.
      */
     public byte[] getResourceFromZip(String resourceName) {
         String entryName = "res/" + resourceName;
@@ -145,115 +189,114 @@ public class ResourcesZipFile implements Closeable {
         }
     }
 
-    private static int getInt(ByteBuffer buffer) {
-        return buffer.getInt();
-    }
-
-    private static int getIntAt(ByteBuffer buffer, int offset) {
-        return buffer.getInt(offset);
-    }
-
-    private static int getUnsignedShort(ByteBuffer buffer) {
-        return Short.toUnsignedInt(buffer.getShort());
-    }
-
-    private static long getUnsignedInt(ByteBuffer buffer) {
-        return Integer.toUnsignedLong(buffer.getInt());
-    }
-
-    private static void skip(ByteBuffer buffer, int bytes) {
-        buffer.position(buffer.position() + bytes);
-    }
-
     /**
-     * Reads and indexes the ZIP central directory.
+     * Reads and indexes the ZIP central directory, populating {@link #entries}.
+     * Does nothing if the entries have already been read.
      */
     private void initialiseEntries() throws IOException {
         if (entries != null) {
             return;
         }
-
         long fileSize = resZipFileChannel.size();
-
         if (fileSize < EOCD_MIN_SIZE) {
             throw new IOException("Invalid ZIP file: file is too small");
         }
-
         long eocdOffset = findEndOfCentralDirectory(fileSize);
+        EndOfCentralDirectory eocd = readEndOfCentralDirectory(eocdOffset, fileSize);
+        if (eocd.entryCountOnDisk != eocd.entryCount) {
+            throw new IOException("Multi-disk ZIP files are not supported");
+        }
+        if (eocd.centralDirectoryOffset + eocd.centralDirectorySize > fileSize) {
+            throw new IOException("Invalid ZIP central directory");
+        }
+        if (eocd.entryCount == 0) {
+            entries = new HashMap<>();
+            return;
+        }
+        entries = readCentralDirectory(eocd.centralDirectoryOffset, eocd.centralDirectorySize, eocd.entryCount);
+    }
+
+    /**
+     * Reads the classic End Of Central Directory record's fields, escalating
+     * to the ZIP64 End Of Central Directory Record (see
+     * {@link #readZip64EndOfCentralDirectory}) if any of them carry a ZIP64
+     * escape value.
+     *
+     * @param eocdOffset absolute offset of the classic End Of Central
+     *                   Directory record.
+     * @param fileSize   total size of the archive, used to bound the size
+     *                   sanity check below.
+     */
+    private EndOfCentralDirectory readEndOfCentralDirectory(long eocdOffset, long fileSize) throws IOException {
         resZipFileChannel.position(eocdOffset);
-
         ByteBuffer eocd = readBuffer(EOCD_MIN_SIZE);
-
         int signature = getInt(eocd);
         if (signature != EOCD_SIGNATURE) {
             throw new IOException("Invalid ZIP end of central directory");
         }
-
         skip(eocd, 4); // disk number + central-directory disk number
-
         long entryCountOnDisk = getUnsignedShort(eocd);
         long entryCount = getUnsignedShort(eocd);
-
         long centralDirectorySize = getUnsignedInt(eocd);
         long centralDirectoryOffset = getUnsignedInt(eocd);
-
-        int commentLength = getUnsignedShort(eocd);
-
-        // A ZIP64 archive escapes any classic EOCD field that would otherwise
-        // overflow its 16- or 32-bit width by setting it to its maximum value,
-        // recording the real value instead in a separate ZIP64 End Of Central
-        // Directory Record. The record is found via a fixed-size locator that
-        // always immediately precedes the classic EOCD record. This is exactly
-        // what happens once a dictionary's res.zip -- e.g. a large audio-heavy
-        // archive exceeds 65535 entries.
-        if (
-            entryCountOnDisk == ZIP64_MAGIC_SHORT
-            || entryCount == ZIP64_MAGIC_SHORT
-            || centralDirectorySize == ZIP64_MAGIC
-            || centralDirectoryOffset == ZIP64_MAGIC
-        ) {
+        // The comment length and content are irrelevant to us; nothing to skip
+        // since it's the last field and we never read past it here.
+        if (isZip64Escaped(entryCountOnDisk, entryCount, centralDirectorySize, centralDirectoryOffset)) {
             Zip64EndOfCentralDirectory zip64Eocd = readZip64EndOfCentralDirectory(eocdOffset);
             entryCountOnDisk = zip64Eocd.entryCountOnDisk;
             entryCount = zip64Eocd.entryCount;
             centralDirectorySize = zip64Eocd.centralDirectorySize;
             centralDirectoryOffset = zip64Eocd.centralDirectoryOffset;
         }
-
-        if (entryCountOnDisk != entryCount) {
-            throw new IOException("Multi-disk ZIP files are not supported");
-        }
-
-        if (commentLength > 0) {
-            // The comment is irrelevant to us.
-        }
-
-        if (centralDirectoryOffset + centralDirectorySize > fileSize) {
-            throw new IOException("Invalid ZIP central directory");
-        }
-
-        if (entryCount == 0) {
-            entries = new HashMap<>();
-            return;
-        }
-
         if (centralDirectorySize > Integer.MAX_VALUE) {
             throw new IOException("ZIP central directory is too large");
         }
-
         if (entryCount > Integer.MAX_VALUE) {
             throw new IOException("ZIP central directory has too many entries");
         }
+        return new EndOfCentralDirectory(entryCountOnDisk, entryCount, centralDirectorySize, centralDirectoryOffset);
+    }
 
+    /**
+     * Checks whether any of the classic End Of Central Directory record's
+     * fields carry the ZIP64 escape value.
+     *
+     * <p>A ZIP64 archive escapes any classic EOCD field that would otherwise
+     * overflow its 16- or 32-bit width by setting it to its maximum value,
+     * recording the real value instead in a separate ZIP64 End Of Central
+     * Directory Record. The record is found via a fixed-size locator that
+     * always immediately precedes the classic EOCD record. This is exactly
+     * what happens once a dictionary's res.zip -- e.g. a large audio-heavy
+     * archive -- exceeds 65535 entries.</p>
+     */
+    private boolean isZip64Escaped(
+        long entryCountOnDisk,
+        long entryCount,
+        long centralDirectorySize,
+        long centralDirectoryOffset
+    ) {
+        return entryCountOnDisk == ZIP64_MAGIC_SHORT
+            || entryCount == ZIP64_MAGIC_SHORT
+            || centralDirectorySize == ZIP64_MAGIC
+            || centralDirectoryOffset == ZIP64_MAGIC;
+    }
+
+    /**
+     * Reads every entry in the central directory into a lookup map keyed by
+     * entry name.
+     */
+    private Map<String, ZipEntryInfo> readCentralDirectory(
+        long centralDirectoryOffset,
+        long centralDirectorySize,
+        long entryCount
+    ) throws IOException {
         resZipFileChannel.position(centralDirectoryOffset);
-
         ByteBuffer directory = readBuffer((int) centralDirectorySize);
         Map<String, ZipEntryInfo> result = new HashMap<>((int) entryCount);
-
         for (long i = 0; i < entryCount; i++) {
             readCentralDirectoryEntry(directory, result);
         }
-
-        entries = result;
+        return result;
     }
 
     /**
@@ -264,77 +307,66 @@ public class ResourcesZipFile implements Closeable {
             fileSize,
             EOCD_MIN_SIZE + EOCD_MAX_COMMENT_SIZE
         );
-
         long searchStart = fileSize - searchSize;
-
         resZipFileChannel.position(searchStart);
-
         ByteBuffer buffer = readBuffer((int) searchSize);
-
         for (int i = buffer.limit() - EOCD_MIN_SIZE; i >= 0; i--) {
             if (getIntAt(buffer, i) == EOCD_SIGNATURE) {
                 return searchStart + i;
             }
         }
-
         throw new IOException("ZIP end of central directory not found");
     }
 
     /**
-     * Reads one entry from the central directory.
+     * Reads one entry from the central directory and adds it to the result map.
      */
     private void readCentralDirectoryEntry(
         ByteBuffer buffer,
         Map<String, ZipEntryInfo> result
     ) throws IOException {
         int signature = getInt(buffer);
-
         if (signature != CENTRAL_DIRECTORY_SIGNATURE) {
             throw new IOException("Invalid ZIP central directory entry");
         }
-
         skip(buffer, 2); // version made by
         skip(buffer, 2); // version needed to extract
-
         int flags = getUnsignedShort(buffer);
         int compressionMethod = getUnsignedShort(buffer);
-
         skip(buffer, 2); // modification time
         skip(buffer, 2); // modification date
         skip(buffer, 4); // CRC-32
-
         long compressedSize = getUnsignedInt(buffer);
         long uncompressedSize = getUnsignedInt(buffer);
-
         int fileNameLength = getUnsignedShort(buffer);
         int extraFieldLength = getUnsignedShort(buffer);
         int commentLength = getUnsignedShort(buffer);
-
         skip(buffer, 2); // disk number start
         skip(buffer, 2); // internal attributes
         skip(buffer, 4); // external attributes
-
         long localHeaderOffset = getUnsignedInt(buffer);
-
-        byte[] fileNameBytes = new byte[fileNameLength];
-        buffer.get(fileNameBytes);
-
-        String fileName = decodeFileName(fileNameBytes, flags);
-
+        String fileName = readCentralDirectoryFileName(buffer, fileNameLength, flags);
         skip(buffer, extraFieldLength);
         skip(buffer, commentLength);
-
         result.put(
             fileName,
-            new ZipEntryInfo(
-                compressionMethod,
-                compressedSize,
-                uncompressedSize,
-                localHeaderOffset
-            )
+            new ZipEntryInfo(compressionMethod, compressedSize, uncompressedSize, localHeaderOffset)
         );
     }
 
+    /**
+     * Reads and decodes a central directory entry's file name field,
+     * advancing the buffer past it.
+     */
+    private String readCentralDirectoryFileName(ByteBuffer buffer, int fileNameLength, int flags) {
+        byte[] fileNameBytes = new byte[fileNameLength];
+        buffer.get(fileNameBytes);
+        return decodeFileName(fileNameBytes, flags);
+    }
+
+    /**
+     * Decodes a ZIP entry's raw file name bytes as UTF-8.
+     */
     private String decodeFileName(byte[] bytes, int flags) {
         if ((flags & (1 << 11)) != 0) {
             return new String(bytes, StandardCharsets.UTF_8);
@@ -346,92 +378,88 @@ public class ResourcesZipFile implements Closeable {
      * Reads and decompresses one ZIP entry.
      */
     private byte[] readEntry(ZipEntryInfo entry) throws IOException {
+        long dataOffset = readLocalFileHeader(entry);
+        if (entry.compressedSize > Integer.MAX_VALUE) {
+            throw new IOException("ZIP entry is too large");
+        }
+        resZipFileChannel.position(dataOffset);
+        byte[] compressedData = readBytes((int) entry.compressedSize);
+        if (entry.compressionMethod == COMPRESSION_STORED) {
+            return compressedData;
+        }
+        if (entry.compressionMethod == COMPRESSION_DEFLATED) {
+            return inflate(compressedData, entry.uncompressedSize);
+        }
+        throw new IOException("Unsupported ZIP compression method: " + entry.compressionMethod);
+    }
+
+    /**
+     * Reads and validates an entry's local file header, returning the
+     * absolute offset where its actual data begins.
+     */
+    private long readLocalFileHeader(ZipEntryInfo entry) throws IOException {
         resZipFileChannel.position(entry.localHeaderOffset);
-
-        ByteBuffer localHeader = readBuffer(30);
-
+        ByteBuffer localHeader = readBuffer(LOCAL_FILE_HEADER_FIXED_SIZE);
         int signature = getInt(localHeader);
-
         if (signature != LOCAL_FILE_HEADER_SIGNATURE) {
             throw new IOException("Invalid ZIP local file header");
         }
-
         skip(localHeader, 2); // version needed
-        int flags = getUnsignedShort(localHeader);
+        skip(localHeader, 2); // general purpose bit flag
         int compressionMethod = getUnsignedShort(localHeader);
-
         if (compressionMethod != entry.compressionMethod) {
             throw new IOException("ZIP compression method mismatch");
         }
-
         skip(localHeader, 4); // modification time/date
         skip(localHeader, 4); // CRC-32
         skip(localHeader, 4); // compressed size
         skip(localHeader, 4); // uncompressed size
-
         int fileNameLength = getUnsignedShort(localHeader);
         int extraFieldLength = getUnsignedShort(localHeader);
-
-        long dataOffset =
-            entry.localHeaderOffset
-                + 30L
-                + fileNameLength
-                + extraFieldLength;
-
-        if (entry.compressedSize > Integer.MAX_VALUE) {
-            throw new IOException("ZIP entry is too large");
-        }
-
-        resZipFileChannel.position(dataOffset);
-
-        byte[] compressedData = readBytes((int) entry.compressedSize);
-
-        if (compressionMethod == COMPRESSION_STORED) {
-            return compressedData;
-        }
-
-        if (compressionMethod == COMPRESSION_DEFLATED) {
-            return inflate(compressedData, entry.uncompressedSize);
-        }
-
-        throw new IOException(
-            "Unsupported ZIP compression method: " + compressionMethod
-        );
+        return entry.localHeaderOffset + LOCAL_FILE_HEADER_FIXED_SIZE + fileNameLength + extraFieldLength;
     }
 
-    private byte[] inflate(byte[] compressedData, long uncompressedSize)
-        throws IOException {
-
+    /**
+     * Decompresses a raw DEFLATE-compressed ZIP entry payload.
+     *
+     * @param compressedData   the entry's raw compressed bytes.
+     * @param uncompressedSize the entry's expected decompressed size, as
+     *                         recorded in the central directory.
+     * @return the decompressed entry contents.
+     * @throws IOException if the size exceeds what can be held in a single
+     *                     array, the compressed data is malformed, or the
+     *                     decompressed size does not match what was expected.
+     */
+    private byte[] inflate(byte[] compressedData, long uncompressedSize) throws IOException {
         if (uncompressedSize > Integer.MAX_VALUE) {
             throw new IOException("ZIP entry is too large");
         }
+        byte[] result = runInflater(compressedData, (int) uncompressedSize);
+        if (result.length != (int) uncompressedSize) {
+            String message = String.format(
+                "Unexpected ZIP entry size: expected %s, got %s",
+                uncompressedSize,
+                result.length
+            );
+            throw new IOException(message);
+        }
+        return result;
+    }
 
+    /**
+     * Runs the DEFLATE inflater loop over the compressed data until finished.
+     */
+    private byte[] runInflater(byte[] compressedData, int uncompressedSize) throws IOException {
         Inflater inflater = new Inflater(true);
         inflater.setInput(compressedData);
-
-        ByteArrayOutputStream output =
-            new ByteArrayOutputStream((int) uncompressedSize);
-
-        byte[] buffer = new byte[8192];
-
+        ByteArrayOutputStream output = new ByteArrayOutputStream(uncompressedSize);
+        byte[] buffer = new byte[INFLATE_BUFFER_SIZE];
         try {
             while (!inflater.finished()) {
                 int count = inflater.inflate(buffer);
-
                 if (count == 0) {
-                    if (inflater.needsDictionary()) {
-                        throw new IOException(
-                            "ZIP entry requires an unsupported dictionary"
-                        );
-                    }
-
-                    if (inflater.needsInput()) {
-                        throw new IOException(
-                            "Unexpected end of compressed ZIP entry"
-                        );
-                    }
+                    checkInflaterStalled(inflater);
                 }
-
                 output.write(buffer, 0, count);
             }
         } catch (DataFormatException e) {
@@ -439,46 +467,106 @@ public class ResourcesZipFile implements Closeable {
         } finally {
             inflater.end();
         }
-
-        byte[] result = output.toByteArray();
-
-        if (result.length != (int) uncompressedSize) {
-            throw new IOException(
-                "Unexpected ZIP entry size: expected "
-                    + uncompressedSize
-                    + ", got "
-                    + result.length
-            );
-        }
-
-        return result;
+        return output.toByteArray();
     }
 
+    /**
+     * Diagnoses why the inflater made no progress on the last call, throwing
+     * a descriptive exception for either recognised cause.
+     */
+    private void checkInflaterStalled(Inflater inflater) throws IOException {
+        if (inflater.needsDictionary()) {
+            throw new IOException("ZIP entry requires an unsupported dictionary");
+        }
+        if (inflater.needsInput()) {
+            throw new IOException("Unexpected end of compressed ZIP entry");
+        }
+    }
+
+    /**
+     * Reads exactly {@code size} bytes from the channel's current position
+     * into a little-endian buffer, advancing the channel.
+     *
+     * @throws IOException if the end of the file is reached before
+     *                     {@code size} bytes have been read.
+     */
     private ByteBuffer readBuffer(int size) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(size);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-
         while (buffer.hasRemaining()) {
             int bytesRead = resZipFileChannel.read(buffer);
-
             if (bytesRead == -1) {
                 throw new IOException("Unexpected end of ZIP file");
             }
         }
-
         buffer.flip();
         return buffer;
     }
 
+    /**
+     * Reads exactly {@code size} bytes from the channel's current position
+     * as a plain byte array.
+     */
     private byte[] readBytes(int size) throws IOException {
         ByteBuffer buffer = readBuffer(size);
-
         byte[] result = new byte[size];
         buffer.get(result);
-
         return result;
     }
 
+    /**
+     * Reads the ZIP64 End Of Central Directory Record, used instead of the
+     * classic EOCD's 16-/32-bit fields whenever the true entry count, central
+     * directory size, or central directory offset exceeds what those fields
+     * can represent.
+     *
+     * @param eocdOffset absolute offset of the classic End Of Central
+     *                   Directory record. The fixed-size ZIP64 locator always
+     *                   sits immediately before it.
+     */
+    private Zip64EndOfCentralDirectory readZip64EndOfCentralDirectory(long eocdOffset) throws IOException {
+        long zip64EocdOffset = readZip64EndOfCentralDirectoryLocator(eocdOffset);
+        resZipFileChannel.position(zip64EocdOffset);
+        ByteBuffer record = readBuffer(ZIP64_EOCD_RECORD_FIXED_SIZE);
+        if (getInt(record) != ZIP64_EOCD_SIGNATURE) {
+            throw new IOException("Invalid ZIP64 end of central directory record");
+        }
+        skip(record, 8); // size of the remaining record
+        skip(record, 2); // version made by
+        skip(record, 2); // version needed to extract
+        skip(record, 4); // number of this disk
+        skip(record, 4); // number of the disk with the start of the central directory
+        long entryCountOnDisk = record.getLong();
+        long entryCount = record.getLong();
+        long centralDirectorySize = record.getLong();
+        long centralDirectoryOffset = record.getLong();
+        return new Zip64EndOfCentralDirectory(
+            entryCountOnDisk, entryCount, centralDirectorySize, centralDirectoryOffset
+        );
+    }
+
+    /**
+     * Reads the ZIP64 End Of Central Directory Locator, which sits
+     * immediately before the classic EOCD record, and returns the absolute
+     * offset of the actual ZIP64 End Of Central Directory Record it points to.
+     */
+    private long readZip64EndOfCentralDirectoryLocator(long eocdOffset) throws IOException {
+        long locatorOffset = eocdOffset - ZIP64_EOCD_LOCATOR_SIZE;
+        if (locatorOffset < 0) {
+            throw new IOException("ZIP64 end of central directory locator not found");
+        }
+        resZipFileChannel.position(locatorOffset);
+        ByteBuffer locator = readBuffer(ZIP64_EOCD_LOCATOR_SIZE);
+        if (getInt(locator) != ZIP64_EOCD_LOCATOR_SIGNATURE) {
+            throw new IOException("ZIP64 end of central directory locator not found");
+        }
+        skip(locator, 4); // disk number with the start of the ZIP64 EOCD record
+        return locator.getLong();
+    }
+
+    /**
+     * Central directory fields needed to locate and decompress one ZIP entry.
+     */
     private static class ZipEntryInfo {
 
         private final int compressionMethod;
@@ -486,6 +574,12 @@ public class ResourcesZipFile implements Closeable {
         private final long uncompressedSize;
         private final long localHeaderOffset;
 
+        /**
+         * @param compressionMethod ZIP compression method code (0 = stored, 8 = deflated).
+         * @param compressedSize    size of the entry's data as stored in the archive.
+         * @param uncompressedSize  size of the entry's data once decompressed.
+         * @param localHeaderOffset absolute offset of the entry's local file header.
+         */
         private ZipEntryInfo(
             int compressionMethod,
             long compressedSize,
@@ -500,58 +594,46 @@ public class ResourcesZipFile implements Closeable {
     }
 
     /**
-     * Reads the ZIP64 End Of Central Directory Record, used instead of the
-     * classic EOCD's 16-/32-bit fields whenever the true entry count, central
-     * directory size, or central directory offset exceeds what those fields
-     * can represent.
-     *
-     * @param eocdOffset absolute offset of the classic End Of Central
-     *                   Directory record. The fixed-size ZIP64 locator always
-     *                   sits immediately before it.
+     * The classic End Of Central Directory record's fields, after resolving
+     * any ZIP64 escape values -- see {@link #isZip64Escaped}.
      */
-    private Zip64EndOfCentralDirectory readZip64EndOfCentralDirectory(long eocdOffset) throws IOException {
-        long locatorOffset = eocdOffset - ZIP64_EOCD_LOCATOR_SIZE;
-        if (locatorOffset < 0) {
-            throw new IOException("ZIP64 end of central directory locator not found");
+    private static class EndOfCentralDirectory {
+        private final long entryCountOnDisk;
+        private final long entryCount;
+        private final long centralDirectorySize;
+        private final long centralDirectoryOffset;
+
+        private EndOfCentralDirectory(
+            long entryCountOnDisk,
+            long entryCount,
+            long centralDirectorySize,
+            long centralDirectoryOffset
+        ) {
+            this.entryCountOnDisk = entryCountOnDisk;
+            this.entryCount = entryCount;
+            this.centralDirectorySize = centralDirectorySize;
+            this.centralDirectoryOffset = centralDirectoryOffset;
         }
-
-        resZipFileChannel.position(locatorOffset);
-        ByteBuffer locator = readBuffer(ZIP64_EOCD_LOCATOR_SIZE);
-
-        if (getInt(locator) != ZIP64_EOCD_LOCATOR_SIGNATURE) {
-            throw new IOException("ZIP64 end of central directory locator not found");
-        }
-        skip(locator, 4); // disk number with the start of the ZIP64 EOCD record
-        long zip64EocdOffset = locator.getLong();
-
-        resZipFileChannel.position(zip64EocdOffset);
-        ByteBuffer record = readBuffer(56); // fixed portion of the ZIP64 EOCD record
-
-        if (getInt(record) != ZIP64_EOCD_SIGNATURE) {
-            throw new IOException("Invalid ZIP64 end of central directory record");
-        }
-        skip(record, 8); // size of the remaining record
-        skip(record, 2); // version made by
-        skip(record, 2); // version needed to extract
-        skip(record, 4); // number of this disk
-        skip(record, 4); // number of the disk with the start of the central directory
-
-        long entryCountOnDisk = record.getLong();
-        long entryCount = record.getLong();
-        long centralDirectorySize = record.getLong();
-        long centralDirectoryOffset = record.getLong();
-
-        return new Zip64EndOfCentralDirectory(
-            entryCountOnDisk, entryCount, centralDirectorySize, centralDirectoryOffset
-        );
     }
 
+    /**
+     * The ZIP64 End Of Central Directory Record's fields -- see
+     * {@link #readZip64EndOfCentralDirectory}.
+     */
     private static class Zip64EndOfCentralDirectory {
         private final long entryCountOnDisk;
         private final long entryCount;
         private final long centralDirectorySize;
         private final long centralDirectoryOffset;
 
+        /**
+         * @param entryCountOnDisk       total entries on this disk (must equal
+         *                               {@code entryCount}; multi-disk archives
+         *                               are not supported).
+         * @param entryCount             total entries in the central directory.
+         * @param centralDirectorySize   size of the central directory in bytes.
+         * @param centralDirectoryOffset absolute offset of the central directory.
+         */
         private Zip64EndOfCentralDirectory(
             long entryCountOnDisk, long entryCount,
             long centralDirectorySize, long centralDirectoryOffset
