@@ -121,7 +121,7 @@ public abstract class BaseActivity extends Activity {
      * @return the DictionaryFiles to use.
      */
     private DictionaryFiles createDictionaryFiles() {
-        return SafDictionaryFilesFactory.create(this);
+        return SafDictionaryFilesFactory.create(this, logger);
     }
 
     /**
