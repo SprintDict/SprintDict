@@ -12,4 +12,14 @@ public class ConsoleLogger implements Logger {
         System.err.println(message);
         throwable.printStackTrace(System.err);
     }
+
+    @Override
+    public void debug(String tag, String message) {
+        System.out.println(message);
+    }
+
+    @Override
+    public void debug(String tag, String message, Throwable throwable) {
+        System.out.println(message);
+    }
 }

@@ -13,6 +13,8 @@ import net.bancer.sparkdict.SparkDictActivity;
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.Shelf;
+import net.bancer.sparkdict.logging.ConsoleLogger;
+import net.bancer.sparkdict.logging.Logger;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -28,6 +30,8 @@ import java.util.concurrent.Future;
  * the list of IndexEntry objects that match the user input.
  */
 public class IndexEntriesAdapter extends ArrayAdapter<String> implements TextWatcher {
+
+    protected static final String TAG = "IndexEntriesAdapter";
 
     private final Vector<String> entries;
 
@@ -53,6 +57,8 @@ public class IndexEntriesAdapter extends ArrayAdapter<String> implements TextWat
      */
     private Future<?> currentTask;
 
+    private Logger logger;
+
     /**
      * Constructor.
      *
@@ -60,8 +66,13 @@ public class IndexEntriesAdapter extends ArrayAdapter<String> implements TextWat
      * @param entries empty container for IndexEntries.
      */
     public IndexEntriesAdapter(Context context, Vector<String> entries) {
+        this(context, entries, new ConsoleLogger());
+    }
+
+    public IndexEntriesAdapter(Context context, Vector<String> entries, Logger logger) {
         super(context, R.layout.list_item, entries);
         this.entries = entries;
+        this.logger = logger;
     }
 
     /**

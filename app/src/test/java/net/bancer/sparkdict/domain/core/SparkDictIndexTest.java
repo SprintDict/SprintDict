@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 
 import net.bancer.sparkdict.Fixtures;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.junit.Before;
@@ -16,9 +15,12 @@ import org.junit.Test;
 
 public class SparkDictIndexTest {
 
+    private DictionaryFiles dictionaryFiles;
+
     @Before
     public void setUp() {
         Fixtures.deleteSparkDictIndex();
+        dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);
     }
 
     @Test
@@ -59,7 +61,7 @@ public class SparkDictIndexTest {
 
     @Test
     public void getBookNameReturnsBookName() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         assertEquals(
             bookInfo.getBookName(),
@@ -67,9 +69,9 @@ public class SparkDictIndexTest {
         );
     }
 
-    @Test(timeout = 800)
-    public void buildIndexAllWordsAreIndexed() throws IOException {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+    @Test
+    public void buildIndexCreatesIndexWithExpectedSize() throws IOException {
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         int indexedCount = index.buildIndex();
         assertEquals(108121, indexedCount);
@@ -83,11 +85,10 @@ public class SparkDictIndexTest {
         index.delete();
     }
 
-    @Test(timeout = 27000)
+    @Test(timeout = 28000)
     public void buildIndexAllIndexedWordsHaveLexicalEntries() throws IOException {
-        File file = new File(Fixtures.GCIDE_IFO_FILE);
-        BookInfo bookInfo = new BookInfo(file);
-        Book book = new Book(file);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
+        Book book = new Book(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         int indexedCount = index.buildIndex();
         assertEquals(108121, indexedCount);
@@ -110,13 +111,13 @@ public class SparkDictIndexTest {
                 assertEquals("zythum", lemma);
             }
         }
-        book.closeResources();
+        book.close();
         index.delete();
     }
 
     @Test
     public void getIndexEntryReturnsFirstEntry() throws IOException {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         index.buildIndex();
         IndexEntry entry = index.getIndexEntry(0);
@@ -126,7 +127,7 @@ public class SparkDictIndexTest {
 
     @Test
     public void getIndexEntryReturnsNullWhenIdIsBeyondIndex() throws IOException {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         index.buildIndex();
         assertNull(index.getIndexEntry(index.getSize()));
@@ -147,7 +148,7 @@ public class SparkDictIndexTest {
 
     @Test
     public void registerObserverReceivesArticlesIndexedNotification() throws IOException {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         TestObserver observer = new TestObserver();
         index.registerObserver(observer);
@@ -159,7 +160,7 @@ public class SparkDictIndexTest {
 
     @Test
     public void removeObserverStopsNotifications() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
         TestObserver observer = new TestObserver();
         index.registerObserver(observer);

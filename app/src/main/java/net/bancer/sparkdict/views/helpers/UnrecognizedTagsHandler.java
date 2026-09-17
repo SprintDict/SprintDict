@@ -143,7 +143,18 @@ public class UnrecognizedTagsHandler implements TagHandler {
             Uri uri = Uri.parse(getURL());
             String resourceName = uri.toString();
             byte[] audio = lexicalEntry.getResource(resourceName);
-            playAudio(audio);
+            if (audio.length > 0) {
+                try {
+                    playAudio(audio);
+                } catch (IOException e) {
+                    String message = String.format(
+                        "Cannot play audio file %s. Audio length: %s",
+                        resourceName,
+                        audio.length
+                    );
+                    Log.e(TAG, message, e);
+                }
+            }
         }
 
         private class ByteArrayMediaDataSource extends MediaDataSource {
@@ -178,16 +189,14 @@ public class UnrecognizedTagsHandler implements TagHandler {
          * Plays audio file.
          *
          * @param audio audio to be played.
+         * @throws IOException on failure to play the audio
          */
-        private void playAudio(byte[] audio) {
+        private void playAudio(byte[] audio) throws IOException {
             MediaPlayer player = new MediaPlayer();
-            try {
-                player.setDataSource(new ByteArrayMediaDataSource(audio));
-                player.prepare();
-                player.start();
-            } catch (IllegalArgumentException | IOException | IllegalStateException e) {
-                Log.e(TAG, "Cannot play audio file", e);
-            }
+            player.setDataSource(new ByteArrayMediaDataSource(audio));
+            player.setOnCompletionListener(MediaPlayer::release);
+            player.prepare();
+            player.start();
         }
     }
 }

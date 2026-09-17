@@ -98,6 +98,8 @@ public class SparkDictActivity extends BaseActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Warm up dictionaries to improve the initial search performance.
+        getShelf();
         initLayout();
         // Check whether we're recreating a previously destroyed instance
         if (savedInstanceState != null) {
@@ -193,7 +195,7 @@ public class SparkDictActivity extends BaseActivity
         inputTextView = findViewById(R.id.searchTextView);
         inputTextView.setOnKeyListener(this);
 
-        indexEntriesAdapter = new IndexEntriesAdapter(this, new Vector<>());
+        indexEntriesAdapter = new IndexEntriesAdapter(this, new Vector<>(), logger);
         inputTextView.setAdapter(indexEntriesAdapter);
         inputTextView.addTextChangedListener(indexEntriesAdapter);
         // Start to display a list of suggestions after 1 letter typed

@@ -6,8 +6,9 @@ import net.bancer.sparkdict.logging.Logger;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
+import java.io.Closeable;
 import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -15,7 +16,7 @@ import java.util.Vector;
  * Book is an abstraction of a dictionary containing lexical entries and index
  * entries.
  */
-public class Book implements Iterable<IndexEntry> {
+public class Book implements Iterable<IndexEntry>, Closeable {
 
     private static final String TAG = "Book";
 
@@ -27,7 +28,7 @@ public class Book implements Iterable<IndexEntry> {
     /**
      * ZIP archive containing dictionary resources such as audio files and pictures.
      */
-    private static final String RES_ZIP_NAME = "res.zip";
+    public static final String RES_ZIP_NAME = "res.zip";
 
     /**
      * BookInfo object.
@@ -64,33 +65,38 @@ public class Book implements Iterable<IndexEntry> {
      */
     private IndexEntriesIterator suggestionsIterator;
 
+    private final DictionaryFiles dictionaryFiles;
+
     /**
      * Constructor.
      *
-     * @param infoFile book info as java.io.File object
-     * @throws IllegalArgumentException if the parameter is null.
+     * @param relativeIfoPath root-relative path to the .ifo document.
+     * @param dictionaryFiles the DictionaryFiles to associate with this book.
      */
-    public Book(File infoFile) {
-        if (infoFile == null) {
-            throw new IllegalArgumentException("infoFile must not be null");
-        }
-        this.logger = new ConsoleLogger();
-        bookInfo = new BookInfo(infoFile, logger);
+    public Book(String relativeIfoPath, DictionaryFiles dictionaryFiles) {
+        this(relativeIfoPath, dictionaryFiles, new ConsoleLogger());
     }
 
     /**
      * Constructor.
      *
-     * @param infoFile Book info as java.io.File object
+     * @param relativeIfoPath root-relative path to the .ifo document.
+     * @param dictionaryFiles the DictionaryFiles to associate with this book.
      * @param logger   Logger to write messages to logs.
-     * @throws IllegalArgumentException if the parameter is null.
      */
-    public Book(File infoFile, Logger logger) {
-        if (infoFile == null) {
-            throw new IllegalArgumentException("infoFile must not be null");
-        }
+    public Book(String relativeIfoPath, DictionaryFiles dictionaryFiles, Logger logger) {
+        this.dictionaryFiles = dictionaryFiles;
         this.logger = logger;
-        bookInfo = new BookInfo(infoFile, logger);
+        bookInfo = new BookInfo(relativeIfoPath, dictionaryFiles);
+    }
+
+    /**
+     * DictionaryFiles getter.
+     *
+     * @return the DictionaryFiles associated with this book.
+     */
+    public DictionaryFiles getDictionaryFiles() {
+        return dictionaryFiles;
     }
 
     /**
@@ -191,13 +197,12 @@ public class Book implements Iterable<IndexEntry> {
         try {
             if (dzFile == null) {
                 String file = bookInfo.getFileBaseName() + DICT_FILE_EXTENSION;
-                dzFile = new DictZipFile(file, logger);
+                dzFile = new DictZipFile(file, dictionaryFiles, logger);
             }
             if (resZipFile == null) {
                 String resZipPath = bookInfo.getDirPath() + "/" + RES_ZIP_NAME;
-                File zipFile = new File(resZipPath);
-                if (zipFile.exists()) {
-                    resZipFile = new ResourcesZipFile(zipFile, logger);
+                if (dictionaryFiles.exists(resZipPath)) {
+                    resZipFile = new ResourcesZipFile(resZipPath, dictionaryFiles, logger);
                 }
             }
             byte[] buffer = dzFile.read(idxEntry.getWordDataOffset(), idxEntry.getWordDataSize());
@@ -206,7 +211,7 @@ public class Book implements Iterable<IndexEntry> {
         } catch (IOException e) {
             String message = String.format(
                 "Failed to read a lexical entry '%s' in %s dictionary",
-                idxEntry,
+                idxEntry.getLemma(),
                 bookInfo.getBookName()
             );
             logger.error(TAG, message, e);
@@ -321,6 +326,15 @@ public class Book implements Iterable<IndexEntry> {
         if (searchIterator == null) {
             try {
                 searchIterator = new IndexEntriesIterator(bookInfo, logger);
+            } catch (ClosedByInterruptException e) {
+                // The calling thread was interrupted mid-read -- almost certainly a
+                // stale lookup being cancelled as the user started searching another word,
+                // not a real failure.
+                // Retrying is pointless: the interrupt status persists on this
+                // thread, so a retry would fail identically. Restore the interrupt
+                // flag and propagate so the caller can recognise this as a
+                // cancellation rather than an error.
+                Thread.currentThread().interrupt();
             } catch (DomainException e) {
                 String message = String.format(
                     "Failed to construct exact-search iterator for %s dictionary",
@@ -342,6 +356,15 @@ public class Book implements Iterable<IndexEntry> {
         if (suggestionsIterator == null) {
             try {
                 suggestionsIterator = new IndexEntriesIterator(bookInfo, logger);
+            } catch (ClosedByInterruptException e) {
+                // The calling thread was interrupted mid-read -- almost certainly a
+                // stale suggestion lookup being cancelled as the user keeps typing
+                // (see IndexEntriesAdapter#onTextChanged), not a real failure.
+                // Retrying is pointless: the interrupt status persists on this
+                // thread, so a retry would fail identically. Restore the interrupt
+                // flag and propagate so the caller can recognise this as a
+                // cancellation rather than an error.
+                Thread.currentThread().interrupt();
             } catch (DomainException e) {
                 String message = String.format(
                     "Failed to construct prefix-search iterator for %s dictionary",
@@ -388,6 +411,15 @@ public class Book implements Iterable<IndexEntry> {
                         result.add(entry);
                         entry = iterator.nextSuggestion(prefixVariation);
                     }
+                } catch (ClosedByInterruptException e) {
+                    // The calling thread was interrupted mid-read -- almost certainly a
+                    // stale suggestion lookup being cancelled as the user keeps typing
+                    // (see IndexEntriesAdapter#onTextChanged), not a real failure.
+                    // Retrying is pointless: the interrupt status persists on this
+                    // thread, so a retry would fail identically. Restore the interrupt
+                    // flag and propagate so the caller can recognise this as a
+                    // cancellation rather than an error.
+                    Thread.currentThread().interrupt();
                 } catch (DomainException e) {
                     String message = String.format(
                         "Failed to find a suggestion for '%s' prefix in %s dictionary",
@@ -407,7 +439,7 @@ public class Book implements Iterable<IndexEntry> {
      * <p>If either resource is not currently open, it is ignored. The resources
      * can be reopened automatically when they are needed again.</p>
      */
-    public void closeResources() {
+    public void close() {
         if (dzFile != null) {
             dzFile.close();
             dzFile = null;

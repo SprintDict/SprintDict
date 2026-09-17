@@ -15,8 +15,11 @@ import androidx.annotation.NonNull;
 
 import net.bancer.sparkdict.R;
 import net.bancer.sparkdict.domain.core.Book;
+import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.Shelf;
+import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
+import net.bancer.sparkdict.storage.SparkDictPreferences;
 
 import java.util.ArrayList;
 import java.util.TreeSet;
@@ -51,7 +54,7 @@ public class SuggestionsProvider extends ContentProvider {
 
     public SuggestionsProvider() {
         //SharedPreferences prefs = getContext().getSharedPreferences("SparkDict", Context.MODE_PRIVATE);
-        //String key = getContext().getString(R.string.menu_dict_path);
+        //String key = SparkDictPreferences.PREF_DICT_ROOT_URI_NAME;
         //String result = prefs.getString(key, "");
     }
 
@@ -72,14 +75,16 @@ public class SuggestionsProvider extends ContentProvider {
         Context context = getContext();
         SharedPreferences prefs = context.getSharedPreferences("SparkDict", Context.MODE_PRIVATE);
 
-        String keyDictPath = context.getString(R.string.menu_dict_path);
+        String keyDictPath = SparkDictPreferences.PREF_DICT_ROOT_URI_NAME;
         String dictPath = prefs.getString(keyDictPath, "");
 
         String keyEnabledDicts = context.getString(R.string.enabled_dicts);
         String strEnabledDicts = prefs.getString(keyEnabledDicts, "");
 
         String[] enabledDicts = strEnabledDicts.split("\\|\\|");
-        Shelf shelf = new Shelf(dictPath, enabledDicts);
+
+        DictionaryFiles dictionaryFiles = SafDictionaryFilesFactory.create(context);
+        Shelf shelf = new Shelf(enabledDicts, dictionaryFiles);
         books = shelf.getBooks();
         return true;
     }
