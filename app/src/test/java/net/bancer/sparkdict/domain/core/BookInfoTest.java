@@ -5,41 +5,48 @@ import static org.junit.Assert.assertThrows;
 
 import net.bancer.sparkdict.Fixtures;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 
 public class BookInfoTest {
 
+    private DictionaryFiles dictionaryFiles;
+
+    @Before
+    public void setUp() {
+        dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);
+    }
+
     @Test
     public void constructorRejectsNullFile() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> new BookInfo((File) null));
-        assertEquals("infoFile must not be null or empty", exception.getMessage());
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> new BookInfo(null, dictionaryFiles)
+        );
+        assertEquals("relativeIfoPath must have .ifo extension", exception.getMessage());
     }
 
     @Test
     public void constructorRejectsNonIfoFile() {
-        File idxFile = new File(Fixtures.GCIDE_IDX_FILE);
         assertThrows(
             IllegalArgumentException.class,
-            () -> new BookInfo(idxFile)
+            () -> new BookInfo(Fixtures.GCIDE_IDX_FILE, dictionaryFiles)
         );
     }
 
     @Test
     public void constructorHandlesMissingFile() {
         String path = Fixtures.TEST_DATA_PATH + "missing/missing.ifo";
-        BookInfo bookInfo = new BookInfo(path);
+        BookInfo bookInfo = new BookInfo(path, dictionaryFiles);
         assertEquals(path, bookInfo.getFileBaseName() + BookInfo.INFO_FILE_EXTENTION);
-        assertEquals(
-            Fixtures.TEST_DATA_PATH + "missing",
-            bookInfo.getDirPath()
-        );
+        assertEquals(Fixtures.TEST_DATA_PATH + "missing", bookInfo.getDirPath());
     }
 
     @Test
     public void constructorWithPathParsesGcideFile() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
         assertEquals("3.0.0", bookInfo.getVersion());
         assertEquals(
             "GNU Collaborative International Dictionary of English",
@@ -53,7 +60,7 @@ public class BookInfoTest {
 
     @Test
     public void constructorWithFileParsesGcideFile() {
-        BookInfo bookInfo = new BookInfo(new File(Fixtures.GCIDE_IFO_FILE));
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
         assertEquals("3.0.0", bookInfo.getVersion());
         assertEquals(
             "GNU Collaborative International Dictionary of English",
@@ -67,63 +74,48 @@ public class BookInfoTest {
 
     @Test
     public void getFileBaseNameReturnsGcidePathWithoutExtension() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
-        assertEquals(
-            Fixtures.GCIDE_IFO_FILE.substring(
-                0,
-                Fixtures.GCIDE_IFO_FILE.length() - 4
-            ),
-            bookInfo.getFileBaseName()
-        );
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
+        String expected = Fixtures.TEST_DATA_PATH + Fixtures.GCIDE_DICT_FOLDER + "/stardict";
+        assertEquals(expected, bookInfo.getFileBaseName());
     }
 
     @Test
     public void getPathToDictFileReturnsGcideDictPath() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
-        assertEquals(
-            Fixtures.GCIDE_IFO_FILE.substring(
-                0,
-                Fixtures.GCIDE_IFO_FILE.length() - 4
-            ) + ".dict.dz",
-            bookInfo.getPathToDictFile()
-        );
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
+        assertEquals(Fixtures.GCIDE_DICT_DZ_FILE_FULL_PATH, bookInfo.getPathToDictFile());
     }
 
     @Test
     public void getDirPathReturnsGcideDirectory() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
-        assertEquals(
-            new File(Fixtures.GCIDE_IFO_FILE).getParent(),
-            bookInfo.getDirPath()
-        );
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
+        String expected = new File(Fixtures.GCIDE_IFO_FILE).getParent();
+        assertEquals(expected, bookInfo.getDirPath());
     }
 
     @Test
     public void toStringReturnsGcideInformation() {
-        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE);
-        assertEquals(
-            "\n"
-                + "Version: 3.0.0\n"
-                + "Dictionary name: GNU Collaborative International Dictionary of English\n"
-                + "Words: 108121\n"
-                + "Synonyms: 11466\n"
-                + "Index file size: 1932870\n"
-                + "Index offset bits: 32\n"
-                + "Author: null\n"
-                + "Email: null\n"
-                + "Website: null\n"
-                + "Description: null\n"
-                + "Date: null\n"
-                + "Same type sequence: h\n"
-                + "Dictionary type: null\n"
-                + "Path: " + Fixtures.GCIDE_IFO_FILE + "\n",
-            bookInfo.toString()
-        );
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
+        String expected = "\n"
+            + "Version: 3.0.0\n"
+            + "Dictionary name: GNU Collaborative International Dictionary of English\n"
+            + "Words: 108121\n"
+            + "Synonyms: 11466\n"
+            + "Index file size: 1932870\n"
+            + "Index offset bits: 32\n"
+            + "Author: null\n"
+            + "Email: null\n"
+            + "Website: null\n"
+            + "Description: null\n"
+            + "Date: null\n"
+            + "Same type sequence: h\n"
+            + "Dictionary type: null\n"
+            + "Path: " + Fixtures.GCIDE_IFO_FILE + "\n";
+        assertEquals(expected, bookInfo.toString());
     }
 
     @Test
     public void constructorParsesAllFields() {
-        BookInfo bookInfo = new BookInfo(Fixtures.ALL_FIELDS_IFO_FILE);
+        BookInfo bookInfo = new BookInfo(Fixtures.ALL_FIELDS_IFO_FILE, dictionaryFiles);
         assertEquals("2.4.2", bookInfo.getVersion());
         assertEquals("Test Dictionary", bookInfo.getBookName());
         assertEquals(456, bookInfo.getWordCount());
@@ -136,24 +128,22 @@ public class BookInfoTest {
 
     @Test
     public void toStringReturnsAllFields() {
-        BookInfo bookInfo = new BookInfo(Fixtures.ALL_FIELDS_IFO_FILE);
-        assertEquals(
-            "\n"
-                + "Version: 2.4.2\n"
-                + "Dictionary name: Test Dictionary\n"
-                + "Words: 456\n"
-                + "Synonyms: 123\n"
-                + "Index file size: 789\n"
-                + "Index offset bits: 64\n"
-                + "Author: Test Author\n"
-                + "Email: test@example.com\n"
-                + "Website: https://example.com\n"
-                + "Description: Test description\n"
-                + "Date: 2026-08-15\n"
-                + "Same type sequence: gm\n"
-                + "Dictionary type: idxoffsetbits64\n"
-                + "Path: " + Fixtures.ALL_FIELDS_IFO_FILE + "\n",
-            bookInfo.toString()
-        );
+        BookInfo bookInfo = new BookInfo(Fixtures.ALL_FIELDS_IFO_FILE, dictionaryFiles);
+        String expected = "\n"
+            + "Version: 2.4.2\n"
+            + "Dictionary name: Test Dictionary\n"
+            + "Words: 456\n"
+            + "Synonyms: 123\n"
+            + "Index file size: 789\n"
+            + "Index offset bits: 64\n"
+            + "Author: Test Author\n"
+            + "Email: test@example.com\n"
+            + "Website: https://example.com\n"
+            + "Description: Test description\n"
+            + "Date: 2026-08-15\n"
+            + "Same type sequence: gm\n"
+            + "Dictionary type: idxoffsetbits64\n"
+            + "Path: " + Fixtures.ALL_FIELDS_IFO_FILE + "\n";
+        assertEquals(expected, bookInfo.toString());
     }
 }

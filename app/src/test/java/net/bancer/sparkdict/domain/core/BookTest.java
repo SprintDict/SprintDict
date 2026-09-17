@@ -7,14 +7,16 @@ import net.bancer.sparkdict.Fixtures;
 import net.bancer.sparkdict.domain.utils.DomainException;
 
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 
 public class BookTest {
+
+    private DictionaryFiles dictionaryFiles;
 
     @BeforeClass
     public static void setUpBeforeClass() throws IOException {
@@ -26,11 +28,17 @@ public class BookTest {
         Fixtures.deleteSparkDictIndex();
     }
 
+    @Before
+    public void setUp() {
+        dictionaryFiles = new FileDictionaryFiles(Fixtures.TEST_DATA_PATH);
+    }
+
     @Test
     public void testGetSuggestionsFromGcide() {
         Vector<IndexEntry> suggestions;
-        Book book = new Book(new File(Fixtures.GCIDE_IFO_FILE));
-        suggestions = book.getSuggestions("abac");
+        try (Book book = new Book(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles)) {
+            suggestions = book.getSuggestions("abac");
+        }
         assertNotNull(suggestions);
         assertEquals(11, suggestions.size());
         assertEquals("abaca", suggestions.get(0).getLemma());
@@ -48,8 +56,10 @@ public class BookTest {
 
     @Test
     public void testGetLexicalEntryFirst() throws DomainException {
-        Book book = new Book(new File(Fixtures.GCIDE_IFO_FILE));
-        LexicalEntry lexicalEntry = book.getLexicalEntry("-able");
+        LexicalEntry lexicalEntry;
+        try (Book book = new Book(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles)) {
+            lexicalEntry = book.getLexicalEntry("-able");
+        }
         assertEquals("-able", lexicalEntry.getLemma());
         String definitions = "<p><b style=\"color: #00b\">-able</b> <i>(-ȧbl)</i>." +
             " [F. <span style=\"color: #8B4513\">-able</span>," +
@@ -69,8 +79,10 @@ public class BookTest {
 
     @Test
     public void testGetLexicalEntryLast() throws DomainException {
-        Book book = new Book(new File(Fixtures.GCIDE_IFO_FILE));
-        LexicalEntry lexicalEntry = book.getLexicalEntry("zythum");
+        LexicalEntry lexicalEntry;
+        try (Book book = new Book(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles)) {
+            lexicalEntry = book.getLexicalEntry("zythum");
+        }
         assertEquals("zythum", lexicalEntry.getLemma());
         String definitions = "<p>Ø<b style=\"color: #00b\">Zythum</b> <i>(zĭthŭm)</i>," +
             " <i style=\"color: #a00\">n.</i>" +
