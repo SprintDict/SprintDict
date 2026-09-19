@@ -76,6 +76,7 @@
 
     <ScrollView
         android:id="@+id/articles_scroll_view"
+        android:clipToPadding="false"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/find_on_page_layout"
