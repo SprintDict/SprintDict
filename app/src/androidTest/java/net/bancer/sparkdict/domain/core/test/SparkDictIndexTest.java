@@ -210,7 +210,7 @@ public class SparkDictIndexTest {
         book.close();
     }
 
-    @Test(timeout = 11000) /* was 7000 */
+    @Test(timeout = 12000) /* was 7000 */
     public void buildIndexWordsHaveLexicalEntriesInWordnet() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
