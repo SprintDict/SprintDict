@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/recent_history_top_layout"
+    android:id="@+id/dict_preferences_top_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
@@ -13,12 +13,10 @@
         android:background="?attr/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <ListView
-        android:id="@+id/history_list"
+    <FrameLayout
+        android:id="@+id/preferences_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:divider="@color/gray"
-        android:dividerHeight="1dp" />
+        android:layout_weight="1" />
 
 </LinearLayout>

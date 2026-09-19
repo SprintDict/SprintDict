@@ -1,10 +1,16 @@
 package net.bancer.sparkdict;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.DictionaryFiles;
@@ -21,7 +27,7 @@ import java.util.LinkedList;
  * BaseActivity provides common methods and configuration data for different
  * activities.
  */
-public abstract class BaseActivity extends Activity {
+public abstract class BaseActivity extends AppCompatActivity {
 
     /**
      * Tag to identify SparkDict (for debug).
@@ -39,10 +45,30 @@ public abstract class BaseActivity extends Activity {
     protected Logger logger;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         logger = new AndroidLogger();
         preferences = new SparkDictPreferences(this);
+        EdgeToEdge.enable(this);
+    }
+
+    /**
+     * Applies system bar insets to the specified view as padding.
+     *
+     * @param view the view to which insets should be applied.
+     */
+    protected void applySystemBarsInsets(View view) {
+        if (view == null) return;
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.systemBars() |
+                WindowInsetsCompat.Type.displayCutout() |
+                WindowInsetsCompat.Type.ime()
+            );
+            v.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
+        ViewCompat.requestApplyInsets(view);
     }
 
 
@@ -165,11 +191,12 @@ public abstract class BaseActivity extends Activity {
      */
     protected boolean saveRecentHistory() {
         StringBuilder historyStr = new StringBuilder();
-        for (int i = 0; i < getRecentHistory().size(); i++) {
+        LinkedList<String> history = getRecentHistory();
+        for (int i = 0; i < history.size(); i++) {
             if (i != 0) {
                 historyStr.append(RECENT_HISTORY_WORDS_SEPARATOR);
             }
-            historyStr.append(recentHistory.get(i));
+            historyStr.append(history.get(i));
         }
         return preferences.save(RECENT_HISTORY_PREF_KEY, historyStr.toString());
     }

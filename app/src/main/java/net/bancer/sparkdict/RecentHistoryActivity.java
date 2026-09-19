@@ -11,6 +11,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NavUtils;
 
 /**
@@ -35,6 +36,9 @@ public class RecentHistoryActivity extends BaseActivity implements OnItemClickLi
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recent_history);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        applySystemBarsInsets(findViewById(R.id.recent_history_top_layout));
         //getActionBar().setDisplayHomeAsUpEnabled(true);
         adapter = new ArrayAdapter<>(
             this,

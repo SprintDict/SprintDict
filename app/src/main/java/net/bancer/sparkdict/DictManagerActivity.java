@@ -22,6 +22,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.appcompat.widget.Toolbar;
 import net.bancer.sparkdict.adapters.DictManagerItemsAdapter;
 import net.bancer.sparkdict.domain.IndexBuilder;
 import net.bancer.sparkdict.domain.core.Book;
@@ -50,13 +51,13 @@ public class DictManagerActivity extends BaseActivity {
      * Flag used in Bundle extras to indicate that DirectoryPicker subactivity
      * must be started.
      *
-     * @see net.bancer.sparkdict.DictManagerActivity#SUB_ACTIVITY
+     * @see DictManagerActivity#SUB_ACTIVITY
      */
     public static final int START_DIR_PICKER = 1;
     /**
      * Flag used in Bundle extras to indicate that no subactivity to be started.
      *
-     * @see net.bancer.sparkdict.DictManagerActivity#SUB_ACTIVITY
+     * @see DictManagerActivity#SUB_ACTIVITY
      */
     protected static final int DO_NOT_START_SUB_ACTIVITY = 0;
     private static final String INDEX_BUILD_CHANNEL_ID = "index_build";
@@ -73,12 +74,33 @@ public class DictManagerActivity extends BaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_dict_manager);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        applySystemBarsInsets(findViewById(R.id.dict_manager_top_layout));
+
+        initViews();
+        refreshList();
+
         Bundle extras = getIntent().getExtras();
         if (extras != null && extras.getInt(SUB_ACTIVITY) == START_DIR_PICKER) {
             startDirPicker();
         }
-        initLayout();
         createNotificationChannel();
+    }
+
+    private void initViews() {
+        rebuildProgressLayout = findViewById(R.id.rebuild_progress_layout);
+        rebuildProgressText = findViewById(R.id.rebuild_progress_text);
+        rebuildProgress = findViewById(R.id.rebuild_progress);
+    }
+
+    private void refreshList() {
+        ArrayList<Book> books = getBooks();
+        adapter = new DictManagerItemsAdapter(this, books);
+        ListView listView = findViewById(R.id.dict_list);
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(adapter);
     }
 
     /**
@@ -103,24 +125,8 @@ public class DictManagerActivity extends BaseActivity {
     }
 
     @Override
-    public void onResume() {
+    protected void onResume() {
         super.onResume();
-        //initLayout();
-    }
-
-    private void initLayout() {
-        setContentView(R.layout.activity_dict_manager);
-
-        ArrayList<Book> books = getBooks();
-        adapter = new DictManagerItemsAdapter(this, books);
-
-        ListView listView = findViewById(R.id.dict_list);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(adapter);
-
-        rebuildProgressLayout = findViewById(R.id.rebuild_progress_layout);
-        rebuildProgressText = findViewById(R.id.rebuild_progress_text);
-        rebuildProgress = findViewById(R.id.rebuild_progress);
     }
 
     @Override
@@ -132,7 +138,7 @@ public class DictManagerActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
         if (itemId == R.id.menu_set_dict_path) {
             startDirPicker();
@@ -142,7 +148,7 @@ public class DictManagerActivity extends BaseActivity {
             startIndexRebuild();
             return true;
         }
-        return super.onMenuItemSelected(featureId, item);
+        return super.onOptionsItemSelected(item);
     }
 
     private void startDirPicker() {
@@ -210,7 +216,7 @@ public class DictManagerActivity extends BaseActivity {
             Log.e(TAG, "Failed to save the selected path to preferences");
         }
         refreshShelf();
-        initLayout(); // Generate DictManagerActivity screen
+        refreshList();
         // Display a toast informing that path was saved/not saved
         showLongToast(msg);
     }

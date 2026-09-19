@@ -30,6 +30,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 
 import net.bancer.sparkdict.adapters.IndexEntriesAdapter;
 import net.bancer.sparkdict.domain.core.Book;
@@ -88,7 +90,7 @@ public class SparkDictActivity extends BaseActivity
 
     private LinearLayout findOnPageView;
 
-    private ArrayList<LexicalEntry> articles = new ArrayList<>();
+    private ArrayList<LexicalEntry> articles;
 
     private ProgressBar searchProgress;
 
@@ -98,15 +100,17 @@ public class SparkDictActivity extends BaseActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SparkDictViewModel viewModel = new ViewModelProvider(this).get(SparkDictViewModel.class);
+        articles = viewModel.getArticles();
+
         // Warm up dictionaries to improve the initial search performance.
         getShelf();
         initLayout();
         // Check whether we're recreating a previously destroyed instance
         if (savedInstanceState != null) {
             // Restore value of members from saved state
-            @SuppressWarnings("unchecked") final ArrayList<LexicalEntry> data = (ArrayList<LexicalEntry>) getLastNonConfigurationInstance();
-            if (data != null && !data.isEmpty()) {
-                articles = data;
+            if (!articles.isEmpty()) {
                 lexicalEntriesListView.addAll(articles);
                 restoreDefinitionsViewsState(savedInstanceState);
                 restoreScrollPosition(savedInstanceState);
@@ -130,7 +134,10 @@ public class SparkDictActivity extends BaseActivity
     @Override
     protected void onPause() {
         super.onPause();
-        saveRecentHistory();
+        boolean isSaved = saveRecentHistory();
+        if (!isSaved) {
+            logger.error(TAG, "Cannot save recent history");
+        }
     }
 
     @Override
@@ -152,7 +159,8 @@ public class SparkDictActivity extends BaseActivity
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
+    protected void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
         setIntent(intent);
         processIntent(intent);
     }
@@ -191,6 +199,9 @@ public class SparkDictActivity extends BaseActivity
 
     private void initLayout() {
         setContentView(R.layout.activity_spark_dict);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        applySystemBarsInsets(findViewById(R.id.spark_dict_activity_top_layout));
 
         inputTextView = findViewById(R.id.searchTextView);
         inputTextView.setOnKeyListener(this);
@@ -227,11 +238,6 @@ public class SparkDictActivity extends BaseActivity
         if (dictPath.trim().isEmpty()) {
             showNoPathSetDialog();
         }
-    }
-
-    @Override
-    public Object onRetainNonConfigurationInstance() {
-        return articles;
     }
 
     /**
@@ -309,7 +315,7 @@ public class SparkDictActivity extends BaseActivity
     }
 
     @Override
-    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
         if (itemId == R.id.menu_recent_history) {
             startActivity(new Intent(this, RecentHistoryActivity.class));
@@ -339,7 +345,7 @@ public class SparkDictActivity extends BaseActivity
             lexicalEntriesListView.collapseAll();
             return true;
         }
-        return super.onMenuItemSelected(featureId, item);
+        return super.onOptionsItemSelected(item);
     }
 
     private void startDictManager(int subactivity) {

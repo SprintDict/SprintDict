@@ -1,24 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/spark_dict_activity_top_layout"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="@color/black"
-    android:gravity="center_horizontal"
-    android:orientation="vertical">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <LinearLayout
         android:id="@+id/search_layout"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_below="@id/toolbar"
+        android:orientation="horizontal"
+        android:padding="4dp">
 
         <net.bancer.sparkdict.views.SearchInputField
             android:id="@+id/searchTextView"
-            android:layout_width="0dip"
-            android:layout_height="fill_parent"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:inputType="textPhonetic">
+            android:inputType="textPhonetic"
+            android:textColor="@color/white"
+            android:hint="@string/search_hint"
+            android:textColorHint="@color/gray">
 
             <requestFocus android:id="@+id/focus_requester" />
         </net.bancer.sparkdict.views.SearchInputField>
@@ -29,25 +39,26 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/search"
             android:padding="10dp"
-            android:src="@drawable/ic_search" />
+            android:src="@drawable/ic_search"
+            android:background="?attr/selectableItemBackgroundBorderless" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/find_on_page_layout"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:baselineAligned="true"
-        android:fadingEdge="horizontal"
         android:orientation="horizontal"
+        android:background="@color/black"
         android:visibility="gone">
 
         <EditText
             android:id="@+id/find_on_page_edit_text"
-            android:layout_width="0dip"
-            android:layout_height="fill_parent"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:inputType="text" />
+            android:inputType="text"
+            android:textColor="@color/white" />
 
         <Button
             android:id="@+id/find_on_page_next_btn"
@@ -76,25 +87,23 @@
 
     <ScrollView
         android:id="@+id/articles_scroll_view"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_above="@id/find_on_page_layout"
         android:layout_below="@id/search_layout">
 
         <net.bancer.sparkdict.views.LexicalEntriesListView
             android:id="@+id/articles_list"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"></net.bancer.sparkdict.views.LexicalEntriesListView>
+            android:orientation="vertical" />
     </ScrollView>
 
     <ProgressBar
         android:id="@+id/search_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/find_on_page_layout"
-        android:layout_below="@id/search_layout"
-        android:layout_centerHorizontal="true"
+        android:layout_centerInParent="true"
         android:visibility="gone" />
 
 </RelativeLayout>

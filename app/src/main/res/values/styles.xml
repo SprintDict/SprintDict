@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="AppTheme" parent="android:Theme.Material"></style>
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/black</item>
+    </style>
 
-    <style name="DictPreferencesTheme" parent="Theme.AppCompat"></style>
+    <style name="DictPreferencesTheme" parent="Theme.AppCompat.DayNight">
+    </style>
 </resources>
