@@ -9,6 +9,9 @@ import android.view.View;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -67,6 +70,31 @@ public class DictPreferencesFragment extends PreferenceFragmentCompat
         );
         RecyclerView recyclerView = getListView();
         recyclerView.addItemDecoration(horizontalLine);
+        applyWindowTopInsets(recyclerView);
+    }
+
+    /**
+     * Applies window insets to the specified view as top padding.
+     *
+     * @param targetView the view to which insets should be applied.
+     */
+    void applyWindowTopInsets(View targetView) {
+        ViewCompat.setOnApplyWindowInsetsListener(
+            targetView,
+            (view, windowInsets) -> {
+                Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                    | WindowInsetsCompat.Type.displayCutout()
+                );
+                view.setPadding(
+                    view.getPaddingLeft(),
+                    insets.top,
+                    view.getPaddingRight(),
+                    view.getPaddingBottom()
+                );
+                return windowInsets;
+            }
+        );
     }
 
     /**

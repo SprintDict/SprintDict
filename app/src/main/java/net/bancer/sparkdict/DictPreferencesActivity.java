@@ -3,6 +3,7 @@ package net.bancer.sparkdict;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
 
 /**
@@ -13,6 +14,7 @@ public class DictPreferencesActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowCompat.enableEdgeToEdge(getWindow());
         if (savedInstanceState == null) {
             Fragment fragment = new DictPreferencesFragment();
             getSupportFragmentManager()

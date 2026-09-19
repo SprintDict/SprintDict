@@ -18,7 +18,6 @@ import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -118,7 +117,6 @@ public class SparkDictActivity extends BaseActivity
             // initialise members with default values for a new instance
             processIntent(getIntent());
         }
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
     @Override
@@ -130,7 +128,10 @@ public class SparkDictActivity extends BaseActivity
     @Override
     protected void onPause() {
         super.onPause();
-        saveRecentHistory();
+        boolean isSaved = saveRecentHistory();
+        if (!isSaved) {
+            logger.error(TAG, "Cannot save recent history");
+        }
     }
 
     @Override
@@ -214,6 +215,7 @@ public class SparkDictActivity extends BaseActivity
 
         findOnPageInput = findViewById(R.id.find_on_page_edit_text);
         findOnPageView = findViewById(R.id.find_on_page_layout);
+        applyWindowInsets(findViewById(R.id.spark_dict_activity_top_layout));
     }
 
     /**

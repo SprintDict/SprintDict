@@ -4,7 +4,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.Toast;
+
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.DictionaryFiles;
@@ -43,8 +49,32 @@ public abstract class BaseActivity extends Activity {
         super.onCreate(savedInstanceState);
         logger = new AndroidLogger();
         preferences = new SparkDictPreferences(this);
+        WindowCompat.enableEdgeToEdge(getWindow());
     }
 
+    /**
+     * Applies system bar insets to the specified view as padding.
+     *
+     * @param targetView the view to which insets should be applied.
+     */
+    void applyWindowInsets(View targetView) {
+        ViewCompat.setOnApplyWindowInsetsListener(
+            targetView,
+            (view, windowInsets) -> {
+                Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                    | WindowInsetsCompat.Type.displayCutout()
+                );
+                view.setPadding(
+                    insets.left,
+                    insets.top,
+                    insets.right,
+                    insets.bottom
+                );
+                return windowInsets;
+            }
+        );
+    }
 
     /**
      * Retrieves path to dictionaries from shared preferences.

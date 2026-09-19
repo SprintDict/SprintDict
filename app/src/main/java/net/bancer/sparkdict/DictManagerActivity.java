@@ -121,6 +121,7 @@ public class DictManagerActivity extends BaseActivity {
         rebuildProgressLayout = findViewById(R.id.rebuild_progress_layout);
         rebuildProgressText = findViewById(R.id.rebuild_progress_text);
         rebuildProgress = findViewById(R.id.rebuild_progress);
+        applyWindowInsets(findViewById(R.id.dict_manager_top_layout));
     }
 
     @Override

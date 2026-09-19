@@ -44,6 +44,7 @@ public class RecentHistoryActivity extends BaseActivity implements OnItemClickLi
         listView = findViewById(R.id.history_list);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(this);
+        applyWindowInsets(findViewById(R.id.history_list));
     }
 
     /**
