@@ -159,16 +159,22 @@ public class SparkDictActivity extends BaseActivity
     }
 
     private void processIntent(Intent intent) {
+        // Handle system text selection lookup
+        if (Intent.ACTION_PROCESS_TEXT.equals(intent.getAction())) {
+            CharSequence text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
+            if (text != null) {
+                doSearch(text.toString());
+            }
+        }
+        // Handle share intent lookup
+        if (Intent.ACTION_SEND.equals(intent.getAction()) && "text/plain".equals(intent.getType())) {
+            String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+            if (sharedText != null) {
+                doSearch(sharedText);
+            }
+        }
         // Handle search action
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-
-//			String query1 = intent.getStringExtra(SearchManager.QUERY);
-//			Cursor cursor = managedQuery(SuggestionsProvider.CONTENT_URI, null, null,
-//	                new String[] {query1}, null);
-//			if(cursor != null) {
-//				System.out.println("cursor count: " + cursor.getCount());
-//			}
-
             String query = intent.getStringExtra(SearchManager.QUERY);
             doSearch(query);
         }

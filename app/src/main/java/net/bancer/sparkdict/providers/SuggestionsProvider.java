@@ -4,58 +4,56 @@ import android.app.SearchManager;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import net.bancer.sparkdict.R;
+import net.bancer.sparkdict.SparkDictApplication;
 import net.bancer.sparkdict.domain.core.Book;
-import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.Shelf;
-import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
-import net.bancer.sparkdict.storage.SparkDictPreferences;
 
-import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.Vector;
 
 /**
- * SuggestionsProvider provides suggestions for Quick Search widget.
- * Android Tutorial: Adding Search Suggestions:
- * <a href="http://www.grokkingandroid.com/android-tutorial-adding-suggestions-to-search/">...</a>
+ * Suggestions provider for SparkDict.
  */
 public class SuggestionsProvider extends ContentProvider {
 
+    /**
+     * The columns we'll include in the cursor.
+     */
     private static final String[] COLUMNS = new String[]{
         BaseColumns._ID,
         SearchManager.SUGGEST_COLUMN_TEXT_1,
-        SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID
+        SearchManager.SUGGEST_COLUMN_TEXT_2,
+        SearchManager.SUGGEST_COLUMN_ICON_1,
+        SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID,
+        SearchManager.SUGGEST_COLUMN_QUERY
     };
+
     private static final int SEARCH_LEXICAL_ENTRY = 0;
+
     private static final int SEARCH_INDEX_ENTRIES = 1;
+
+    public static final String TAG = "SuggestionsProvider";
+
     /**
      * Full class name of SuggestionsProvider.
      */
     public static String AUTHORITY = "net.bancer.sparkdict.providers.SuggestionsProvider";
-    /**
-     * URI to identify requests to SparkDict.
-     */
-    public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/dictionary");
+
     private static final UriMatcher sURIMatcher = buildUriMatcher();
 
-    private ArrayList<Book> books;
-    private TreeSet<IndexEntry> suggestions;
-
     public SuggestionsProvider() {
-        //SharedPreferences prefs = getContext().getSharedPreferences("SparkDict", Context.MODE_PRIVATE);
-        //String key = SparkDictPreferences.PREF_DICT_ROOT_URI_NAME;
-        //String result = prefs.getString(key, "");
     }
 
     /**
@@ -65,55 +63,73 @@ public class SuggestionsProvider extends ContentProvider {
         UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         // to get definitions
         matcher.addURI(AUTHORITY, "dictionary", SEARCH_LEXICAL_ENTRY);
+        matcher.addURI(AUTHORITY, "dictionary/*", SEARCH_LEXICAL_ENTRY);
         // to get suggestions
         matcher.addURI(AUTHORITY, SearchManager.SUGGEST_URI_PATH_QUERY, SEARCH_INDEX_ENTRIES);
+        matcher.addURI(AUTHORITY, SearchManager.SUGGEST_URI_PATH_QUERY + "/*", SEARCH_INDEX_ENTRIES);
         return matcher;
     }
 
     @Override
     public boolean onCreate() {
-        Context context = getContext();
-        SharedPreferences prefs = context.getSharedPreferences("SparkDict", Context.MODE_PRIVATE);
-
-        String keyDictPath = SparkDictPreferences.PREF_DICT_ROOT_URI_NAME;
-        String dictPath = prefs.getString(keyDictPath, "");
-
-        String keyEnabledDicts = context.getString(R.string.enabled_dicts);
-        String strEnabledDicts = prefs.getString(keyEnabledDicts, "");
-
-        String[] enabledDicts = strEnabledDicts.split("\\|\\|");
-
-        DictionaryFiles dictionaryFiles = SafDictionaryFilesFactory.create(context);
-        Shelf shelf = new Shelf(enabledDicts, dictionaryFiles);
-        books = shelf.getBooks();
         return true;
     }
 
     @Override
-    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+    public Cursor query(
+        @NonNull Uri uri,
+        String[] projection,
+        String selection,
+        String[] selectionArgs,
+        String sortOrder
+    ) {
+        Log.i("SuggestionsProvider", "QUERY: " + uri);
+        Context context = getContext();
+        if (context == null) {
+            throw new IllegalStateException("Context is null");
+        }
         // Use the UriMatcher to see what kind of query we have and format the db query accordingly
         switch (sURIMatcher.match(uri)) {
             case SEARCH_INDEX_ENTRIES:
-                if (selectionArgs == null) {
-                    throw new IllegalArgumentException("selectionArgs must be provided for the Uri: " + uri);
+                String query;
+                if (selectionArgs != null && selectionArgs.length > 0) {
+                    query = selectionArgs[0];
+                } else {
+                    query = uri.getLastPathSegment();
                 }
-                return searchSuggestions(selectionArgs[0]);
+                return searchSuggestions(query);
             case SEARCH_LEXICAL_ENTRY:
-                if (selectionArgs == null) {
-                    throw new IllegalArgumentException("selectionArgs must be provided for the Uri: " + uri);
+                String lemma;
+                if (selectionArgs != null && selectionArgs.length > 0) {
+                    lemma = selectionArgs[0];
+                } else {
+                    lemma = uri.getLastPathSegment();
                 }
-                return search(selectionArgs[0]);
+                return search(lemma);
             default:
                 throw new IllegalArgumentException("Unknown Uri: " + uri);
         }
     }
 
+    /**
+     * Searches for suggestions for a given word.
+     *
+     * @param word The word to search for.
+     * @return A cursor containing the search results.
+     */
     private Cursor searchSuggestions(String word) {
         MatrixCursor cursor = new MatrixCursor(COLUMNS);
-        if (word != null) {
-            getSuggestions().clear();
-            for (int i = 0; i < books.size(); i++) {
-                Book book = books.get(i);
+        Context context = getContext();
+        if (context == null) {
+            return cursor;
+        }
+        SparkDictApplication app = (SparkDictApplication) context.getApplicationContext();
+        Shelf shelf = app.getShelf();
+        if (word != null && !word.isEmpty() && shelf != null) {
+            String iconUri = "android.resource://" + context.getPackageName() + "/" + R.drawable.ic_launcher_sparkdict;
+            String description = context.getString(R.string.search_description);
+            TreeSet<IndexEntry> suggestions = new TreeSet<>();
+            for (Book book : shelf.getBooks()) {
                 if (book.isEnabled()) {
                     Vector<IndexEntry> tmp = book.getSuggestions(word);
                     suggestions.addAll(tmp);
@@ -121,29 +137,46 @@ public class SuggestionsProvider extends ContentProvider {
             }
             int id = 0;
             for (IndexEntry nextWord : suggestions) {
-                cursor.addRow(new Object[]{(long) id, nextWord, nextWord});
+                String lemma = nextWord.getLemma();
+                cursor.addRow(new Object[]{(long) id, lemma, description, iconUri, lemma, lemma});
                 id++;
             }
         }
         return cursor;
     }
 
-    private TreeSet<IndexEntry> getSuggestions() {
-        if (suggestions == null) {
-            suggestions = new TreeSet<>();
-        }
-        return suggestions;
-    }
-
     /**
-     * Not implemented yet. Throws UnsupportedOperationException.
+     * Searches for a word in the dictionary.
+     *
+     * @param word The word to search for.
+     * @return A cursor containing the search results.
      */
-    private Cursor search(String string) {
-        throw new UnsupportedOperationException("Not implemented yet.");
-//    	String[] columns = new String[] {BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1};
-//    	MatrixCursor cursor = new MatrixCursor(columns);
-//
-//		return cursor;
+    private Cursor search(String word) {
+        MatrixCursor cursor = new MatrixCursor(COLUMNS);
+        Context context = getContext();
+        if (context == null) {
+            return cursor;
+        }
+        SparkDictApplication app = (SparkDictApplication) context.getApplicationContext();
+        Shelf shelf = app.getShelf();
+        if (word != null && !word.isEmpty() && shelf != null) {
+            String iconUri = "android.resource://" + context.getPackageName() + "/" + R.drawable.ic_launcher_sparkdict;
+            String description = context.getString(R.string.search_description);
+            int id = 0;
+            for (Book book : shelf.getBooks()) {
+                if (book.isEnabled()) {
+                    try {
+                        if (book.getLexicalEntry(word) != null) {
+                            cursor.addRow(new Object[]{(long) id, word, description, iconUri, word, word});
+                            id++;
+                        }
+                    } catch (Exception e) {
+                        app.getLogger().error(TAG, "Error searching for " + word, e);
+                    }
+                }
+            }
+        }
+        return cursor;
     }
 
     /**

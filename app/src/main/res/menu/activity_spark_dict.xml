@@ -24,12 +24,9 @@
         android:id="@+id/menu_settings"
         android:icon="@drawable/ic_menu_preferences"
         android:title="@string/menu_settings" />
-    <!-- Set visible to true after Adding Custom Suggestions from
-    http://developer.android.com/guide/topics/search/adding-custom-suggestions.html
-    will be implemented -->
     <item
         android:id="@+id/search_dialog"
         android:icon="@drawable/ic_menu_search"
         android:title="@string/search"
-        android:visible="false" />
+        android:visible="true" />
 </menu>

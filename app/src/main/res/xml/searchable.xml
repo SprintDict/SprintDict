@@ -7,6 +7,6 @@
     android:searchSuggestAuthority="net.bancer.sparkdict.providers.SuggestionsProvider"
     android:searchSuggestIntentAction="net.bancer.sparkdict.SEARCH"
     android:searchSuggestIntentData="content://net.bancer.sparkdict.providers.SuggestionsProvider/dictionary"
-    android:searchSuggestSelection=" ?"
+    android:searchSuggestSelection="word MATCH ?"
     android:searchSuggestThreshold="1"
     android:voiceSearchMode="showVoiceSearchButton|launchRecognizer" />

@@ -13,11 +13,8 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import net.bancer.sparkdict.domain.core.Book;
-import net.bancer.sparkdict.domain.core.DictionaryFiles;
 import net.bancer.sparkdict.domain.core.Shelf;
-import net.bancer.sparkdict.logging.AndroidLogger;
 import net.bancer.sparkdict.logging.Logger;
-import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 import net.bancer.sparkdict.storage.SparkDictPreferences;
 
 import java.util.ArrayList;
@@ -36,19 +33,14 @@ public abstract class BaseActivity extends Activity {
 
     protected SparkDictPreferences preferences;
 
-    private static final String RECENT_HISTORY_PREF_KEY = "recent.history";
-    private static final String RECENT_HISTORY_WORDS_SEPARATOR = "::";
-    private static final int RECENT_HISTORY_MAX_SIZE = 100;
-    private static Shelf shelf;
-    private static LinkedList<String> recentHistory;
-
     protected Logger logger;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        logger = new AndroidLogger();
-        preferences = new SparkDictPreferences(this);
+        SparkDictApplication app = (SparkDictApplication) getApplication();
+        logger = app.getLogger();
+        preferences = app.getPreferences();
         WindowCompat.enableEdgeToEdge(getWindow());
     }
 
@@ -91,17 +83,6 @@ public abstract class BaseActivity extends Activity {
     }
 
     /**
-     * Retrieves a string array of titles of enabled dictionaries from shared
-     * preferences.
-     *
-     * @return a string array of titles of enabled dictionaries.
-     */
-    protected String[] getEnabledDictsFromPrefs() {
-        String strEnabledDicts = preferences.getString(getString(R.string.enabled_dicts));
-        return strEnabledDicts.split("\\|\\|");
-    }
-
-    /**
      * Displays a long toast message.
      *
      * @param msg string message to be displayed.
@@ -129,10 +110,7 @@ public abstract class BaseActivity extends Activity {
      * @return shelf containing all books.
      */
     public Shelf getShelf() {
-        if (shelf == null) {
-            refreshShelf();
-        }
-        return shelf;
+        return ((SparkDictApplication) getApplication()).getShelf();
     }
 
     /**
@@ -140,18 +118,7 @@ public abstract class BaseActivity extends Activity {
      * always up-to-date.
      */
     protected void refreshShelf() {
-        DictionaryFiles dictionaryFiles = createDictionaryFiles();
-        String[] enabledDicts = getEnabledDictsFromPrefs();
-        shelf = new Shelf(enabledDicts, dictionaryFiles, logger);
-    }
-
-    /**
-     * Creates the {@link DictionaryFiles} used to resolve dictionary files.
-     *
-     * @return the DictionaryFiles to use.
-     */
-    private DictionaryFiles createDictionaryFiles() {
-        return SafDictionaryFilesFactory.create(this, logger);
+        ((SparkDictApplication) getApplication()).refreshShelf();
     }
 
     /**
@@ -161,11 +128,7 @@ public abstract class BaseActivity extends Activity {
      * @param word The word to be added.
      */
     protected void addToRecentHistory(String word) {
-        getRecentHistory().remove(word);
-        if (recentHistory.size() == RECENT_HISTORY_MAX_SIZE) {
-            recentHistory.removeLast();
-        }
-        recentHistory.addFirst(word);
+        ((SparkDictApplication) getApplication()).addToRecentHistory(word);
     }
 
     /**
@@ -174,18 +137,7 @@ public abstract class BaseActivity extends Activity {
      * @return LinkedList<String> Linked list of recent search history.
      */
     protected LinkedList<String> getRecentHistory() {
-        if (recentHistory == null) {
-            recentHistory = new LinkedList<>();
-            String history = preferences.getString(RECENT_HISTORY_PREF_KEY);
-            if (!history.isEmpty()) {
-                String[] historyArr = history.split(RECENT_HISTORY_WORDS_SEPARATOR);
-                for (String s : historyArr) {
-                    recentHistory.offer(s);
-                }
-            }
-
-        }
-        return recentHistory;
+        return ((SparkDictApplication) getApplication()).getRecentHistory();
     }
 
     /**
@@ -194,13 +146,6 @@ public abstract class BaseActivity extends Activity {
      * @return boolean `true` if the recent history was saved, else `false`
      */
     protected boolean saveRecentHistory() {
-        StringBuilder historyStr = new StringBuilder();
-        for (int i = 0; i < getRecentHistory().size(); i++) {
-            if (i != 0) {
-                historyStr.append(RECENT_HISTORY_WORDS_SEPARATOR);
-            }
-            historyStr.append(recentHistory.get(i));
-        }
-        return preferences.save(RECENT_HISTORY_PREF_KEY, historyStr.toString());
+        return ((SparkDictApplication) getApplication()).saveRecentHistory();
     }
 }
