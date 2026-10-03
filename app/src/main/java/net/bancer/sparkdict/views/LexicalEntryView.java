@@ -254,10 +254,12 @@ public class LexicalEntryView extends LinearLayout implements
 
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
-        if (!hasFocus) {
+        if (!hasFocus && v != definitionsView) {
             v.setFocusable(false);
             v.setFocusableInTouchMode(false);
-            ((EditText) v).setCursorVisible(false);
+            if (v instanceof EditText) {
+                ((EditText) v).setCursorVisible(false);
+            }
         }
     }
 

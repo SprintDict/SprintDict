@@ -2,6 +2,8 @@ package net.bancer.sparkdict;
 
 import android.app.AlertDialog;
 import android.app.SearchManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -34,6 +36,7 @@ import net.bancer.sparkdict.adapters.IndexEntriesAdapter;
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.LexicalEntry;
 import net.bancer.sparkdict.domain.utils.DomainException;
+import net.bancer.sparkdict.views.DefinitionsView;
 import net.bancer.sparkdict.views.LexicalEntriesListView;
 import net.bancer.sparkdict.views.SearchInputField;
 
@@ -46,7 +49,7 @@ import java.util.concurrent.Executors;
  * SparkDictActivity is the main activity.
  */
 public class SparkDictActivity extends BaseActivity
-    implements OnClickListener, OnKeyListener, OnItemClickListener {
+    implements OnClickListener, OnKeyListener, OnItemClickListener, DefinitionsView.SelectionActionListener {
 
     public static final String SEARCH_INTENT = "net.bancer.sparkdict.SEARCH";
 
@@ -471,6 +474,66 @@ public class SparkDictActivity extends BaseActivity
      */
     public void onFindPreviousWordOnPageButtonClick(View v) {
         lexicalEntriesListView.findPreviousOnScreen(findOnPageInput.getText().toString());
+    }
+
+    /**
+     * Searches for the specified text in all enabled dictionaries.
+     *
+     * @param selectedText text selected by the user to search in the app.
+     */
+    @Override
+    public void onSearchSelected(String selectedText) {
+        if (selectedText != null && !selectedText.trim().isEmpty()) {
+            doSearch(selectedText.trim());
+        }
+    }
+
+    /**
+     * Opens the find-on-page input bar, populates it with the selected text,
+     * and finds the next occurrence.
+     *
+     * @param selectedText text selected by the user to find on page.
+     */
+    @Override
+    public void onFindOnPageSelected(String selectedText) {
+        if (selectedText != null && !selectedText.trim().isEmpty()) {
+            String query = selectedText.trim();
+            findOnPageView.setVisibility(View.VISIBLE);
+            findOnPageInput.setText(query);
+            findOnPageInput.setSelection(query.length());
+            lexicalEntriesListView.findNextOnScreen(query);
+        }
+    }
+
+    /**
+     * Copies the selected text to the system clipboard.
+     *
+     * @param selectedText text selected by the user to copy.
+     */
+    @Override
+    public void onCopySelected(String selectedText) {
+        if (selectedText != null && !selectedText.isEmpty()) {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            if (clipboard != null) {
+                ClipData clip = ClipData.newPlainText("Copied Text", selectedText);
+                clipboard.setPrimaryClip(clip);
+            }
+        }
+    }
+
+    /**
+     * Opens the system share chooser to share the selected text with other applications.
+     *
+     * @param selectedText text selected by the user to share.
+     */
+    @Override
+    public void onShareSelected(String selectedText) {
+        if (selectedText != null && !selectedText.isEmpty()) {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, selectedText);
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.share_via)));
+        }
     }
 
     /**

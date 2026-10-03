@@ -54,4 +54,7 @@
     <string name="find_on_page_previous">Назад</string>
     <string name="find_on_page_close">Закрыть</string>
     <string name="definitions_expander_icon_description">Иконка раскрытия определений.</string>
+    <string name="context_menu_copy">Копировать</string>
+    <string name="context_menu_share">Поделиться</string>
+    <string name="share_via">Поделиться с помощью</string>
 </resources>
