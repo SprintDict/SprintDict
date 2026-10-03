@@ -54,4 +54,7 @@
     <string name="find_on_page_previous">Previous</string>
     <string name="find_on_page_close">Close</string>
     <string name="definitions_expander_icon_description">Definitions expander icon.</string>
+    <string name="context_menu_copy">Copy</string>
+    <string name="context_menu_share">Share</string>
+    <string name="share_via">Share via</string>
 </resources>

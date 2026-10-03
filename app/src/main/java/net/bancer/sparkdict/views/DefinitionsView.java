@@ -6,7 +6,9 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.Rect;
 import android.text.Html;
+import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
@@ -14,8 +16,11 @@ import android.text.style.LeadingMarginSpan;
 import android.text.style.QuoteSpan;
 import android.text.style.TextAppearanceSpan;
 import android.util.AttributeSet;
+import android.view.ActionMode;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import androidx.core.text.HtmlCompat;
 
@@ -34,6 +39,26 @@ public class DefinitionsView extends EditText {
     private static final int BLOCKQUOTE_INDENT = 10;
 
     /**
+     * Context menu item identifier for searching selected text in the app.
+     */
+    public static final int ID_SEARCH = 1;
+
+    /**
+     * Context menu item identifier for finding selected text on the current page.
+     */
+    public static final int ID_FIND_ON_PAGE = 2;
+
+    /**
+     * Context menu item identifier for copying selected text to clipboard.
+     */
+    public static final int ID_COPY = 3;
+
+    /**
+     * Context menu item identifier for sharing selected text with other apps.
+     */
+    public static final int ID_SHARE = 4;
+
+    /**
      * Focused word background colour.
      */
     private BackgroundColorSpan focusedWordBackground;
@@ -49,12 +74,47 @@ public class DefinitionsView extends EditText {
     private Spanned originalText;
 
     /**
+     * Interface for handling selection context menu actions.
+     */
+    public interface SelectionActionListener {
+
+        /**
+         * Triggered when the user selects the "Search" context menu item for selected text.
+         *
+         * @param selectedText text selected by the user.
+         */
+        void onSearchSelected(String selectedText);
+
+        /**
+         * Triggered when the user selects the "Find on page" context menu item for selected text.
+         *
+         * @param selectedText text selected by the user.
+         */
+        void onFindOnPageSelected(String selectedText);
+
+        /**
+         * Triggered when the user selects the "Copy" context menu item for selected text.
+         *
+         * @param selectedText text selected by the user.
+         */
+        void onCopySelected(String selectedText);
+
+        /**
+         * Triggered when the user selects the "Share" context menu item for selected text.
+         *
+         * @param selectedText text selected by the user.
+         */
+        void onShareSelected(String selectedText);
+    }
+
+    /**
      * Constructor.
      *
      * @param context application context.
      */
     public DefinitionsView(Context context) {
         super(context);
+        init();
     }
 
     /**
@@ -65,6 +125,7 @@ public class DefinitionsView extends EditText {
      */
     public DefinitionsView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     /**
@@ -76,6 +137,29 @@ public class DefinitionsView extends EditText {
      */
     public DefinitionsView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        init();
+    }
+
+    /**
+     * Initialises view state, enables text selection, disables keyboard editing,
+     * and registers the custom action mode callback.
+     */
+    private void init() {
+        setTextIsSelectable(true);
+        setKeyListener(null);
+        setCursorVisible(false);
+        setCustomSelectionActionModeCallback(new CustomSelectionActionModeCallback());
+    }
+
+    /**
+     * Prevents the soft keyboard from displaying when this view receives focus or is tapped,
+     * as definitions text is read-only and non-editable.
+     *
+     * @return {@code false} to indicate this view is not an editable text editor.
+     */
+    @Override
+    public boolean onCheckIsTextEditor() {
+        return false;
     }
 
     /**
@@ -185,7 +269,7 @@ public class DefinitionsView extends EditText {
      */
     public void setParsedHtml(Spanned parsedHtml) {
         originalText = parsedHtml;
-        setText(parsedHtml, TextView.BufferType.SPANNABLE);
+        setText(parsedHtml, BufferType.SPANNABLE);
     }
 
     /**
@@ -193,7 +277,7 @@ public class DefinitionsView extends EditText {
      */
     public void restoreOriginalText() {
         if (originalText != null) {
-            setText(originalText, TextView.BufferType.SPANNABLE);
+            setText(originalText, BufferType.SPANNABLE);
         }
     }
 
@@ -239,5 +323,153 @@ public class DefinitionsView extends EditText {
             builder.setSpan(blockquoteMargin, start, end, flags);
         }
         return builder;
+    }
+
+    /**
+     * Retrieves the active selection action listener from the host context if implemented.
+     *
+     * @return the selection action listener instance or null.
+     */
+    private SelectionActionListener getSelectionActionListener() {
+        if (getContext() instanceof SelectionActionListener) {
+            return (SelectionActionListener) getContext();
+        }
+        return null;
+    }
+
+    /**
+     * Dispatches a selection context menu action to the registered selection action listener.
+     *
+     * @param itemId       identifier of the selected menu item.
+     * @param selectedText text selected by the user.
+     */
+    private void handleSelectionAction(int itemId, String selectedText) {
+        SelectionActionListener listener = getSelectionActionListener();
+        if (listener != null) {
+            if (itemId == ID_SEARCH) {
+                listener.onSearchSelected(selectedText);
+            } else if (itemId == ID_FIND_ON_PAGE) {
+                listener.onFindOnPageSelected(selectedText);
+            } else if (itemId == ID_COPY) {
+                listener.onCopySelected(selectedText);
+            } else if (itemId == ID_SHARE) {
+                listener.onShareSelected(selectedText);
+            }
+        }
+    }
+
+    /**
+     * Custom {@link ActionMode.Callback2} handling text selection context menu creation,
+     * item invocation, and selection rectangle calculation for proper menu placement.
+     */
+    private class CustomSelectionActionModeCallback extends ActionMode.Callback2 {
+
+        /**
+         * Called when the action mode is created; populates the custom context menu.
+         *
+         * @param mode action mode being created.
+         * @param menu menu to populate.
+         * @return {@code true} to indicate the menu was created.
+         */
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            populateMenu(menu);
+            return true;
+        }
+
+        /**
+         * Called when the action mode is prepared; populates the custom context menu.
+         *
+         * @param mode action mode being prepared.
+         * @param menu menu to populate.
+         * @return {@code true} to indicate the menu was prepared.
+         */
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            populateMenu(menu);
+            return true;
+        }
+
+        /**
+         * Clears default selection action items and adds custom items:
+         * Search, Find on page, Copy, Share.
+         *
+         * @param menu menu to populate.
+         */
+        private void populateMenu(Menu menu) {
+            menu.clear();
+            menu.add(Menu.NONE, ID_SEARCH, 1, getContext().getString(R.string.search));
+            menu.add(Menu.NONE, ID_FIND_ON_PAGE, 2, getContext().getString(R.string.menu_find_on_page));
+            menu.add(Menu.NONE, ID_COPY, 3, getContext().getString(R.string.context_menu_copy));
+            menu.add(Menu.NONE, ID_SHARE, 4, getContext().getString(R.string.context_menu_share));
+        }
+
+        /**
+         * Triggered when a context menu item is clicked.
+         * Retrieves the selected text and executes the corresponding action.
+         *
+         * @param mode action mode containing the menu item.
+         * @param item menu item clicked.
+         * @return {@code true} if the action was handled, otherwise {@code false}.
+         */
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            int start = Math.min(getSelectionStart(), getSelectionEnd());
+            int end = Math.max(getSelectionStart(), getSelectionEnd());
+            String selectedText = "";
+            if (start >= 0 && end > start && getText() != null) {
+                selectedText = getText().subSequence(start, end).toString().trim();
+            }
+            mode.finish();
+            if (!selectedText.isEmpty()) {
+                handleSelectionAction(item.getItemId(), selectedText);
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Called when the action mode is destroyed.
+         *
+         * @param mode action mode being destroyed.
+         */
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+        }
+
+        /**
+         * Calculates the bounding rectangle of the selected text within this view's coordinates.
+         * Used by the system floating toolbar to position the context menu directly below
+         * or above the selection.
+         *
+         * @param mode    action mode requesting content bounds.
+         * @param view    view hosting the selection.
+         * @param outRect rectangle populated with the selection bounds in view coordinates.
+         */
+        @Override
+        public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
+            int start = Math.min(getSelectionStart(), getSelectionEnd());
+            int end = Math.max(getSelectionStart(), getSelectionEnd());
+            Layout layout = getLayout();
+            if (layout != null && start >= 0 && end > start) {
+                int startLine = layout.getLineForOffset(start);
+                int endLine = layout.getLineForOffset(end);
+                Rect topRect = new Rect();
+                layout.getLineBounds(startLine, topRect);
+                Rect bottomRect = new Rect();
+                layout.getLineBounds(endLine, bottomRect);
+                float primaryHorizontalStart = layout.getPrimaryHorizontal(start);
+                float primaryHorizontalEnd = layout.getPrimaryHorizontal(end);
+                int left = (int) Math.min(primaryHorizontalStart, primaryHorizontalEnd);
+                int right = (int) Math.max(primaryHorizontalStart, primaryHorizontalEnd);
+                if (startLine != endLine) {
+                    left = 0;
+                    right = view.getWidth();
+                }
+                outRect.set(left, topRect.top, right, bottomRect.bottom);
+            } else {
+                super.onGetContentRect(mode, view, outRect);
+            }
+        }
     }
 }
