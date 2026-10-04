@@ -5,10 +5,9 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.text.Html;
-import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
@@ -19,7 +18,6 @@ import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.EditText;
 
 import androidx.core.text.HtmlCompat;
@@ -142,13 +140,42 @@ public class DefinitionsView extends EditText {
 
     /**
      * Initialises view state, enables text selection, disables keyboard editing,
+     * keeps view non-focusable by default to prevent unwanted scrolling on single taps,
      * and registers the custom action mode callback.
      */
     private void init() {
         setTextIsSelectable(true);
         setKeyListener(null);
         setCursorVisible(false);
+        setFocusable(false);
+        setFocusableInTouchMode(false);
         setCustomSelectionActionModeCallback(new CustomSelectionActionModeCallback());
+    }
+
+    /**
+     * Dynamically enables focusability on long press so text selection mode and context menu can start
+     * without taking focus or triggering ScrollView scrolling on single taps.
+     *
+     * @return {@code true} if the long click was handled.
+     */
+    @Override
+    public boolean performLongClick() {
+        setFocusable(true);
+        setFocusableInTouchMode(true);
+        requestFocus();
+        return super.performLongClick();
+    }
+
+    /**
+     * Prevents parent ScrollView from automatically scrolling when this view receives focus on long press.
+     *
+     * @param rectangle the rectangle in this view's coordinates.
+     * @param immediate true to scroll immediately without animation.
+     * @return {@code false} to suppress automated focus-driven scrolling.
+     */
+    @Override
+    public boolean requestRectangleOnScreen(Rect rectangle, boolean immediate) {
+        return false;
     }
 
     /**
@@ -359,10 +386,9 @@ public class DefinitionsView extends EditText {
     }
 
     /**
-     * Custom {@link ActionMode.Callback2} handling text selection context menu creation,
-     * item invocation, and selection rectangle calculation for proper menu placement.
+     * Custom {@link ActionMode.Callback} handling text selection context menu creation and item invocation.
      */
-    private class CustomSelectionActionModeCallback extends ActionMode.Callback2 {
+    private class CustomSelectionActionModeCallback implements ActionMode.Callback {
 
         /**
          * Called when the action mode is created; populates the custom context menu.
@@ -429,47 +455,15 @@ public class DefinitionsView extends EditText {
         }
 
         /**
-         * Called when the action mode is destroyed.
+         * Called when the action mode is destroyed; restores non-focusable state.
          *
          * @param mode action mode being destroyed.
          */
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-        }
-
-        /**
-         * Calculates the bounding rectangle of the selected text within this view's coordinates.
-         * Used by the system floating toolbar to position the context menu directly below
-         * or above the selection.
-         *
-         * @param mode    action mode requesting content bounds.
-         * @param view    view hosting the selection.
-         * @param outRect rectangle populated with the selection bounds in view coordinates.
-         */
-        @Override
-        public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
-            int start = Math.min(getSelectionStart(), getSelectionEnd());
-            int end = Math.max(getSelectionStart(), getSelectionEnd());
-            Layout layout = getLayout();
-            if (layout != null && start >= 0 && end > start) {
-                int startLine = layout.getLineForOffset(start);
-                int endLine = layout.getLineForOffset(end);
-                Rect topRect = new Rect();
-                layout.getLineBounds(startLine, topRect);
-                Rect bottomRect = new Rect();
-                layout.getLineBounds(endLine, bottomRect);
-                float primaryHorizontalStart = layout.getPrimaryHorizontal(start);
-                float primaryHorizontalEnd = layout.getPrimaryHorizontal(end);
-                int left = (int) Math.min(primaryHorizontalStart, primaryHorizontalEnd);
-                int right = (int) Math.max(primaryHorizontalStart, primaryHorizontalEnd);
-                if (startLine != endLine) {
-                    left = 0;
-                    right = view.getWidth();
-                }
-                outRect.set(left, topRect.top, right, bottomRect.bottom);
-            } else {
-                super.onGetContentRect(mode, view, outRect);
-            }
+            setFocusable(false);
+            setFocusableInTouchMode(false);
+            clearFocus();
         }
     }
 }
