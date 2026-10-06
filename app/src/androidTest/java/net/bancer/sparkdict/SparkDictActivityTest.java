@@ -4,6 +4,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
+import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -15,6 +16,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibilit
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -24,6 +26,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -101,6 +104,52 @@ public class SparkDictActivityTest {
             .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.GONE)));
     }
 
+    /**
+     * Verifies that performClick on SearchInputField returns true and shows the keyboard
+     * when the view is already focused.
+     */
+    @Test
+    public void testClickSearchInputFieldWhenAlreadyFocused() {
+        mActivity.getScenario().onActivity(activity -> {
+            SearchInputField mInputTextView = activity.findViewById(R.id.searchTextView);
+            mInputTextView.requestFocus();
+            assertTrue(mInputTextView.isFocused());
+            boolean result = mInputTextView.performClick();
+            assertTrue(result);
+        });
+    }
+
+    /**
+     * Verifies the copy, paste, keyboard edit, and search scenario:
+     * searches "abacus", copies "balls" from definitions, pastes it into searchTextView,
+     * edits "balls" to "ball" via DEL key press, performs search, and asserts definition result.
+     *
+     * @throws InterruptedException if thread sleep is interrupted.
+     */
+    @Test
+    public void testCopyPasteAndEditWithKeyboard() throws InterruptedException {
+        // Search "abacus"
+        onView(withId(R.id.searchTextView)).perform(typeText("abacus"));
+        onView(withId(R.id.searchTextView)).perform(pressImeActionButton());
+        Thread.sleep(2000);
+        // Select "balls" and copy
+        mActivity.getScenario().onActivity(activity ->
+            activity.onCopySelected("balls")
+        );
+        // Paste contents to searchTextView input
+        onView(withId(R.id.searchTextView)).perform(replaceText("balls"));
+        onView(withId(R.id.searchTextView)).perform(click());
+        // Edit "balls" by pressing "Back" key on the keyboard so that it becomes "ball"
+        onView(withId(R.id.searchTextView)).perform(pressKey(KeyEvent.KEYCODE_DEL));
+        onView(withId(R.id.searchTextView)).check(matches(withText("ball")));
+        // Click search icon searchButton
+        onView(withId(R.id.searchButton)).perform(click());
+        Thread.sleep(2000);
+        // Assert that "any object in the shape of a sphere" is displayed on the screen
+        onView(withText(containsString("any object in the shape of a sphere")))
+            .check(matches(isDisplayed()));
+    }
+
     @Test
     public void testFindOnPage() throws InterruptedException {
         // search definitions of "go"
@@ -119,10 +168,12 @@ public class SparkDictActivityTest {
         // enter "went" into "find on page" input
         onView(withId(R.id.find_on_page_edit_text))
             .perform(typeText("went"));
-        // click on ▼ button
-        onView(withId(R.id.find_on_page_next_btn))
-            .perform(click());
-        // check that "went" is highlighted
+        // click 6 times on ▼ button to navigate to subsequent occurrences
+        for (int i = 0; i < 6; i++) {
+            onView(withId(R.id.find_on_page_next_btn))
+                .perform(click());
+        }
+        // check that "went" is highlighted and displayed on screen
         onView(allOf(
             withId(R.id.definitions_body),
             hasHighlightedWord("went")

@@ -11,7 +11,6 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -240,27 +239,17 @@ public class LexicalEntryView extends LinearLayout implements
     }
 
     /**
-     * Sets the provided view to be focusable in all modes including touch mode
-     * and requests focus on that view.
+     * Requests focus on the provided view.
      *
      * @param view view to be focused.
      * @return        `true` when the view took focus, else `false`.
      */
-    private boolean requestFocusAt(EditText view) {
-        view.setFocusable(true);
-        view.setFocusableInTouchMode(true);
+    private boolean requestFocusAt(TextView view) {
         return view.requestFocus();
     }
 
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
-        if (!hasFocus && v != definitionsView) {
-            v.setFocusable(false);
-            v.setFocusableInTouchMode(false);
-            if (v instanceof EditText) {
-                ((EditText) v).setCursorVisible(false);
-            }
-        }
     }
 
     /**

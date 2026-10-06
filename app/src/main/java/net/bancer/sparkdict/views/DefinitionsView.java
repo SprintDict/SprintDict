@@ -5,9 +5,10 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.text.Html;
+import android.text.Selection;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
@@ -18,7 +19,7 @@ import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.core.text.HtmlCompat;
 
@@ -32,7 +33,7 @@ import net.bancer.sparkdict.views.helpers.UnrecognizedTagsHandler;
  * different transformations of them.
  */
 @SuppressLint("AppCompatCustomView")
-public class DefinitionsView extends EditText {
+public class DefinitionsView extends TextView {
 
     private static final int BLOCKQUOTE_INDENT = 10;
 
@@ -139,43 +140,11 @@ public class DefinitionsView extends EditText {
     }
 
     /**
-     * Initialises view state, enables text selection, disables keyboard editing,
-     * keeps view non-focusable by default to prevent unwanted scrolling on single taps,
-     * and registers the custom action mode callback.
+     * Initialises view state, enables text selection, and registers the custom action mode callback.
      */
     private void init() {
         setTextIsSelectable(true);
-        setKeyListener(null);
-        setCursorVisible(false);
-        setFocusable(false);
-        setFocusableInTouchMode(false);
         setCustomSelectionActionModeCallback(new CustomSelectionActionModeCallback());
-    }
-
-    /**
-     * Dynamically enables focusability on long press so text selection mode and context menu can start
-     * without taking focus or triggering ScrollView scrolling on single taps.
-     *
-     * @return {@code true} if the long click was handled.
-     */
-    @Override
-    public boolean performLongClick() {
-        setFocusable(true);
-        setFocusableInTouchMode(true);
-        requestFocus();
-        return super.performLongClick();
-    }
-
-    /**
-     * Prevents parent ScrollView from automatically scrolling when this view receives focus on long press.
-     *
-     * @param rectangle the rectangle in this view's coordinates.
-     * @param immediate true to scroll immediately without animation.
-     * @return {@code false} to suppress automated focus-driven scrolling.
-     */
-    @Override
-    public boolean requestRectangleOnScreen(Rect rectangle, boolean immediate) {
-        return false;
     }
 
     /**
@@ -205,7 +174,9 @@ public class DefinitionsView extends EditText {
      * Removes highlighting of the focused word.
      */
     public void removeFocusedWordBackground() {
-        getText().removeSpan(getFocusedWordBackground());
+        if (getText() instanceof Spannable) {
+            ((Spannable) getText()).removeSpan(getFocusedWordBackground());
+        }
     }
 
     /**
@@ -215,13 +186,16 @@ public class DefinitionsView extends EditText {
      * @param end   selection end position.
      */
     public void requestFocusAt(int start, int end) {
-        setSelection(start, end);
-        getText().setSpan(
-            getFocusedWordBackground(),
-            start,
-            end,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-        );
+        if (getText() instanceof Spannable) {
+            Spannable spannable = (Spannable) getText();
+            Selection.setSelection(spannable, start, end);
+            spannable.setSpan(
+                getFocusedWordBackground(),
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+        }
     }
 
     /**
@@ -248,8 +222,11 @@ public class DefinitionsView extends EditText {
                 getColorStateList(),
                 null
             );
-            getText().setSpan(bgColorSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            getText().setSpan(txtAppearanceSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            if (getText() instanceof Spannable) {
+                Spannable spannable = (Spannable) getText();
+                spannable.setSpan(bgColorSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spannable.setSpan(txtAppearanceSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
             start = def.indexOf(lowerCaseWord, end);
         }
         return atLeastOneHighlighted;
@@ -455,15 +432,12 @@ public class DefinitionsView extends EditText {
         }
 
         /**
-         * Called when the action mode is destroyed; restores non-focusable state.
+         * Called when the action mode is destroyed.
          *
          * @param mode action mode being destroyed.
          */
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            setFocusable(false);
-            setFocusableInTouchMode(false);
-            clearFocus();
         }
     }
 }

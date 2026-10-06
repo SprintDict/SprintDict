@@ -18,7 +18,7 @@
             android:layout_width="0dip"
             android:layout_height="fill_parent"
             android:layout_weight="1"
-            android:inputType="textPhonetic">
+            android:inputType="text|textAutoComplete">
 
             <requestFocus android:id="@+id/focus_requester" />
         </net.bancer.sparkdict.views.SearchInputField>
@@ -85,7 +85,7 @@
             android:textAppearance="?android:attr/textAppearanceLarge" />
     </LinearLayout>
 
-    <net.bancer.sparkdict.views.LockableScrollView
+    <ScrollView
         android:id="@+id/articles_scroll_view"
         android:clipToPadding="false"
         android:layout_width="fill_parent"
@@ -98,7 +98,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" />
-    </net.bancer.sparkdict.views.LockableScrollView>
+    </ScrollView>
 
     <ProgressBar
         android:id="@+id/search_progress"
