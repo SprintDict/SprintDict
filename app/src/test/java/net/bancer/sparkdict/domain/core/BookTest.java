@@ -92,4 +92,20 @@ public class BookTest {
             "<p><!-- End of definitions section of the dictionary --></p>";
         assertEquals(definitions, lexicalEntry.getDefinitions());
     }
+
+    @Test
+    public void testCustomDisplayName() {
+        try (Book book = new Book(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles)) {
+            assertEquals("GNU Collaborative International Dictionary of English", book.getBookName());
+            assertEquals("GNU Collaborative International Dictionary of English", book.getDisplayName());
+
+            book.getInfo().setCustomName("My Custom Dictionary");
+            assertEquals("My Custom Dictionary", book.getInfo().getCustomName());
+            assertEquals("My Custom Dictionary", book.getDisplayName());
+            assertEquals("GNU Collaborative International Dictionary of English", book.getBookName());
+
+            book.getInfo().setCustomName("");
+            assertEquals("GNU Collaborative International Dictionary of English", book.getDisplayName());
+        }
+    }
 }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Shelf is place where all dictionaries (books) are located.
@@ -16,7 +17,6 @@ public class Shelf {
     private static final String TAG = "Shelf";
 
     private ArrayList<Book> books;
-
 
     /**
      * Array containing titles of enabled dictionaries.
@@ -30,18 +30,37 @@ public class Shelf {
 
     private final DictionaryFiles dictionaryFiles;
 
+    private final Map<String, String> customDictNames;
+
     /**
      * Constructor.
      *
-     * @param enabledDicts string array of the enabled dictionaries titles.
+     * @param enabledDicts   string array of the enabled dictionaries titles.
      * @param dictionaryFiles the DictionaryFiles to associate with this shelf.
-     * @param logger       Logger to write messages to logs.
+     * @param customDictNames map of original book names to custom display names.
+     * @param logger          Logger to write messages to logs.
      */
-    public Shelf(String[] enabledDicts, DictionaryFiles dictionaryFiles, Logger logger) {
+    public Shelf(String[] enabledDicts, DictionaryFiles dictionaryFiles, Map<String, String> customDictNames, Logger logger) {
         this.enabledDicts = enabledDicts;
         this.dictionaryFiles = dictionaryFiles;
+        if (customDictNames != null) {
+            this.customDictNames = customDictNames;
+        } else {
+            this.customDictNames = new HashMap<>();
+        }
         this.logger = logger;
         putBooksOnShelf();
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param enabledDicts   string array of the enabled dictionaries titles.
+     * @param dictionaryFiles the DictionaryFiles to associate with this shelf.
+     * @param logger          Logger to write messages to logs.
+     */
+    public Shelf(String[] enabledDicts, DictionaryFiles dictionaryFiles, Logger logger) {
+        this(enabledDicts, dictionaryFiles, null, logger);
     }
 
     /**
@@ -50,7 +69,7 @@ public class Shelf {
      * @param enabledDicts String array of the enabled dictionaries titles.
      */
     public Shelf(String[] enabledDicts, DictionaryFiles dictionaryFiles) {
-        this(enabledDicts, dictionaryFiles, new ConsoleLogger());
+        this(enabledDicts, dictionaryFiles, null, new ConsoleLogger());
     }
 
     /**
@@ -94,6 +113,10 @@ public class Shelf {
         List<String> ifoPaths = dictionaryFiles.findDictionaryMetaFilePaths();
         for (String ifoPath : ifoPaths) {
             Book dic = new Book(ifoPath, dictionaryFiles, logger);
+            String customName = customDictNames.get(dic.getBookName());
+            if (customName != null && !customName.isEmpty()) {
+                dic.getInfo().setCustomName(customName);
+            }
             booksMap.put(dic.getBookName(), dic);
         }
         return booksMap;

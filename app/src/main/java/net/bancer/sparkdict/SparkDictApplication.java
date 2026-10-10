@@ -10,6 +10,7 @@ import net.bancer.sparkdict.storage.SafDictionaryFilesFactory;
 import net.bancer.sparkdict.storage.SparkDictPreferences;
 
 import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * Custom Application class for SprintDict to manage global state.
@@ -68,7 +69,8 @@ public class SparkDictApplication extends Application {
         DictionaryFiles dictionaryFiles = SafDictionaryFilesFactory.create(this, logger);
         String strEnabledDicts = preferences.getString(getString(R.string.enabled_dicts));
         String[] enabledDicts = strEnabledDicts.split("\\|\\|");
-        shelf = new Shelf(enabledDicts, dictionaryFiles, logger);
+        Map<String, String> customDictNames = preferences.getCustomDictNames();
+        shelf = new Shelf(enabledDicts, dictionaryFiles, customDictNames, logger);
     }
 
     /**

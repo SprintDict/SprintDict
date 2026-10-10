@@ -57,4 +57,7 @@
     <string name="context_menu_copy">Copy</string>
     <string name="context_menu_share">Share</string>
     <string name="share_via">Share via</string>
+    <string name="menu_change_dict_name">Change dictionary name</string>
+    <string name="change_dict_name_dialog_title">Change dictionary name</string>
+    <string name="cancel">Cancel</string>
 </resources>

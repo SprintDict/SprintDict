@@ -229,6 +229,15 @@ public class Book implements Iterable<IndexEntry>, Closeable {
     }
 
     /**
+     * Display name getter.
+     *
+     * @return the custom display name if set and not empty, otherwise the original book title.
+     */
+    public String getDisplayName() {
+        return bookInfo.getDisplayName();
+    }
+
+    /**
      * String representation of the book.
      */
     @Override

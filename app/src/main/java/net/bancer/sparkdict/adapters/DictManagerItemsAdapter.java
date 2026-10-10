@@ -68,7 +68,7 @@ public class DictManagerItemsAdapter extends BaseAdapter implements
         Book book = items.get(position);
 
         CheckBox checkBox = convertView.findViewById(R.id.dict_manager_checkbox);
-        checkBox.setText(book.getBookName());
+        checkBox.setText(book.getDisplayName());
         checkBox.setChecked(book.isEnabled());
 
         ImageView arrowUp = convertView.findViewById(R.id.dict_manager_move_up);
