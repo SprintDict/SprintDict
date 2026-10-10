@@ -50,7 +50,7 @@ public class LexicalEntry {
     public LexicalEntry(String lemma, byte[] dataBlocks, BookInfo bookInfo, Logger logger) {
         this.bookInfo = bookInfo;
         this.lemma = lemma;
-        this.dictTitle = bookInfo.getBookName();
+        this.dictTitle = bookInfo.getDisplayName();
         this.logger = logger;
         String dataTypes = bookInfo.getSameTypeSequence();
         if (dataTypes == null) {

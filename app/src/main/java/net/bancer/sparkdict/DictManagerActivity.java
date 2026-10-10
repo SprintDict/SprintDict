@@ -1,5 +1,6 @@
 package net.bancer.sparkdict;
 
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -13,10 +14,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -117,11 +122,88 @@ public class DictManagerActivity extends BaseActivity {
         ListView listView = findViewById(R.id.dict_list);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(adapter);
+        registerForContextMenu(listView);
 
         rebuildProgressLayout = findViewById(R.id.rebuild_progress_layout);
         rebuildProgressText = findViewById(R.id.rebuild_progress_text);
         rebuildProgress = findViewById(R.id.rebuild_progress);
         applyWindowInsets(findViewById(R.id.dict_manager_top_layout));
+    }
+
+    /**
+     * Called when a context menu for the view is being built.
+     *
+     * <p>Inflates the context menu layout for the dictionary list view.</p>
+     *
+     * @param menu     the context menu that is being built
+     * @param v        the view for which the context menu is being built
+     * @param menuInfo extra information about the item for which the context menu should be shown
+     */
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        if (v.getId() == R.id.dict_list) {
+            getMenuInflater().inflate(R.menu.dict_manager_context, menu);
+        }
+    }
+
+    /**
+     * Called whenever an item in a context menu is selected.
+     *
+     * <p>Handles selection of the "Change dictionary name" menu item by displaying
+     * the name-editing dialog for the targeted dictionary.</p>
+     *
+     * @param item the context menu item that was selected
+     * @return {@code true} if the menu item selection was handled, else {@code false}
+     */
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        if (item.getItemId() == R.id.menu_change_dict_name) {
+            if (info != null) {
+                showChangeDictNameDialog(info.position);
+            }
+            return true;
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    /**
+     * Displays a dialog allowing the user to edit the custom name for the dictionary at position.
+     *
+     * @param position position of the dictionary in the adapter.
+     */
+    private void showChangeDictNameDialog(int position) {
+        Book book = (Book) adapter.getItem(position);
+        if (book == null) {
+            return;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.change_dict_name_dialog_title);
+
+        final EditText input = new EditText(this);
+        input.setSingleLine(true);
+        String currentDisplayName = book.getDisplayName();
+        input.setText(currentDisplayName);
+        if (currentDisplayName != null) {
+            input.setSelection(currentDisplayName.length());
+        }
+
+        FrameLayout container = new FrameLayout(this);
+        int paddingPx = (int) (16 * getResources().getDisplayMetrics().density);
+        container.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
+        container.addView(input);
+        builder.setView(container);
+
+        builder.setPositiveButton(R.string.save, (dialog, which) -> {
+            String newName = input.getText().toString().trim();
+            book.getInfo().setCustomName(newName);
+            preferences.saveCustomDictName(book.getBookName(), newName);
+            adapter.notifyDataSetChanged();
+        });
+        builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.cancel());
+
+        builder.show();
     }
 
     @Override

@@ -38,6 +38,11 @@ public class BookInfo {
     private String bookName;
 
     /**
+     * Custom display name for the dictionary.
+     */
+    private String customName = null;
+
+    /**
      * wordCount is the count of word entries in .idx file
      * <p>
      * required
@@ -239,6 +244,36 @@ public class BookInfo {
      */
     public String getBookName() {
         return bookName;
+    }
+
+    /**
+     * Custom name getter.
+     *
+     * @return custom display name of the dictionary, or `null` if not set.
+     */
+    public String getCustomName() {
+        return customName;
+    }
+
+    /**
+     * Custom name mutator.
+     *
+     * @param customName custom display name for the dictionary.
+     */
+    public void setCustomName(String customName) {
+        this.customName = customName;
+    }
+
+    /**
+     * Display name getter.
+     *
+     * @return custom display name if set and not empty, otherwise original book title.
+     */
+    public String getDisplayName() {
+        if (customName != null && !customName.trim().isEmpty()) {
+            return customName;
+        }
+        return getBookName();
     }
 
     /**

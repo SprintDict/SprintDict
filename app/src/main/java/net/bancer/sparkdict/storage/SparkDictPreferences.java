@@ -3,6 +3,9 @@ package net.bancer.sparkdict.storage;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SparkDictPreferences {
 
     /**
@@ -16,6 +19,11 @@ public class SparkDictPreferences {
      * where "dictionaries" is the name of the selected folder.
      */
     public static final String PREF_DICT_ROOT_URI_NAME = "dict_root_uri";
+
+    /**
+     * Preference key for custom dictionary display names map.
+     */
+    public static final String PREF_CUSTOM_DICT_NAMES = "custom_dict_names";
 
     private final SharedPreferences preferences;
 
@@ -67,5 +75,66 @@ public class SparkDictPreferences {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putFloat(key, value);
         return editor.commit();
+    }
+
+    /**
+     * Gets map of custom dictionary display names from shared preferences.
+     *
+     * @return map of original book names to custom display names.
+     */
+    public Map<String, String> getCustomDictNames() {
+        Map<String, String> result = new HashMap<>();
+        String raw = getString(PREF_CUSTOM_DICT_NAMES);
+        if (raw.isEmpty()) {
+            return result;
+        }
+        String[] pairs = raw.split("\\|\\|");
+        for (String pair : pairs) {
+            String[] parts = pair.split("=>", 2);
+            if (parts.length == 2 && !parts[0].isEmpty()) {
+                result.put(parts[0], parts[1]);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Saves map of custom dictionary display names to shared preferences.
+     *
+     * @param customNames map of original book names to custom display names.
+     * @return `true` if saved successfully, else `false`.
+     */
+    public boolean saveCustomDictNames(Map<String, String> customNames) {
+        StringBuilder sb = new StringBuilder();
+        if (customNames != null) {
+            for (Map.Entry<String, String> entry : customNames.entrySet()) {
+                if (entry.getValue() != null && !entry.getValue().trim().isEmpty()) {
+                    if (sb.length() > 0) {
+                        sb.append("||");
+                    }
+                    sb.append(entry.getKey())
+                        .append("=>")
+                        .append(entry.getValue().trim());
+                }
+            }
+        }
+        return save(PREF_CUSTOM_DICT_NAMES, sb.toString());
+    }
+
+    /**
+     * Saves or removes custom display name for a specific dictionary in shared preferences.
+     *
+     * @param bookName   original book name.
+     * @param customName custom display name to save, or null/empty to clear.
+     * @return `true` if saved successfully, else `false`.
+     */
+    public boolean saveCustomDictName(String bookName, String customName) {
+        Map<String, String> map = getCustomDictNames();
+        if (customName == null || customName.trim().isEmpty()) {
+            map.remove(bookName);
+        } else {
+            map.put(bookName, customName.trim());
+        }
+        return saveCustomDictNames(map);
     }
 }
