@@ -43,6 +43,19 @@ public class LockableScrollView extends ScrollView {
     }
 
     /**
+     * Suppresses automatic rectangle scrolling when a child view requests a rectangle on screen.
+     *
+     * @param child     child view requesting rectangle.
+     * @param rectangle target rectangle in child coordinates.
+     * @param immediate {@code true} for immediate scrolling.
+     * @return {@code false} to suppress automated scrolling.
+     */
+    @Override
+    public boolean requestChildRectangleOnScreen(View child, Rect rectangle, boolean immediate) {
+        return false;
+    }
+
+    /**
      * Updates view group focus state while suppressing automatic scrolling when a child view
      * gains focus to prevent unexpected viewport jumping when audio icons or links are tapped.
      *
@@ -55,18 +68,5 @@ public class LockableScrollView extends ScrollView {
         int oldY = getScrollY();
         super.requestChildFocus(child, focused);
         scrollTo(oldX, oldY);
-    }
-
-    /**
-     * Suppresses automatic rectangle scrolling when a child view requests a rectangle on screen.
-     *
-     * @param child     child view requesting rectangle.
-     * @param rectangle target rectangle in child coordinates.
-     * @param immediate {@code true} for immediate scrolling.
-     * @return {@code false} to suppress automated scrolling.
-     */
-    @Override
-    public boolean requestChildRectangleOnScreen(View child, Rect rectangle, boolean immediate) {
-        return false;
     }
 }
