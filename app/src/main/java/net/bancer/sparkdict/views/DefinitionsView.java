@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.text.Html;
 import android.text.Selection;
@@ -19,6 +20,9 @@ import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewParent;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.core.text.HtmlCompat;
@@ -180,7 +184,8 @@ public class DefinitionsView extends TextView {
     }
 
     /**
-     * Focuses on the specific portion of the definitions and highlights it.
+     * Focuses on the specific portion of the definitions, highlights it,
+     * and scrolls the line containing the word into view.
      *
      * @param start selection start position.
      * @param end   selection end position.
@@ -195,6 +200,35 @@ public class DefinitionsView extends TextView {
                 end,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             );
+            if (getLayout() != null) {
+                int line = getLayout().getLineForOffset(start);
+                Rect rect = new Rect();
+                getLayout().getLineBounds(line, rect);
+                scrollToLine(rect.top);
+            }
+        }
+    }
+
+    /**
+     * Scrolls the parent ScrollView to bring the specified vertical line position into view.
+     *
+     * @param lineTop top Y coordinate of the target line relative to this view.
+     */
+    private void scrollToLine(int lineTop) {
+        ViewParent parent = getParent();
+        int y = lineTop;
+        while (parent != null && !(parent instanceof ScrollView)) {
+            if (parent instanceof View) {
+                y += ((View) parent).getTop();
+                parent = parent.getParent();
+            } else {
+                break;
+            }
+        }
+        if (parent instanceof ScrollView) {
+            final ScrollView scrollView = (ScrollView) parent;
+            final int targetY = Math.max(0, y - 200);
+            scrollView.post(() -> scrollView.smoothScrollTo(0, targetY));
         }
     }
 

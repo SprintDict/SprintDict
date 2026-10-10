@@ -6,6 +6,7 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
 import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.action.ViewActions.replaceText;
+import static androidx.test.espresso.action.ViewActions.swipeUp;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
@@ -26,11 +27,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
+import android.text.style.URLSpan;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -44,6 +47,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import net.bancer.sparkdict.domain.core.Shelf;
 import net.bancer.sparkdict.storage.SparkDictPreferences;
+import net.bancer.sparkdict.views.DefinitionsView;
 import net.bancer.sparkdict.views.SearchInputField;
 
 import org.hamcrest.Description;
@@ -148,6 +152,67 @@ public class SparkDictActivityTest {
         // Assert that "any object in the shape of a sphere" is displayed on the screen
         onView(withText(containsString("any object in the shape of a sphere")))
             .check(matches(isDisplayed()));
+    }
+
+    /**
+     * Verifies that searching "bring", scrolling down, expanding the second dictionary,
+     * scrolling a small amount to the audio icon, and clicking the audio icon does not cause unexpected scrolling.
+     *
+     * @throws InterruptedException if thread sleep is interrupted.
+     */
+    @Test
+    public void testAudioClickDoesNotScrollScreen() throws InterruptedException {
+        Context context = ApplicationProvider.getApplicationContext();
+        SparkDictPreferences preferences = new SparkDictPreferences(context);
+        String key = context.getString(R.string.enabled_dicts);
+        String originalValue = preferences.getString(key);
+        // It is important that Cambridge dictionary in the second one.
+        String testValue = "Mueller7GPL||Cambridge Advanced Learners Dictionary 3th Ed. (En-En)||WordNet||Большая Советская Энциклопедия";
+        preferences.save(key, testValue);
+        SparkDictApplication app = (SparkDictApplication) context;
+        app.refreshShelf();
+        try {
+            // Search "bring"
+            onView(withId(R.id.searchTextView)).perform(typeText("bring"));
+            onView(withId(R.id.searchTextView)).perform(pressImeActionButton());
+            Thread.sleep(2000);
+            // Scroll to the bottom
+            onView(withId(R.id.articles_scroll_view)).perform(swipeUp());
+            Thread.sleep(500);
+            // Explicitly click on the second dictionary title ("Cambridge Advanced Learners Dictionary 3th Ed. (En-En)")
+            onView(allOf(
+                withId(R.id.dict_title),
+                withText(containsString("Cambridge Advanced Learners Dictionary"))
+            )).perform(click());
+            Thread.sleep(1000);
+            // Scroll a small amount (3-5 lines of text, ~200px) until the first audio icon below it becomes visible
+            mActivity.getScenario().onActivity(activity -> {
+                ScrollView scrollView = activity.findViewById(R.id.articles_scroll_view);
+                scrollView.scrollBy(0, 200);
+            });
+            Thread.sleep(500);
+            // Click that audio icon and assert scrollY does not unexpectedly jump
+            mActivity.getScenario().onActivity(activity -> {
+                ScrollView scrollView = activity.findViewById(R.id.articles_scroll_view);
+                int scrollYBefore = scrollView.getScrollY();
+                LinearLayout articlesList = activity.findViewById(R.id.articles_list);
+                if (articlesList.getChildCount() >= 2) {
+                    View secondEntry = articlesList.getChildAt(1);
+                    DefinitionsView defView = secondEntry.findViewById(R.id.definitions_body);
+                    if (defView != null && defView.getText() instanceof Spanned) {
+                        Spanned text = (Spanned) defView.getText();
+                        URLSpan[] spans = text.getSpans(0, text.length(), URLSpan.class);
+                        if (spans.length > 0) {
+                            spans[0].onClick(defView);
+                        }
+                    }
+                }
+                assertEquals(scrollYBefore, scrollView.getScrollY());
+            });
+        } finally {
+            preferences.save(key, originalValue);
+            app.refreshShelf();
+        }
     }
 
     @Test
