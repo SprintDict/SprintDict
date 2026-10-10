@@ -8,7 +8,7 @@ import android.widget.ScrollView;
 
 /**
  * LockableScrollView extends {@link ScrollView} to suppress automatic focus-driven
- * or child-rectangle-driven scrolling while preserving user touch scrolling.
+ * scrolling when child views gain focus, preventing unexpected viewport jumping.
  */
 public class LockableScrollView extends ScrollView {
 
@@ -42,13 +42,31 @@ public class LockableScrollView extends ScrollView {
         super(context, attrs, defStyle);
     }
 
+    /**
+     * Suppresses automatic rectangle scrolling when a child view requests a rectangle on screen.
+     *
+     * @param child     child view requesting rectangle.
+     * @param rectangle target rectangle in child coordinates.
+     * @param immediate {@code true} for immediate scrolling.
+     * @return {@code false} to suppress automated scrolling.
+     */
     @Override
     public boolean requestChildRectangleOnScreen(View child, Rect rectangle, boolean immediate) {
         return false;
     }
 
+    /**
+     * Updates view group focus state while suppressing automatic scrolling when a child view
+     * gains focus to prevent unexpected viewport jumping when audio icons or links are tapped.
+     *
+     * @param child   child view requesting focus.
+     * @param focused focused view.
+     */
     @Override
     public void requestChildFocus(View child, View focused) {
-        // Suppress automatic scrolling when a child view (e.g. DefinitionsView on long press) gains focus
+        int oldX = getScrollX();
+        int oldY = getScrollY();
+        super.requestChildFocus(child, focused);
+        scrollTo(oldX, oldY);
     }
 }

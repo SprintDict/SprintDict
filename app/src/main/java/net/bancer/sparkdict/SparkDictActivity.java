@@ -433,6 +433,10 @@ public class SparkDictActivity extends BaseActivity
         if (controller != null) {
             controller.show(WindowInsets.Type.ime());
         }
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(view, 0);
+        }
     }
 
     /**
