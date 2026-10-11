@@ -146,4 +146,49 @@ public class BookInfoTest {
             + "Path: " + Fixtures.ALL_FIELDS_IFO_FILE + "\n";
         assertEquals(expected, bookInfo.toString());
     }
+
+    @Test
+    public void gettersReturnParsedValues() {
+        BookInfo bookInfo = new BookInfo(Fixtures.ALL_FIELDS_IFO_FILE, dictionaryFiles);
+        assertEquals(123, bookInfo.getSynWordCount());
+        assertEquals("Test Author", bookInfo.getAuthor());
+        assertEquals("test@example.com", bookInfo.getEmail());
+        assertEquals("https://example.com", bookInfo.getWebsite());
+        assertEquals("idxoffsetbits64", bookInfo.getDictType());
+        assertEquals(Fixtures.ALL_FIELDS_IFO_FILE, bookInfo.getFilePath());
+    }
+
+    @Test
+    public void toDetailsStringOmitsNullAndEmptyFields() {
+        BookInfo bookInfo = new BookInfo(Fixtures.GCIDE_IFO_FILE, dictionaryFiles);
+        String expected = "Version: 3.0.0\n"
+            + "Dictionary name: GNU Collaborative International Dictionary of English\n"
+            + "Words: 108121\n"
+            + "Synonyms: 11466\n"
+            + "Index file size: 1932870\n"
+            + "Index offset bits: 32\n"
+            + "Same type sequence: h\n"
+            + "Path: " + Fixtures.GCIDE_IFO_FILE;
+        assertEquals(expected, bookInfo.toDetailsString());
+    }
+
+    @Test
+    public void toDetailsStringIncludesAllPopulatedFields() {
+        BookInfo bookInfo = new BookInfo(Fixtures.ALL_FIELDS_IFO_FILE, dictionaryFiles);
+        String expected = "Version: 2.4.2\n"
+            + "Dictionary name: Test Dictionary\n"
+            + "Words: 456\n"
+            + "Synonyms: 123\n"
+            + "Index file size: 789\n"
+            + "Index offset bits: 64\n"
+            + "Author: Test Author\n"
+            + "Email: test@example.com\n"
+            + "Website: https://example.com\n"
+            + "Description: Test description\n"
+            + "Date: 2026-08-15\n"
+            + "Same type sequence: gm\n"
+            + "Dictionary type: idxoffsetbits64\n"
+            + "Path: " + Fixtures.ALL_FIELDS_IFO_FILE;
+        assertEquals(expected, bookInfo.toDetailsString());
+    }
 }

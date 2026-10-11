@@ -99,6 +99,15 @@ public class BookInfoTest {
     }
 
     @Test
+    public void testToDetailsString() {
+        BookInfo muellerBookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH_RELATIVE, dictionaryFiles);
+        String details = muellerBookInfo.toDetailsString();
+        assertTrue(details.contains("Dictionary name: Mueller7GPL"));
+        assertTrue(details.contains("Words: 46198"));
+        assertTrue(details.contains("Date: 2004.03.09"));
+    }
+
+    @Test
     public void testGetFileBaseName() {
         BookInfo muellerBookInfo = new BookInfo(Mocks.MUELLER_IFO_PATH, dictionaryFiles);
         assertEquals(Mocks.MUELLER_BASE_PATH, muellerBookInfo.getFileBaseName());

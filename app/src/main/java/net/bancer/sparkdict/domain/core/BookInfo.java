@@ -352,7 +352,122 @@ public class BookInfo {
         return getFileBaseName() + Book.DICT_FILE_EXTENSION;
     }
 
+    /**
+     * Synonyms word count getter.
+     *
+     * @return count of synonym entries in .syn file, or 0 if absent.
+     */
+    public int getSynWordCount() {
+        return synWordCount;
+    }
+
+    /**
+     * Author getter.
+     *
+     * @return author of the dictionary.
+     */
+    public String getAuthor() {
+        return author;
+    }
+
+    /**
+     * Email getter.
+     *
+     * @return contact email of the author.
+     */
+    public String getEmail() {
+        return email;
+    }
+
+    /**
+     * Website getter.
+     *
+     * @return website URL of the dictionary or author.
+     */
+    public String getWebsite() {
+        return website;
+    }
+
+    /**
+     * Dictionary type getter.
+     *
+     * @return dictionary type.
+     */
+    public String getDictType() {
+        return dictType;
+    }
+
+    /**
+     * File path getter.
+     *
+     * @return relative path to the .ifo document.
+     */
+    public String getFilePath() {
+        return filePath;
+    }
+
+    /**
+     * Directory path getter.
+     *
+     * @return directory path containing current dictionary files.
+     */
     public String getDirPath() {
         return dirPath;
+    }
+
+    /**
+     * Formats non-empty dictionary metadata into a human-readable string.
+     *
+     * <p>Line breaks in the description field formatted with HTML tags
+     * (e.g., {@code &lt;br&gt;}) are converted to standard newlines.</p>
+     *
+     * @return a formatted string containing non-empty dictionary details.
+     */
+    public String toDetailsString() {
+        StringBuilder result = new StringBuilder();
+        if (version != null && !version.trim().isEmpty()) {
+            result.append("Version: ").append(version.trim()).append("\n");
+        }
+        if (bookName != null && !bookName.trim().isEmpty()) {
+            result.append("Dictionary name: ").append(bookName.trim()).append("\n");
+        }
+        if (wordCount > 0) {
+            result.append("Words: ").append(wordCount).append("\n");
+        }
+        if (synWordCount > 0) {
+            result.append("Synonyms: ").append(synWordCount).append("\n");
+        }
+        if (idxFileSize > 0) {
+            result.append("Index file size: ").append(idxFileSize).append("\n");
+        }
+        if (idxOffsetBits > 0) {
+            result.append("Index offset bits: ").append(idxOffsetBits).append("\n");
+        }
+        if (author != null && !author.trim().isEmpty()) {
+            result.append("Author: ").append(author.trim()).append("\n");
+        }
+        if (email != null && !email.trim().isEmpty()) {
+            result.append("Email: ").append(email.trim()).append("\n");
+        }
+        if (website != null && !website.trim().isEmpty()) {
+            result.append("Website: ").append(website.trim()).append("\n");
+        }
+        if (description != null && !description.trim().isEmpty()) {
+            String formattedDescription = description.replaceAll("(?i)<br\\s*/?>", "\n").trim();
+            result.append("Description: ").append(formattedDescription).append("\n");
+        }
+        if (date != null && !date.trim().isEmpty()) {
+            result.append("Date: ").append(date.trim()).append("\n");
+        }
+        if (sameTypeSequence != null && !sameTypeSequence.trim().isEmpty()) {
+            result.append("Same type sequence: ").append(sameTypeSequence.trim()).append("\n");
+        }
+        if (dictType != null && !dictType.trim().isEmpty()) {
+            result.append("Dictionary type: ").append(dictType.trim()).append("\n");
+        }
+        if (filePath != null && !filePath.trim().isEmpty()) {
+            result.append("Path: ").append(filePath.trim()).append("\n");
+        }
+        return result.toString().trim();
     }
 }
