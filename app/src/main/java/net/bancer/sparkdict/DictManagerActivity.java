@@ -30,6 +30,7 @@ import android.widget.TextView;
 import net.bancer.sparkdict.adapters.DictManagerItemsAdapter;
 import net.bancer.sparkdict.domain.IndexBuilder;
 import net.bancer.sparkdict.domain.core.Book;
+import net.bancer.sparkdict.domain.core.BookInfo;
 import net.bancer.sparkdict.domain.utils.DomainException;
 import net.bancer.sparkdict.storage.SparkDictPreferences;
 
@@ -150,8 +151,8 @@ public class DictManagerActivity extends BaseActivity {
     /**
      * Called whenever an item in a context menu is selected.
      *
-     * <p>Handles selection of the "Change dictionary name" menu item by displaying
-     * the name-editing dialog for the targeted dictionary.</p>
+     * <p>Handles selection of context menu items such as "Details" and
+     * "Change dictionary name".</p>
      *
      * @param item the context menu item that was selected
      * @return {@code true} if the menu item selection was handled, else {@code false}
@@ -159,13 +160,39 @@ public class DictManagerActivity extends BaseActivity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        if (item.getItemId() == R.id.menu_change_dict_name) {
+        if (item.getItemId() == R.id.menu_dict_details) {
+            if (info != null) {
+                showDictDetailsDialog(info.position);
+            }
+            return true;
+        } else if (item.getItemId() == R.id.menu_change_dict_name) {
             if (info != null) {
                 showChangeDictNameDialog(info.position);
             }
             return true;
         }
         return super.onContextItemSelected(item);
+    }
+
+    /**
+     * Displays a dialog showing detailed metadata for the dictionary at position.
+     *
+     * @param position position of the dictionary in the adapter.
+     */
+    private void showDictDetailsDialog(int position) {
+        Book book = (Book) adapter.getItem(position);
+        if (book == null) {
+            return;
+        }
+        BookInfo info = book.getInfo();
+        if (info == null) {
+            return;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.dict_details_dialog_title);
+        builder.setMessage(info.toDetailsString());
+        builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
+        builder.show();
     }
 
     /**

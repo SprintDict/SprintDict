@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/menu_dict_details"
+        android:title="@string/menu_dict_details" />
+    <item
         android:id="@+id/menu_change_dict_name"
         android:title="@string/menu_change_dict_name" />
 </menu>

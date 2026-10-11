@@ -57,6 +57,8 @@
     <string name="context_menu_copy">Копировать</string>
     <string name="context_menu_share">Поделиться</string>
     <string name="share_via">Поделиться с помощью</string>
+    <string name="menu_dict_details">Подробности</string>
+    <string name="dict_details_dialog_title">Сведения о словаре</string>
     <string name="menu_change_dict_name">Изменить название словаря</string>
     <string name="change_dict_name_dialog_title">Изменить название словаря</string>
     <string name="cancel">Отмена</string>
