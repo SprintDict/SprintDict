@@ -27,7 +27,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
-import android.text.style.URLSpan;
+import android.text.style.ClickableSpan;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageButton;
@@ -200,10 +200,10 @@ public class SparkDictActivityTest {
                     View secondEntry = articlesList.getChildAt(1);
                     DefinitionsView defView = secondEntry.findViewById(R.id.definitions_body);
                     if (defView != null && defView.getText() instanceof Spanned) {
-                        Spanned text = (Spanned) defView.getText();
-                        URLSpan[] spans = text.getSpans(0, text.length(), URLSpan.class);
-                        if (spans.length > 0) {
-                            spans[0].onClick(defView);
+                        Spanned definitions = (Spanned) defView.getText();
+                        ClickableSpan[] audioButtons = definitions.getSpans(0, definitions.length(), ClickableSpan.class);
+                        if (audioButtons.length > 0) {
+                            audioButtons[0].onClick(defView);
                         }
                     }
                 }
