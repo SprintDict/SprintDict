@@ -29,6 +29,8 @@ import androidx.core.text.HtmlCompat;
 
 import net.bancer.sparkdict.R;
 import net.bancer.sparkdict.domain.core.LexicalEntry;
+import net.bancer.sparkdict.views.helpers.AudioImageSpan;
+import net.bancer.sparkdict.views.helpers.AudioLinkMovementMethod;
 import net.bancer.sparkdict.views.helpers.DictResourceImageGetter;
 import net.bancer.sparkdict.views.helpers.UnrecognizedTagsHandler;
 
@@ -148,7 +150,38 @@ public class DefinitionsView extends TextView {
      */
     private void init() {
         setTextIsSelectable(true);
+        setMovementMethod(AudioLinkMovementMethod.getInstance());
         setCustomSelectionActionModeCallback(new CustomSelectionActionModeCallback());
+    }
+
+    /**
+     * Called when the text selection changes. Clears selection if only an audio icon is selected.
+     *
+     * @param selStart selection start position.
+     * @param selEnd   selection end position.
+     */
+    @Override
+    protected void onSelectionChanged(int selStart, int selEnd) {
+        super.onSelectionChanged(selStart, selEnd);
+        if (
+            selStart >= 0 &&
+            selEnd > selStart &&
+            getText() instanceof Spanned
+        ) {
+            Spanned spanned = (Spanned) getText();
+            AudioImageSpan[] spans = spanned.getSpans(selStart, selEnd, AudioImageSpan.class);
+            if (spans.length > 0) {
+                int spanStart = spanned.getSpanStart(spans[0]);
+                int spanEnd = spanned.getSpanEnd(spans[0]);
+                if (
+                    selStart == spanStart &&
+                    selEnd == spanEnd &&
+                    getText() instanceof Spannable
+                ) {
+                    Selection.removeSelection((Spannable) getText());
+                }
+            }
+        }
     }
 
     /**
