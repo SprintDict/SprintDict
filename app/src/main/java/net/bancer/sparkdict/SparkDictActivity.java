@@ -41,6 +41,7 @@ import net.bancer.sparkdict.views.LexicalEntriesListView;
 import net.bancer.sparkdict.views.SearchInputField;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -60,6 +61,11 @@ public class SparkDictActivity extends BaseActivity
     private static final String KEY_FOCUSED_WORD = "FOCUSED_WORD";
 
     private static final String KEY_FIND_ON_PAGE_STR = "KEY_FIND_ON_PAGE_STR";
+
+    /**
+     * Key to identify the current history index state after screen orientation change.
+     */
+    private static final String KEY_CURRENT_HISTORY_INDEX = "KEY_CURRENT_HISTORY_INDEX";
 
     /**
      * Key to identify the array of definitions visibility field values of
@@ -95,6 +101,22 @@ public class SparkDictActivity extends BaseActivity
     private ProgressBar searchProgress;
 
     /**
+     * ImageButton for navigating to previous (older) history items.
+     */
+    private ImageButton navPreviousButton;
+
+    /**
+     * ImageButton for navigating to next (newer) history items.
+     */
+    private ImageButton navNextButton;
+
+    /**
+     * Current index pointer into search history list.
+     * Index 0 represents the most recently searched word.
+     */
+    private int currentHistoryIndex = 0;
+
+    /**
      * Called when the activity is first created.
      */
     @Override
@@ -105,6 +127,7 @@ public class SparkDictActivity extends BaseActivity
         initLayout();
         // Check whether we're recreating a previously destroyed instance
         if (savedInstanceState != null) {
+            currentHistoryIndex = savedInstanceState.getInt(KEY_CURRENT_HISTORY_INDEX, 0);
             // Restore value of members from saved state
             @SuppressWarnings("unchecked") final ArrayList<LexicalEntry> data = (ArrayList<LexicalEntry>) getLastNonConfigurationInstance();
             if (data != null && !data.isEmpty()) {
@@ -150,6 +173,7 @@ public class SparkDictActivity extends BaseActivity
         super.onSaveInstanceState(outState);
         saveDefinitionsViewsState(outState);
         saveScrollPosition(outState);
+        outState.putInt(KEY_CURRENT_HISTORY_INDEX, currentHistoryIndex);
         if (findOnPageView.getVisibility() == View.VISIBLE) {
             saveFindOnPageBarState(outState);
         }
@@ -162,31 +186,34 @@ public class SparkDictActivity extends BaseActivity
     }
 
     private void processIntent(Intent intent) {
+        int historyIndex = intent.getIntExtra(RecentHistoryActivity.EXTRA_HISTORY_INDEX, -1);
         // Handle system text selection lookup
         if (Intent.ACTION_PROCESS_TEXT.equals(intent.getAction())) {
             CharSequence text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
             if (text != null) {
-                doSearch(text.toString());
+                doSearch(text.toString(), historyIndex);
             }
         }
         // Handle share intent lookup
         if (Intent.ACTION_SEND.equals(intent.getAction()) && "text/plain".equals(intent.getType())) {
             String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
             if (sharedText != null) {
-                doSearch(sharedText);
+                doSearch(sharedText, historyIndex);
             }
         }
         // Handle search action
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            doSearch(query);
+            if (query != null) {
+                doSearch(query, historyIndex);
+            }
         }
         // Handle lexical entry hyperlink click
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Uri data = intent.getData();
             if (data != null) {
                 String query = data.getSchemeSpecificPart().substring(2);
-                doSearch(query);
+                doSearch(query, historyIndex);
             }
         }
         // Handle searchable dialogue suggestion click
@@ -194,7 +221,7 @@ public class SparkDictActivity extends BaseActivity
             Uri data = intent.getData();
             if (data != null) {
                 String query = data.getLastPathSegment();
-                doSearch(query);
+                doSearch(query, historyIndex);
             }
         }
     }
@@ -214,6 +241,16 @@ public class SparkDictActivity extends BaseActivity
 
         ImageButton searchButton = findViewById(R.id.searchButton);
         searchButton.setOnClickListener(this);
+
+        navPreviousButton = findViewById(R.id.nav_previous_btn);
+        if (navPreviousButton != null) {
+            navPreviousButton.setOnClickListener(this);
+        }
+
+        navNextButton = findViewById(R.id.nav_next_btn);
+        if (navNextButton != null) {
+            navNextButton.setOnClickListener(this);
+        }
 
         searchProgress = findViewById(R.id.search_progress);
 
@@ -384,8 +421,52 @@ public class SparkDictActivity extends BaseActivity
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.searchButton) {
+        int id = v.getId();
+        if (id == R.id.searchButton) {
             doSearch(inputTextView.getText().toString());
+        } else if (id == R.id.nav_previous_btn) {
+            navigateHistoryPrevious();
+        } else if (id == R.id.nav_next_btn) {
+            navigateHistoryNext();
+        }
+    }
+
+    /**
+     * Navigates to the previous (older) search history word.
+     */
+    private void navigateHistoryPrevious() {
+        LinkedList<String> history = getRecentHistory();
+        if (currentHistoryIndex < history.size() - 1) {
+            currentHistoryIndex++;
+            String word = history.get(currentHistoryIndex);
+            doSearch(word, currentHistoryIndex);
+        }
+    }
+
+    /**
+     * Navigates to the next (newer) search history word.
+     */
+    private void navigateHistoryNext() {
+        LinkedList<String> history = getRecentHistory();
+        if (currentHistoryIndex > 0 && currentHistoryIndex < history.size()) {
+            currentHistoryIndex--;
+            String word = history.get(currentHistoryIndex);
+            doSearch(word, currentHistoryIndex);
+        }
+    }
+
+    /**
+     * Updates enabled/disabled visual state of navigation bar buttons.
+     */
+    private void updateNavButtonsState() {
+        LinkedList<String> history = getRecentHistory();
+        if (navPreviousButton != null) {
+            boolean canGoPrevious = currentHistoryIndex < history.size() - 1;
+            navPreviousButton.setEnabled(canGoPrevious);
+        }
+        if (navNextButton != null) {
+            boolean canGoNext = currentHistoryIndex > 0;
+            navNextButton.setEnabled(canGoNext);
         }
     }
 
@@ -406,10 +487,29 @@ public class SparkDictActivity extends BaseActivity
     }
 
     private void doSearch(String searchStr) {
+        doSearch(searchStr, -1);
+    }
+
+    /**
+     * Initiates a search for searchStr in all enabled dictionaries.
+     *
+     * @param searchStr    the string query to search.
+     * @param historyIndex position in search history if navigating history,
+     *                     or -1 if performing a new user search.
+     */
+    private void doSearch(String searchStr, int historyIndex) {
+        boolean isHistoryNavigation = false;
+        if (historyIndex >= 0) {
+            currentHistoryIndex = historyIndex;
+            isHistoryNavigation = true;
+        } else {
+            currentHistoryIndex = 0;
+        }
         lexicalEntriesListView.removeAllViews();
         searchProgress.setVisibility(View.VISIBLE);
-        searchExecutor.execute(new SearchWorker(searchStr));
+        searchExecutor.execute(new SearchWorker(searchStr, isHistoryNavigation));
         hideKeyboard(inputTextView);
+        updateNavButtonsState();
     }
 
     /**
@@ -552,17 +652,24 @@ public class SparkDictActivity extends BaseActivity
         private final String lemma;
 
         /**
+         * Indicates whether the search was triggered by history navigation.
+         */
+        private final boolean isHistoryNavigation;
+
+        /**
          * Indicates whether the search found at least one lexical entry.
          */
         private Boolean result;
 
         /**
-         * Creates a search worker for the specified search term.
+         * Creates a search worker for the specified search term and history navigation mode.
          *
-         * @param lemma search term to look up in the enabled dictionaries.
+         * @param lemma               search term to look up in the enabled dictionaries.
+         * @param isHistoryNavigation `true` if search was triggered by history navigation.
          */
-        private SearchWorker(String lemma) {
+        private SearchWorker(String lemma, boolean isHistoryNavigation) {
             this.lemma = lemma;
+            this.isHistoryNavigation = isHistoryNavigation;
         }
 
         /**
@@ -594,7 +701,9 @@ public class SparkDictActivity extends BaseActivity
                         articles.add(entry);
                         publishProgress(entry);
                         if (!atLeastOneEntryFound) {
-                            SparkDictActivity.this.addToRecentHistory(lemma);
+                            if (!isHistoryNavigation) {
+                                SparkDictActivity.this.addToRecentHistory(lemma);
+                            }
                             atLeastOneEntryFound = true;
                         }
                     }
@@ -638,6 +747,7 @@ public class SparkDictActivity extends BaseActivity
             }
             // hide progress spinner
             searchProgress.setVisibility(View.GONE);
+            updateNavButtonsState();
         }
     }
 }

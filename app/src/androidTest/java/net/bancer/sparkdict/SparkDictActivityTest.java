@@ -75,15 +75,89 @@ public class SparkDictActivityTest {
         mActivity.getScenario().onActivity(activity -> {
             SearchInputField mInputTextView = activity.findViewById(R.id.searchTextView);
             ImageButton mSearchButton = activity.findViewById(R.id.searchButton);
+            ImageButton navPrevButton = activity.findViewById(R.id.nav_previous_btn);
+            ImageButton navNextButton = activity.findViewById(R.id.nav_next_btn);
             ProgressBar mSearchProgress = activity.findViewById(R.id.search_progress);
             LinearLayout mArticlesList = activity.findViewById(R.id.articles_list);
             Shelf mShelf = activity.getShelf();
             assertNotNull(mInputTextView.getAdapter());
             assertNotNull(mSearchButton);
+            assertNotNull(navPrevButton);
+            assertNotNull(navNextButton);
             assertNotNull(mSearchProgress);
             assertNotNull(mArticlesList);
             assertEquals(0, mArticlesList.getChildCount());
             assertNotNull(mShelf);
+        });
+    }
+
+    /**
+     * Verifies that search history navigation using Previous and Next buttons
+     * functions correctly and preserves recent search history without re-ordering.
+     *
+     * @throws InterruptedException if thread sleep is interrupted.
+     */
+    @Test
+    public void testSearchHistoryNavigation() throws InterruptedException {
+        Context context = ApplicationProvider.getApplicationContext();
+        SparkDictApplication app = (SparkDictApplication) context;
+        app.refreshShelf();
+
+        // Clear history before test
+        mActivity.getScenario().onActivity(activity ->
+            activity.getRecentHistory().clear()
+        );
+
+        // Search "abacus"
+        onView(withId(R.id.searchTextView)).perform(replaceText("abacus"));
+        onView(withId(R.id.searchButton)).perform(click());
+        Thread.sleep(1500);
+
+        // Search "ball"
+        onView(withId(R.id.searchTextView)).perform(replaceText("ball"));
+        onView(withId(R.id.searchButton)).perform(click());
+        Thread.sleep(1500);
+
+        // Search "go"
+        onView(withId(R.id.searchTextView)).perform(replaceText("go"));
+        onView(withId(R.id.searchButton)).perform(click());
+        Thread.sleep(1500);
+
+        // Verify history contains ["go", "ball", "abacus"]
+        mActivity.getScenario().onActivity(activity -> {
+            assertEquals(3, activity.getRecentHistory().size());
+            assertEquals("go", activity.getRecentHistory().get(0));
+            assertEquals("ball", activity.getRecentHistory().get(1));
+            assertEquals("abacus", activity.getRecentHistory().get(2));
+        });
+
+        // Click Previous button -> navigate to "ball"
+        onView(withId(R.id.nav_previous_btn)).perform(click());
+        Thread.sleep(1500);
+
+        // Verify history order is unchanged
+        mActivity.getScenario().onActivity(activity -> {
+            assertEquals(3, activity.getRecentHistory().size());
+            assertEquals("go", activity.getRecentHistory().get(0));
+            assertEquals("ball", activity.getRecentHistory().get(1));
+            assertEquals("abacus", activity.getRecentHistory().get(2));
+        });
+
+        // Click Previous button -> navigate to "abacus"
+        onView(withId(R.id.nav_previous_btn)).perform(click());
+        Thread.sleep(1500);
+
+        // Click Next button -> navigate back to "ball"
+        onView(withId(R.id.nav_next_btn)).perform(click());
+        Thread.sleep(1500);
+
+        // Final verification that history list was never changed or duplicated
+        mActivity.getScenario().onActivity(activity -> {
+            assertEquals(3, activity.getRecentHistory().size());
+            assertEquals("go", activity.getRecentHistory().get(0));
+            assertEquals("ball", activity.getRecentHistory().get(1));
+            assertEquals("abacus", activity.getRecentHistory().get(2));
+            activity.getRecentHistory().clear();
         });
     }
 
@@ -369,5 +443,7 @@ public class SparkDictActivityTest {
             }
         }
         editor.commit();
+        SparkDictApplication app = (SparkDictApplication) context;
+        app.refreshShelf();
     }
 }
