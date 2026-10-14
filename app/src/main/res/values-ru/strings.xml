@@ -62,4 +62,6 @@
     <string name="menu_change_dict_name">Изменить название словаря</string>
     <string name="change_dict_name_dialog_title">Изменить название словаря</string>
     <string name="cancel">Отмена</string>
+    <string name="nav_previous">Предыдущее слово</string>
+    <string name="nav_next">Следующее слово</string>
 </resources>

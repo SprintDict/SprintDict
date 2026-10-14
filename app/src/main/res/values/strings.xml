@@ -62,4 +62,6 @@
     <string name="menu_change_dict_name">Change dictionary name</string>
     <string name="change_dict_name_dialog_title">Change dictionary name</string>
     <string name="cancel">Cancel</string>
+    <string name="nav_previous">Previous word</string>
+    <string name="nav_next">Next word</string>
 </resources>

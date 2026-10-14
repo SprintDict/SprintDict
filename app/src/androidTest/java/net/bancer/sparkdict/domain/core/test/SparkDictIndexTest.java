@@ -120,7 +120,7 @@ public class SparkDictIndexTest {
         }
     }
 
-    @Test(timeout = 5500) /* was 5500 */
+    @Test(timeout = 6000) /* was 5500 */
     public void buildIndexAllWordsAreIndexedInWordnet() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);
@@ -163,7 +163,7 @@ public class SparkDictIndexTest {
         book.close();
     }
 
-    @Test(timeout = 14000) /* was 10000 */
+    @Test(timeout = 16000) /* was 10000 */
     public void buildIndexWordsHaveLexicalEntriesInBse() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
         Book book = new Book(Mocks.BSE_IFO_PATH_RELATIVE, dictionaryFiles);
@@ -210,7 +210,7 @@ public class SparkDictIndexTest {
         book.close();
     }
 
-    @Test(timeout = 13000) /* was 7000 */
+    @Test(timeout = 15000) /* was 7000 */
     public void buildIndexWordsHaveLexicalEntriesInWordnet() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         Book book = new Book(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);

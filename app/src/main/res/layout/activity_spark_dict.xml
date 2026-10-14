@@ -8,9 +8,43 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/navigation_bar_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/black"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="0dp"
+        android:paddingTop="0dp"
+        android:paddingEnd="0dp"
+        android:paddingBottom="0dp">
+
+        <ImageButton
+            android:id="@+id/nav_previous_btn"
+            style="?android:attr/buttonStyle"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="0dp"
+            android:contentDescription="@string/nav_previous"
+            android:enabled="false"
+            android:src="@drawable/ic_nav_previous" />
+
+        <ImageButton
+            android:id="@+id/nav_next_btn"
+            style="?android:attr/buttonStyle"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="0dp"
+            android:contentDescription="@string/nav_next"
+            android:enabled="false"
+            android:src="@drawable/ic_nav_next" />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/search_layout"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/navigation_bar_layout"
         android:orientation="horizontal">
 
         <net.bancer.sparkdict.views.SearchInputField

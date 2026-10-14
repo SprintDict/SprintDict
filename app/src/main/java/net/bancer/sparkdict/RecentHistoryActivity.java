@@ -21,6 +21,11 @@ import androidx.core.app.NavUtils;
 public class RecentHistoryActivity extends BaseActivity implements OnItemClickListener {
 
     /**
+     * Extra key used to pass the selected history index to SparkDictActivity.
+     */
+    public static final String EXTRA_HISTORY_INDEX = "net.bancer.sparkdict.HISTORY_INDEX";
+
+    /**
      * List of all recently searched items.
      */
     private ListView listView;
@@ -76,12 +81,18 @@ public class RecentHistoryActivity extends BaseActivity implements OnItemClickLi
     /**
      * Handles a click on an item from the history list. Passes the selected
      * word or phrase to SparkDictActivity as a target for search action.
+     *
+     * @param parent   the AdapterView where the click happened.
+     * @param v        the view within the AdapterView that was clicked.
+     * @param position the position of the view in the adapter.
+     * @param id       the row id of the item that was clicked.
      */
     @Override
     public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
         String word = listView.getAdapter().getItem(position).toString();
         Intent intent = new Intent(Intent.ACTION_SEARCH);
         intent.putExtra(SearchManager.QUERY, word);
+        intent.putExtra(EXTRA_HISTORY_INDEX, position);
         intent.setClass(this, SparkDictActivity.class);
         startActivity(intent);
     }
