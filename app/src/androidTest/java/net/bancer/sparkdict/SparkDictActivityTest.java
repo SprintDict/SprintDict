@@ -77,6 +77,10 @@ public class SparkDictActivityTest {
             ImageButton mSearchButton = activity.findViewById(R.id.searchButton);
             ImageButton navPrevButton = activity.findViewById(R.id.nav_previous_btn);
             ImageButton navNextButton = activity.findViewById(R.id.nav_next_btn);
+            ImageButton navHistButton = activity.findViewById(R.id.nav_history_btn);
+            ImageButton navExpandButton = activity.findViewById(R.id.nav_expand_all_btn);
+            ImageButton navCollapseButton = activity.findViewById(R.id.nav_collapse_all_btn);
+            ImageButton navFindButton = activity.findViewById(R.id.nav_find_on_page_btn);
             ProgressBar mSearchProgress = activity.findViewById(R.id.search_progress);
             LinearLayout mArticlesList = activity.findViewById(R.id.articles_list);
             Shelf mShelf = activity.getShelf();
@@ -84,11 +88,48 @@ public class SparkDictActivityTest {
             assertNotNull(mSearchButton);
             assertNotNull(navPrevButton);
             assertNotNull(navNextButton);
+            assertNotNull(navHistButton);
+            assertNotNull(navExpandButton);
+            assertNotNull(navCollapseButton);
+            assertNotNull(navFindButton);
             assertNotNull(mSearchProgress);
             assertNotNull(mArticlesList);
             assertEquals(0, mArticlesList.getChildCount());
             assertNotNull(mShelf);
         });
+    }
+
+    /**
+     * Verifies that tapping the History navigation button launches RecentHistoryActivity.
+     */
+    @Test
+    public void testHistoryButtonOpensRecentHistory() {
+        Intents.init();
+        try {
+            onView(withId(R.id.nav_history_btn)).perform(click());
+            intended(hasComponent(RecentHistoryActivity.class.getName()));
+        } finally {
+            Intents.release();
+        }
+    }
+
+    /**
+     * Verifies that tapping the Expand All and Collapse All navigation buttons
+     * invokes expandAll and collapseAll actions without errors.
+     */
+    @Test
+    public void testExpandAllAndCollapseAllNavButtons() {
+        onView(withId(R.id.nav_expand_all_btn)).perform(click());
+        onView(withId(R.id.nav_collapse_all_btn)).perform(click());
+    }
+
+    /**
+     * Verifies that tapping the Find on page navigation button displays the find-on-page layout bar.
+     */
+    @Test
+    public void testFindOnPageNavButton() {
+        onView(withId(R.id.nav_find_on_page_btn)).perform(click());
+        onView(withId(R.id.find_on_page_layout)).check(matches(isDisplayed()));
     }
 
     /**

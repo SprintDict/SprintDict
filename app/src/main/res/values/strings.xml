@@ -64,4 +64,5 @@
     <string name="cancel">Cancel</string>
     <string name="nav_previous">Previous word</string>
     <string name="nav_next">Next word</string>
+    <string name="nav_history">History</string>
 </resources>
