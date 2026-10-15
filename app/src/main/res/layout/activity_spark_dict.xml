@@ -38,6 +38,42 @@
             android:contentDescription="@string/nav_next"
             android:enabled="false"
             android:src="@drawable/ic_nav_next" />
+
+        <ImageButton
+            android:id="@+id/nav_history_btn"
+            style="?android:attr/buttonStyle"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="0dp"
+            android:contentDescription="@string/nav_history"
+            android:src="@drawable/ic_nav_history" />
+
+        <ImageButton
+            android:id="@+id/nav_expand_all_btn"
+            style="?android:attr/buttonStyle"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="0dp"
+            android:contentDescription="@string/menu_expand_all"
+            android:src="@drawable/ic_nav_expand_all" />
+
+        <ImageButton
+            android:id="@+id/nav_collapse_all_btn"
+            style="?android:attr/buttonStyle"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="0dp"
+            android:contentDescription="@string/menu_collapse_all"
+            android:src="@drawable/ic_nav_collapse_all" />
+
+        <ImageButton
+            android:id="@+id/nav_find_on_page_btn"
+            style="?android:attr/buttonStyle"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="0dp"
+            android:contentDescription="@string/menu_find_on_page"
+            android:src="@drawable/ic_nav_find_on_page" />
     </LinearLayout>
 
     <LinearLayout

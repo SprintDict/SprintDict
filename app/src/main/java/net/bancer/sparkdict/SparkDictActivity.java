@@ -228,29 +228,11 @@ public class SparkDictActivity extends BaseActivity
 
     private void initLayout() {
         setContentView(R.layout.activity_spark_dict);
-
-        inputTextView = findViewById(R.id.searchTextView);
-        inputTextView.setOnKeyListener(this);
-
-        indexEntriesAdapter = new IndexEntriesAdapter(this, new Vector<>(), logger);
-        inputTextView.setAdapter(indexEntriesAdapter);
-        inputTextView.addTextChangedListener(indexEntriesAdapter);
-        // Start to display a list of suggestions after 1 letter typed
-        inputTextView.setThreshold(1);
-        inputTextView.setOnItemClickListener(this);
+        initNavigationBar();
+        initSearchInput();
 
         ImageButton searchButton = findViewById(R.id.searchButton);
         searchButton.setOnClickListener(this);
-
-        navPreviousButton = findViewById(R.id.nav_previous_btn);
-        if (navPreviousButton != null) {
-            navPreviousButton.setOnClickListener(this);
-        }
-
-        navNextButton = findViewById(R.id.nav_next_btn);
-        if (navNextButton != null) {
-            navNextButton.setOnClickListener(this);
-        }
 
         searchProgress = findViewById(R.id.search_progress);
 
@@ -262,6 +244,50 @@ public class SparkDictActivity extends BaseActivity
         findOnPageInput = findViewById(R.id.find_on_page_edit_text);
         findOnPageView = findViewById(R.id.find_on_page_layout);
         applyWindowInsets(findViewById(R.id.spark_dict_activity_top_layout));
+    }
+
+    /**
+     * Initialises navigation bar buttons.
+     */
+    private void initNavigationBar() {
+        navPreviousButton = findViewById(R.id.nav_previous_btn);
+        if (navPreviousButton != null) {
+            navPreviousButton.setOnClickListener(this);
+        }
+        navNextButton = findViewById(R.id.nav_next_btn);
+        if (navNextButton != null) {
+            navNextButton.setOnClickListener(this);
+        }
+        ImageButton navHistoryButton = findViewById(R.id.nav_history_btn);
+        if (navHistoryButton != null) {
+            navHistoryButton.setOnClickListener(this);
+        }
+        ImageButton navExpandAllButton = findViewById(R.id.nav_expand_all_btn);
+        if (navExpandAllButton != null) {
+            navExpandAllButton.setOnClickListener(this);
+        }
+        ImageButton navCollapseAllButton = findViewById(R.id.nav_collapse_all_btn);
+        if (navCollapseAllButton != null) {
+            navCollapseAllButton.setOnClickListener(this);
+        }
+        ImageButton navFindOnPageButton = findViewById(R.id.nav_find_on_page_btn);
+        if (navFindOnPageButton != null) {
+            navFindOnPageButton.setOnClickListener(this);
+        }
+    }
+
+    /**
+     * Initialises search input field.
+     */
+    private void initSearchInput() {
+        inputTextView = findViewById(R.id.searchTextView);
+        inputTextView.setOnKeyListener(this);
+        indexEntriesAdapter = new IndexEntriesAdapter(this, new Vector<>(), logger);
+        inputTextView.setAdapter(indexEntriesAdapter);
+        inputTextView.addTextChangedListener(indexEntriesAdapter);
+        // Start to display a list of suggestions after 1 letter typed
+        inputTextView.setThreshold(1);
+        inputTextView.setOnItemClickListener(this);
     }
 
     /**
@@ -360,7 +386,7 @@ public class SparkDictActivity extends BaseActivity
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         int itemId = item.getItemId();
         if (itemId == R.id.menu_recent_history) {
-            startActivity(new Intent(this, RecentHistoryActivity.class));
+            openRecentHistory();
             return true;
         }
         if (itemId == R.id.menu_find_on_page) {
@@ -428,7 +454,22 @@ public class SparkDictActivity extends BaseActivity
             navigateHistoryPrevious();
         } else if (id == R.id.nav_next_btn) {
             navigateHistoryNext();
+        } else if (id == R.id.nav_history_btn) {
+            openRecentHistory();
+        } else if (id == R.id.nav_expand_all_btn) {
+            lexicalEntriesListView.expandAll();
+        } else if (id == R.id.nav_collapse_all_btn) {
+            lexicalEntriesListView.collapseAll();
+        } else if (id == R.id.nav_find_on_page_btn) {
+            openFindOnPageBar();
         }
+    }
+
+    /**
+     * Opens the Recent History activity.
+     */
+    private void openRecentHistory() {
+        startActivity(new Intent(this, RecentHistoryActivity.class));
     }
 
     /**

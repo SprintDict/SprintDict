@@ -64,4 +64,5 @@
     <string name="cancel">Отмена</string>
     <string name="nav_previous">Предыдущее слово</string>
     <string name="nav_next">Следующее слово</string>
+    <string name="nav_history">История</string>
 </resources>
