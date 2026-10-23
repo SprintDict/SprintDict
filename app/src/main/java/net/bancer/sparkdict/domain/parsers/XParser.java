@@ -24,6 +24,16 @@ public class XParser extends MParser {
     private static final String A_TAG_CLOSE = "</a>";
     private static final String ABR_OPEN_TAG = "<abr>";
     private static final String ABR_CLOSE_TAG = "</abr>";
+
+    /**
+     * Opening 'co' tag.
+     */
+    private static final String CO_OPEN_TAG = "<co>";
+
+    /**
+     * Closing 'co' tag.
+     */
+    private static final String CO_CLOSE_TAG = "</co>";
     private static final String EX_OPEN_TAG = "<ex>";
     private static final String EX_CLOSE_TAG = "</ex>";
     private static final String KREF_OPEN_TAG = "<kref>";
@@ -53,6 +63,11 @@ public class XParser extends MParser {
 
     private static final String COLOR_GREY = "#808080";
 
+    /**
+     * Coral colour hex value for 'co' tag formatting.
+     */
+    private static final String COLOR_CORAL = "#FF7F50";
+
     private static final Map<String, String> HTML_COLORS = new HashMap<>();
 
     static {
@@ -81,7 +96,7 @@ public class XParser extends MParser {
      * 			<c>				<font>
      * 			</c>			</font>
      * 			<c ...>			<font ...>
-     * 			<co>			<font color="#E0E0E0"> (gray)
+     * 			<co>			<font color="#FF7F50"> (coral)
      * 			</co>			</font>
      * 			<abr>			<font color="#FFCCFF"> (pink)
      * 			</abr>			</font>
@@ -97,6 +112,7 @@ public class XParser extends MParser {
         parseKTags(result);
         parseExTags(result);
         parseAbrTags(result);
+        parseCoTags(result);
         parseCTags(result);
         parseRrefTags(result);
 
@@ -110,6 +126,16 @@ public class XParser extends MParser {
     private void parseAbrTags(StringBuffer strBuffer) {
         String openTagReplacement = String.format(FONT_TAG_OPEN, ABBREVIATION_COLOR);
         parseHTMLTagPair(strBuffer, ABR_OPEN_TAG, ABR_CLOSE_TAG, openTagReplacement, FONT_TAG_CLOSE);
+    }
+
+    /**
+     * Replaces &lt;co&gt; and &lt;/co&gt; tags with HTML font tag specifying coral colour.
+     *
+     * @param strBuffer string buffer to be processed.
+     */
+    private void parseCoTags(StringBuffer strBuffer) {
+        String openTagReplacement = String.format(FONT_TAG_OPEN, COLOR_CORAL);
+        parseHTMLTagPair(strBuffer, CO_OPEN_TAG, CO_CLOSE_TAG, openTagReplacement, FONT_TAG_CLOSE);
     }
 
     private void parseExTags(StringBuffer strBuffer) {
@@ -167,7 +193,7 @@ public class XParser extends MParser {
         while (openTagPos > -1 && closeTagPos > openTagPos) {
             String innerString = strBuffer.substring(openTagPos + RREF_OPEN_TAG.length(), closeTagPos);
             String data;
-            if (innerString.endsWith(".wav")) {
+            if (innerString.endsWith(".wav") || innerString.endsWith(".ogg")) {
                 data = String.format(OBJECT_TAG, innerString, innerString);
             } else {
                 data = String.format(IMG_TAG, innerString) + BR_TAG;
