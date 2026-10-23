@@ -12,6 +12,7 @@
     <string name="menu_manage_dictionaries">Manage Dictionaries</string>
     <string name="menu_dict_path">Path To Dictionaries</string>
     <string name="menu_rebuild_index">Rebuild index</string>
+    <string name="menu_build_index">Build index</string>
     <string name="set_dict_path">SprintDict - Set Dictionaries Path</string>
     <string name="prompt_to_set_path">No dictionaries path is set.\nWould you like to select one now?</string>
     <string name="yes">Yes</string>

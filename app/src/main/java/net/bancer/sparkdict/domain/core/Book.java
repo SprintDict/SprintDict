@@ -316,6 +316,15 @@ public class Book implements Iterable<IndexEntry>, Closeable {
     }
 
     /**
+     * Checks whether the .sparkdict.idx file exists for this book.
+     *
+     * @return {@code true} if the .sparkdict.idx file exists, else {@code false}.
+     */
+    public boolean hasSparkDictIndex() {
+        return dictionaryFiles.exists(bookInfo.getFileBaseName() + SparkDictIndex.FILE_EXTENSION);
+    }
+
+    /**
      * Returns an Iterator for index entries, used for exact-lemma searches
      * (see {@link #getLexicalEntry(String)}).
      *

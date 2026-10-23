@@ -1,8 +1,12 @@
 package net.bancer.sparkdict.domain;
 
+import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.IObserver;
 import net.bancer.sparkdict.domain.core.Shelf;
 import net.bancer.sparkdict.domain.utils.DomainException;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Builds dictionary indexes in a background thread and reports progress,
@@ -12,36 +16,52 @@ public class IndexBuilder extends Thread implements IObserver {
 
     private static final int MESSAGES_TIME_STEP = 100;
     private final Listener listener;
-    private final Shelf shelf;
+    private final List<Book> books;
     private int articlesIndexed = 0;
     private int totalArticles = 0;
     private long previousMessageTime = 0;
 
     /**
-     * Creates an index builder for the specified shelf.
+     * Creates an index builder for all dictionaries in the specified shelf.
      *
-     * @param listener listener that receives indexing progress, errors and * completion notifications
+     * @param listener listener that receives indexing progress, errors and
+     *                 completion notifications
      * @param shelf    shelf containing the dictionaries whose indexes are to be built
      */
     public IndexBuilder(Listener listener, Shelf shelf) {
         this.listener = listener;
-        this.shelf = shelf;
+        this.books = shelf.getBooks();
     }
 
     /**
-     * Builds indexes for all dictionaries in the shelf and reports progress and
+     * Creates an index builder for a single dictionary.
+     *
+     * @param listener listener that receives indexing progress, errors and
+     *                 completion notifications
+     * @param book     dictionary whose index is to be built
+     */
+    public IndexBuilder(Listener listener, Book book) {
+        this.listener = listener;
+        this.books = Collections.singletonList(book);
+    }
+
+    /**
+     * Builds indexes for the assigned dictionaries and reports progress and
      * errors through the listener.
      */
     @Override
     public void run() {
-        totalArticles = shelf.getTotalLexicalEntriesQuantity();
+        totalArticles = 0;
+        int count = books.size();
+        for (int i = 0; i < count; i++) {
+            totalArticles += books.get(i).getLexicalEntriesQuantity();
+        }
         listener.onProgress(articlesIndexed, totalArticles);
-        int count = shelf.getBooks().size();
         for (int i = 0; i < count; i++) {
             try {
-                shelf.getBooks().get(i).buildSparkDictIndex(this);
+                books.get(i).buildSparkDictIndex(this);
             } catch (DomainException e) {
-                String dictionaryName = shelf.getBooks().get(i).getBookName();
+                String dictionaryName = books.get(i).getBookName();
                 listener.onIndexingError(dictionaryName, e);
             }
         }

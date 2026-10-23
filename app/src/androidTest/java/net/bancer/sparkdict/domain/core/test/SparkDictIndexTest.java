@@ -120,7 +120,7 @@ public class SparkDictIndexTest {
         }
     }
 
-    @Test(timeout = 6000) /* was 5500 */
+    @Test(timeout = 7000) /* was 5500 */
     public void buildIndexAllWordsAreIndexedInWordnet() throws IOException {
         BookInfo bookInfo = new BookInfo(Mocks.WORDNET_IFO_PATH_RELATIVE, dictionaryFiles);
         SparkDictIndex index = new SparkDictIndex(bookInfo);

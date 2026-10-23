@@ -6,4 +6,7 @@
     <item
         android:id="@+id/menu_change_dict_name"
         android:title="@string/menu_change_dict_name" />
+    <item
+        android:id="@+id/menu_build_index"
+        android:title="@string/menu_build_index" />
 </menu>

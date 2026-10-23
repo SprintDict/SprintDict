@@ -134,7 +134,9 @@ public class DictManagerActivity extends BaseActivity {
     /**
      * Called when a context menu for the view is being built.
      *
-     * <p>Inflates the context menu layout for the dictionary list view.</p>
+     * <p>Inflates the context menu layout for the dictionary list view and sets
+     * the title of the build/rebuild index menu item depending on whether the
+     * selected dictionary already has an index file.</p>
      *
      * @param menu     the context menu that is being built
      * @param v        the view for which the context menu is being built
@@ -145,14 +147,26 @@ public class DictManagerActivity extends BaseActivity {
         super.onCreateContextMenu(menu, v, menuInfo);
         if (v.getId() == R.id.dict_list) {
             getMenuInflater().inflate(R.menu.dict_manager_context, menu);
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+            if (info != null) {
+                Book book = (Book) adapter.getItem(info.position);
+                MenuItem buildIndexItem = menu.findItem(R.id.menu_build_index);
+                if (buildIndexItem != null && book != null) {
+                    if (book.hasSparkDictIndex()) {
+                        buildIndexItem.setTitle(R.string.menu_rebuild_index);
+                    } else {
+                        buildIndexItem.setTitle(R.string.menu_build_index);
+                    }
+                }
+            }
         }
     }
 
     /**
      * Called whenever an item in a context menu is selected.
      *
-     * <p>Handles selection of context menu items such as "Details" and
-     * "Change dictionary name".</p>
+     * <p>Handles selection of context menu items such as "Details",
+     * "Change dictionary name", and "Build index / Rebuild index".</p>
      *
      * @param item the context menu item that was selected
      * @return {@code true} if the menu item selection was handled, else {@code false}
@@ -168,6 +182,14 @@ public class DictManagerActivity extends BaseActivity {
         } else if (item.getItemId() == R.id.menu_change_dict_name) {
             if (info != null) {
                 showChangeDictNameDialog(info.position);
+            }
+            return true;
+        } else if (item.getItemId() == R.id.menu_build_index) {
+            if (info != null) {
+                Book book = (Book) adapter.getItem(info.position);
+                if (book != null) {
+                    startSingleIndexBuild(book);
+                }
             }
             return true;
         }
@@ -399,6 +421,22 @@ public class DictManagerActivity extends BaseActivity {
             getString(R.string.rebuilding_index_progress, 0, 0)
         );
         progressThread = new IndexBuilder(new IndexBuilderProgressUIUpdater(this), getShelf());
+        progressThread.start();
+    }
+
+    /**
+     * Starts building the dictionary index for a single dictionary and displays
+     * the rebuild progress UI.
+     *
+     * @param book the dictionary whose index is to be built
+     */
+    private void startSingleIndexBuild(Book book) {
+        rebuildProgressLayout.setVisibility(View.VISIBLE);
+        rebuildProgress.setProgress(0);
+        rebuildProgressText.setText(
+            getString(R.string.rebuilding_index_progress, 0, 0)
+        );
+        progressThread = new IndexBuilder(new IndexBuilderProgressUIUpdater(this), book);
         progressThread.start();
     }
 
