@@ -8,6 +8,7 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.anything;
 import static org.junit.Assert.assertNotNull;
 
@@ -82,5 +83,22 @@ public class DictManagerActivityTest {
             .check(matches(isDisplayed()));
         onView(withText(android.R.string.ok))
             .perform(click());
+    }
+
+    /**
+     * Verifies that long-clicking a dictionary item opens the context menu
+     * showing the build or rebuild index option, and clicking it displays the rebuild progress layout.
+     */
+    @Test
+    public void test30SelectingBuildIndexFromContextMenu() {
+        onData(anything())
+            .inAdapterView(withId(R.id.dict_list))
+            .atPosition(0)
+            .perform(longClick());
+        onView(anyOf(withText(R.string.menu_rebuild_index), withText(R.string.menu_build_index)))
+            .check(matches(isDisplayed()))
+            .perform(click());
+        onView(withId(R.id.rebuild_progress_layout))
+            .check(matches(isDisplayed()));
     }
 }

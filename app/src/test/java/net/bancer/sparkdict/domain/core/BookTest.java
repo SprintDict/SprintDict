@@ -2,6 +2,7 @@ package net.bancer.sparkdict.domain.core;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import net.bancer.sparkdict.Fixtures;
 import net.bancer.sparkdict.domain.utils.DomainException;
@@ -106,6 +107,13 @@ public class BookTest {
 
             book.getInfo().setCustomName("");
             assertEquals("GNU Collaborative International Dictionary of English", book.getDisplayName());
+        }
+    }
+
+    @Test
+    public void testHasSparkDictIndex() {
+        try (Book book = new Book(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles)) {
+            assertTrue(book.hasSparkDictIndex());
         }
     }
 }

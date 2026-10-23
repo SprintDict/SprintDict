@@ -12,6 +12,7 @@
     <string name="menu_manage_dictionaries">Управление словарями</string>
     <string name="menu_dict_path">Путь к словарям</string>
     <string name="menu_rebuild_index">Индексировать</string>
+    <string name="menu_build_index">Индексировать</string>
     <string name="set_dict_path">SprintDict - Указать путь к словарям</string>
     <string name="prompt_to_set_path">Месторасположение словарей неизвестно.\nВы хотите указать его сейчас?</string>
     <string name="yes">Да</string>
