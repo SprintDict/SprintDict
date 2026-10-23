@@ -8,15 +8,27 @@ import net.bancer.sparkdict.domain.parsers.XParser;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Android integration tests for {@link XParser}.
+ */
 public class XParserTest {
 
+    /**
+     * Parser instance under test.
+     */
     private IParser parser;
 
+    /**
+     * Sets up test fixtures before each test execution.
+     */
     @Before
     public void setUp() {
         parser = new XParser();
     }
 
+    /**
+     * Tests parsing of various XDXF tags including &lt;k&gt;, &lt;c&gt;, &lt;abr&gt;, &lt;rref&gt;.
+     */
     @Test
     public void testParse() {
         String raw = "<k>abacus</k>" +
@@ -66,5 +78,25 @@ public class XParserTest {
             "[Weighing, measuring and counting devices]" +
             "</blockquote></blockquote></blockquote>";
         assertEquals(parsed, parser.parse(raw.getBytes()));
+    }
+
+    /**
+     * Tests parsing of &lt;co&gt; tags into HTML font tags with coral color (#FF7F50).
+     */
+    @Test
+    public void testParseCoTags() {
+        String raw = "<co>commentary text</co>";
+        String expected = "<font color=\"#FF7F50\">commentary text</font>";
+        assertEquals(expected, parser.parse(raw.getBytes()));
+    }
+
+    /**
+     * Tests parsing of multiple &lt;co&gt; tags in a single string.
+     */
+    @Test
+    public void testParseMultipleCoTags() {
+        String raw = "First <co>note 1</co> second <co>note 2</co> end";
+        String expected = "First <font color=\"#FF7F50\">note 1</font> second <font color=\"#FF7F50\">note 2</font> end";
+        assertEquals(expected, parser.parse(raw.getBytes()));
     }
 }
