@@ -149,6 +149,23 @@ public class Shelf {
     }
 
     /**
+     * Retrieves a list of enabled dictionaries that are missing their .sparkdict.idx index files.
+     *
+     * @return a list of enabled books that do not have a .sparkdict.idx index file.
+     */
+    public List<Book> getBooksMissingSparkDictIndex() {
+        List<Book> result = new ArrayList<>();
+        int count = books.size();
+        for (int i = 0; i < count; i++) {
+            Book book = books.get(i);
+            if (book.isEnabled() && !book.hasSparkDictIndex()) {
+                result.add(book);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Closes the resources held by all books in the shelf.
      *
      * <p>If a book has no open resources, its resource clean-up method does nothing.</p>

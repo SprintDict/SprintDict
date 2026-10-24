@@ -77,4 +77,13 @@ public class ShelfTest {
         Shelf shelf = new Shelf(enabledDicts, dictionaryFiles);
         shelf.closeResources();
     }
+
+    @Test
+    public void testGetBooksMissingSparkDictIndex() {
+        String[] enabledDicts = new String[]{"GNU Collaborative International Dictionary of English"};
+        Shelf shelf = new Shelf(enabledDicts, dictionaryFiles);
+        java.util.List<Book> missing = shelf.getBooksMissingSparkDictIndex();
+        assertEquals(1, missing.size());
+        assertEquals("GNU Collaborative International Dictionary of English", missing.get(0).getBookName());
+    }
 }

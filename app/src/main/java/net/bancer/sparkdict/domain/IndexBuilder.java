@@ -10,12 +10,12 @@ import java.util.List;
 
 /**
  * Builds dictionary indexes in a background thread and reports progress,
- * errors and completion through a {@link Listener}, decoupled from any UI.
+ * errors and completion through a {@link IndexBuilderListener}, decoupled from any UI.
  */
 public class IndexBuilder extends Thread implements IObserver {
 
     private static final int MESSAGES_TIME_STEP = 100;
-    private final Listener listener;
+    private final IndexBuilderListener listener;
     private final List<Book> books;
     private int articlesIndexed = 0;
     private int totalArticles = 0;
@@ -28,7 +28,7 @@ public class IndexBuilder extends Thread implements IObserver {
      *                 completion notifications
      * @param shelf    shelf containing the dictionaries whose indexes are to be built
      */
-    public IndexBuilder(Listener listener, Shelf shelf) {
+    public IndexBuilder(IndexBuilderListener listener, Shelf shelf) {
         this.listener = listener;
         this.books = shelf.getBooks();
     }
@@ -40,9 +40,21 @@ public class IndexBuilder extends Thread implements IObserver {
      *                 completion notifications
      * @param book     dictionary whose index is to be built
      */
-    public IndexBuilder(Listener listener, Book book) {
+    public IndexBuilder(IndexBuilderListener listener, Book book) {
         this.listener = listener;
         this.books = Collections.singletonList(book);
+    }
+
+    /**
+     * Creates an index builder for a specific list of dictionaries.
+     *
+     * @param listener listener that receives indexing progress, errors and
+     *                 completion notifications
+     * @param books    list of dictionaries whose indexes are to be built
+     */
+    public IndexBuilder(IndexBuilderListener listener, List<Book> books) {
+        this.listener = listener;
+        this.books = books;
     }
 
     /**
@@ -85,34 +97,5 @@ public class IndexBuilder extends Thread implements IObserver {
         if (articlesIndexed >= totalArticles) {
             listener.onIndexingComplete();
         }
-    }
-
-    /**
-     * Receives updates from the index building process. Implementations are
-     * responsible for any UI/notification concerns; IndexBuilder itself
-     * has no knowledge of Android UI.
-     */
-    public interface Listener {
-
-        /**
-         * Receives an indexing progress update.
-         *
-         * @param indexed number of articles indexed so far
-         * @param total   total number of articles to be indexed
-         */
-        void onProgress(int indexed, int total);
-
-        /**
-         * Reports an error that occurred while indexing a dictionary.
-         *
-         * @param dictionaryName name of the dictionary that could not be indexed
-         * @param e              exception that caused the indexing failure
-         */
-        void onIndexingError(String dictionaryName, DomainException e);
-
-        /**
-         * Reports that indexing has completed.
-         */
-        void onIndexingComplete();
     }
 }

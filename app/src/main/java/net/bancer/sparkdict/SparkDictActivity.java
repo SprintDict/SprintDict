@@ -100,6 +100,12 @@ public class SparkDictActivity extends BaseActivity
 
     private ProgressBar searchProgress;
 
+    private LinearLayout rebuildProgressLayout;
+
+    private TextView rebuildProgressText;
+
+    private ProgressBar rebuildProgress;
+
     /**
      * ImageButton for navigating to previous (older) history items.
      */
@@ -230,6 +236,7 @@ public class SparkDictActivity extends BaseActivity
         setContentView(R.layout.activity_spark_dict);
         initNavigationBar();
         initSearchInput();
+        initRebuildIndexProgressBar();
 
         ImageButton searchButton = findViewById(R.id.searchButton);
         searchButton.setOnClickListener(this);
@@ -244,6 +251,38 @@ public class SparkDictActivity extends BaseActivity
         findOnPageInput = findViewById(R.id.find_on_page_edit_text);
         findOnPageView = findViewById(R.id.find_on_page_layout);
         applyWindowInsets(findViewById(R.id.spark_dict_activity_top_layout));
+    }
+
+    /**
+     * Initialises the progress bar for rebuilding the index.
+     */
+    private void initRebuildIndexProgressBar() {
+        rebuildProgressLayout = findViewById(R.id.rebuild_progress_layout);
+        rebuildProgressText = findViewById(R.id.rebuild_progress_text);
+        rebuildProgress = findViewById(R.id.rebuild_progress);
+    }
+
+    /**
+     * Updates the index rebuilding progress bar and progress text on the main UI thread.
+     *
+     * <p>Hides the progress layout when all entries have been indexed.</p>
+     *
+     * @param indexed number of entries indexed so far
+     * @param total   total number of entries to be indexed
+     */
+    public void updateIndexRebuildProgressBar(int indexed, int total) {
+        if (rebuildProgressLayout == null || rebuildProgress == null || rebuildProgressText == null) {
+            return;
+        }
+        rebuildProgressLayout.setVisibility(View.VISIBLE);
+        rebuildProgress.setMax(total);
+        rebuildProgress.setProgress(indexed);
+        rebuildProgressText.setText(
+            getString(R.string.rebuilding_index_progress, indexed, total)
+        );
+        if (indexed >= total) {
+            rebuildProgressLayout.setVisibility(View.GONE);
+        }
     }
 
     /**
