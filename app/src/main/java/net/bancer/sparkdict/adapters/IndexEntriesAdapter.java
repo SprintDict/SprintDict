@@ -10,6 +10,8 @@ import android.widget.Filter;
 
 import net.bancer.sparkdict.R;
 import net.bancer.sparkdict.SparkDictActivity;
+import net.bancer.sparkdict.domain.IndexBuilder;
+import net.bancer.sparkdict.domain.IndexBuilderListener;
 import net.bancer.sparkdict.domain.core.Book;
 import net.bancer.sparkdict.domain.core.IndexEntry;
 import net.bancer.sparkdict.domain.core.Shelf;
@@ -21,6 +23,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -182,9 +185,16 @@ public class IndexEntriesAdapter extends ArrayAdapter<String> implements TextWat
         /**
          * Retrieves suggestions for the current search text from each enabled book
          * and publishes the results to the main application thread.
+         *
+         * <p>Checks whether any enabled dictionaries are missing their index files.
+         * If missing, builds those index files with progress reporting before
+         * looking up suggestions.</p>
          */
         @Override
         public void run() {
+            if (!buildMissingIndexes()) {
+                return;
+            }
             ArrayList<Book> books = shelf.getBooks();
             for (int i = 0; i < books.size(); i++) {
                 Book book = books.get(i);
@@ -193,6 +203,30 @@ public class IndexEntriesAdapter extends ArrayAdapter<String> implements TextWat
                     publishProgress(suggestions);
                 }
             }
+        }
+
+        /**
+         * Checks whether any enabled dictionaries in the shelf are missing their
+         * index files and builds those index files synchronously with progress reporting.
+         *
+         * @return {@code true} if index building completed or was not needed,
+         *         or {@code false} if the current thread was interrupted while waiting.
+         */
+        private boolean buildMissingIndexes() {
+            List<Book> booksMissingIndexes = shelf.getBooksMissingSparkDictIndex();
+            if (booksMissingIndexes.isEmpty()) {
+                return true;
+            }
+            IndexBuilderListener listener = new SparkDictActivityIndexBuilderListener(getContext());
+            IndexBuilder builder = new IndexBuilder(listener, booksMissingIndexes);
+            builder.start();
+            try {
+                builder.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+            return true;
         }
 
         /**

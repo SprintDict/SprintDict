@@ -45,7 +45,7 @@ public class IndexBuilderTest {
         AtomicInteger lastIndexed = new AtomicInteger(0);
         AtomicInteger totalArticles = new AtomicInteger(0);
 
-        IndexBuilder.Listener listener = new IndexBuilder.Listener() {
+        IndexBuilderListener listener = new IndexBuilderListener() {
             @Override
             public void onProgress(int indexed, int total) {
                 lastIndexed.set(indexed);
@@ -65,6 +65,49 @@ public class IndexBuilderTest {
 
         try (Book book = new Book(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles)) {
             IndexBuilder indexBuilder = new IndexBuilder(listener, book);
+            indexBuilder.start();
+            boolean finished = latch.await(10, TimeUnit.SECONDS);
+            assertTrue("Index building timed out", finished);
+            assertTrue("Indexing complete was not triggered", complete.get());
+            assertEquals(book.getLexicalEntriesQuantity(), totalArticles.get());
+            assertEquals(totalArticles.get(), lastIndexed.get());
+        }
+    }
+
+    /**
+     * Verifies that building an index for a list of books completes successfully
+     * and reports progress through the listener.
+     *
+     * @throws InterruptedException if the thread is interrupted while waiting
+     */
+    @Test
+    public void testBuildIndexForListOfBooks() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicBoolean complete = new AtomicBoolean(false);
+        AtomicInteger lastIndexed = new AtomicInteger(0);
+        AtomicInteger totalArticles = new AtomicInteger(0);
+
+        IndexBuilderListener listener = new IndexBuilderListener() {
+            @Override
+            public void onProgress(int indexed, int total) {
+                lastIndexed.set(indexed);
+                totalArticles.set(total);
+            }
+
+            @Override
+            public void onIndexingError(String dictionaryName, DomainException e) {
+            }
+
+            @Override
+            public void onIndexingComplete() {
+                complete.set(true);
+                latch.countDown();
+            }
+        };
+
+        try (Book book = new Book(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles)) {
+            java.util.List<Book> books = java.util.Collections.singletonList(book);
+            IndexBuilder indexBuilder = new IndexBuilder(listener, books);
             indexBuilder.start();
             boolean finished = latch.await(10, TimeUnit.SECONDS);
             assertTrue("Index building timed out", finished);

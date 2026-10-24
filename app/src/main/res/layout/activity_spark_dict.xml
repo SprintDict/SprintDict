@@ -155,13 +155,35 @@
             android:textAppearance="?android:attr/textAppearanceLarge" />
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/rebuild_progress_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/search_layout"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/rebuild_progress_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal" />
+
+        <ProgressBar
+            android:id="@+id/rebuild_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
     <net.bancer.sparkdict.views.LockableScrollView
         android:id="@+id/articles_scroll_view"
         android:clipToPadding="false"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/find_on_page_layout"
-        android:layout_below="@id/search_layout">
+        android:layout_below="@id/rebuild_progress_layout">
 
         <net.bancer.sparkdict.views.LexicalEntriesListView
             android:id="@+id/articles_list"
@@ -175,7 +197,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/find_on_page_layout"
-        android:layout_below="@id/search_layout"
+        android:layout_below="@id/rebuild_progress_layout"
         android:layout_centerHorizontal="true"
         android:visibility="gone" />
 
