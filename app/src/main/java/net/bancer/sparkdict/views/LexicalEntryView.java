@@ -9,7 +9,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -26,9 +25,11 @@ import java.util.concurrent.Executors;
  * LexicalEntryView displays all parts of the lexical entry and handles
  * different transformations of them.
  */
-public class LexicalEntryView extends LinearLayout implements
-    View.OnFocusChangeListener, View.OnTouchListener {
+public class LexicalEntryView extends LinearLayout implements View.OnClickListener {
 
+    /**
+     * Tag for logging.
+     */
     private static final String TAG = "LexicalEntryView";
 
     /**
@@ -104,6 +105,7 @@ public class LexicalEntryView extends LinearLayout implements
      */
     public LexicalEntryView(Context context) {
         super(context);
+        init();
     }
 
     /**
@@ -114,6 +116,7 @@ public class LexicalEntryView extends LinearLayout implements
      */
     public LexicalEntryView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     /**
@@ -123,11 +126,12 @@ public class LexicalEntryView extends LinearLayout implements
      * @param lexicalEntry lexical entry domain object.
      */
     public LexicalEntryView(Context context, LexicalEntry lexicalEntry) {
-        super(context);
-        init();
+        this(context);
         this.lexicalEntry = lexicalEntry;
-        dictTitleView.setText(lexicalEntry.getDictTitle());
-        lemmaView.setText(lexicalEntry.getLemma());
+        if (lexicalEntry != null) {
+            dictTitleView.setText(lexicalEntry.getDictTitle());
+            lemmaView.setText(lexicalEntry.getLemma());
+        }
     }
 
     /**
@@ -138,20 +142,19 @@ public class LexicalEntryView extends LinearLayout implements
         inflater.inflate(R.layout.lexical_entry, this, true);
 
         expanderView = findViewById(R.id.expander_icon);
-        expanderView.setOnTouchListener(this);
+        expanderView.setOnClickListener(this);
 
         dictTitleView = findViewById(R.id.dict_title);
-        dictTitleView.setOnTouchListener(this);
+        dictTitleView.setOnClickListener(this);
 
         lemmaView = findViewById(R.id.article_title);
-        lemmaView.setOnTouchListener(this);
 
         definitionsView = findViewById(R.id.definitions_body);
         definitionsProgressContainer = findViewById(R.id.definitions_progress_container);
 
-        definitionsView.setOnClickListener((OnClickListener) getContext());
-        definitionsView.setOnFocusChangeListener(this);
-        definitionsView.setOnTouchListener(this);
+        if (getContext() instanceof OnClickListener) {
+            definitionsView.setOnClickListener((OnClickListener) getContext());
+        }
         // make links clickable
         definitionsView.setMovementMethod(LinkMovementMethod.getInstance());//Causes problems with action bar for editing/copying/pasting
 
@@ -176,15 +179,12 @@ public class LexicalEntryView extends LinearLayout implements
      */
     private void saveFontSizesToSharedPreferences() {
         SparkDictPreferences preferences = new SparkDictPreferences(getContext());
-        TextView dictTitleView = findViewById(R.id.dict_title);
         if (dictTitleView != null) {
             preferences.save(getContext().getString(R.string.pref_dict_title_font_size), dictTitleView.getTextSize());
         }
-        TextView articleTitleView = findViewById(R.id.article_title);
-        if (articleTitleView != null) {
-            preferences.save(getContext().getString(R.string.pref_article_title_font_size), articleTitleView.getTextSize());
+        if (lemmaView != null) {
+            preferences.save(getContext().getString(R.string.pref_article_title_font_size), lemmaView.getTextSize());
         }
-        TextView definitionsView = findViewById(R.id.definitions_body);
         if (definitionsView != null) {
             preferences.save(getContext().getString(R.string.pref_definitions_font_size), definitionsView.getTextSize());
         }
@@ -248,27 +248,32 @@ public class LexicalEntryView extends LinearLayout implements
         return view.requestFocus();
     }
 
+    /**
+     * Handles click events on view elements.
+     *
+     * @param v view that was clicked.
+     */
     @Override
-    public void onFocusChange(View v, boolean hasFocus) {
+    public void onClick(View v) {
+        if (v.getId() == R.id.dict_title || v.getId() == R.id.expander_icon) {
+            toggleExpanded();
+        }
     }
 
     /**
-     * Expands/collapses definitions of this lexical entry after a touch on the
-     * dictionary title.
+     * Toggles the expanded/collapsed state of definitions.
      */
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        final int action = event.getAction();
-        if (v.getId() == R.id.dict_title || v.getId() == R.id.expander_icon) {
-            if (action == MotionEvent.ACTION_UP) {
-                if (definitionsView.getVisibility() == View.VISIBLE) {
-                    collapse();
-                } else if (definitionsView.getVisibility() == View.GONE) {
-                    expand();
-                }
-            }
+    private void toggleExpanded() {
+        switch (definitionsView.getVisibility()) {
+            case View.VISIBLE:
+                collapse();
+                break;
+            case View.GONE:
+                expand();
+                break;
+            default:
+                break;
         }
-        return false;
     }
 
     /**
@@ -295,7 +300,7 @@ public class LexicalEntryView extends LinearLayout implements
             definitionsView.setVisibility(View.VISIBLE);
             return;
         }
-        if (definitionsLoading) {
+        if (definitionsLoading || lexicalEntry == null) {
             return;
         }
         definitionsLoading = true;
@@ -328,11 +333,11 @@ public class LexicalEntryView extends LinearLayout implements
      * @return        `true` if at least one word occurrence was found.
      */
     public boolean highlightWord(String word) {
-        if (definitionsLoaded && definitionsView.getVisibility() == View.VISIBLE) {
-            highlightingDone = true;
-            return definitionsView.highlightAllInstancesOfWord(word);
+        if (!definitionsLoaded || definitionsView.getVisibility() != View.VISIBLE) {
+            return false;
         }
-        return false;
+        highlightingDone = true;
+        return definitionsView.highlightAllInstancesOfWord(word);
     }
 
     /**
@@ -380,11 +385,10 @@ public class LexicalEntryView extends LinearLayout implements
      * in this string, -1 if the specified string is not a substring.
      */
     public int findNextIndexOf(String word, int start) {
-        if (definitionsView.getVisibility() == View.VISIBLE) {
-            return definitionsView.getText().toString().indexOf(word, start);
-        } else {
+        if (definitionsView.getVisibility() != View.VISIBLE) {
             return -1;
         }
+        return definitionsView.getText().toString().indexOf(word, start);
     }
 
     /**
@@ -398,11 +402,10 @@ public class LexicalEntryView extends LinearLayout implements
      * in this string, -1 if the specified string is not a substring.
      */
     public int findLastIndexOf(String word, int start) {
-        if (definitionsView.getVisibility() == View.VISIBLE) {
-            return definitionsView.getText().toString().lastIndexOf(word, start);
-        } else {
+        if (definitionsView.getVisibility() != View.VISIBLE) {
             return -1;
         }
+        return definitionsView.getText().toString().lastIndexOf(word, start);
     }
 
     /**
