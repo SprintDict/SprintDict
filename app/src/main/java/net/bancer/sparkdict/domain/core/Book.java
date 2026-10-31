@@ -325,6 +325,20 @@ public class Book implements Iterable<IndexEntry>, Closeable {
     }
 
     /**
+     * Warms up the dictionary by pre-opening the suggestion search
+     * iterator and its underlying search file channels in advance.
+     */
+    public void warmUp() {
+        if (!enabled || !hasSparkDictIndex()) {
+            return;
+        }
+        IndexEntriesIterator iterator = getSuggestionsIterator();
+        if (iterator != null && iterator.hasNext()) {
+            iterator.next();
+        }
+    }
+
+    /**
      * Returns an Iterator for index entries, used for exact-lemma searches
      * (see {@link #getLexicalEntry(String)}).
      *
@@ -402,6 +416,9 @@ public class Book implements Iterable<IndexEntry>, Closeable {
      */
     public Vector<IndexEntry> getSuggestions(String prefix) {
         Vector<IndexEntry> result = new Vector<>(IndexEntriesIterator.MAX);
+        if (prefix == null || prefix.isEmpty()) {
+            return result;
+        }
         IndexEntriesIterator iterator = getSuggestionsIterator();
         iterator.reset();
         if (!iterator.hasNext()) {

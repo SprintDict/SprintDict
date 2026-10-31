@@ -128,8 +128,8 @@ public class SparkDictActivity extends BaseActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Warm up dictionaries to improve the initial search performance.
-        getShelf();
+        // Warm up dictionaries to improve initial search performance.
+        getShelf().warmUp();
         initLayout();
         // Check whether we're recreating a previously destroyed instance
         if (savedInstanceState != null) {

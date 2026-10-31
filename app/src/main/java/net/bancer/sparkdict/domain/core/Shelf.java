@@ -166,6 +166,15 @@ public class Shelf {
     }
 
     /**
+     * Warms up all enabled dictionaries by pre-opening their suggestion search handles.
+     */
+    public void warmUp() {
+        for (Book book : books) {
+            book.warmUp();
+        }
+    }
+
+    /**
      * Closes the resources held by all books in the shelf.
      *
      * <p>If a book has no open resources, its resource clean-up method does nothing.</p>
