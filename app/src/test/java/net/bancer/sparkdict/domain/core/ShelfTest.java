@@ -86,4 +86,13 @@ public class ShelfTest {
         assertEquals(1, missing.size());
         assertEquals("GNU Collaborative International Dictionary of English", missing.get(0).getBookName());
     }
+
+    @Test
+    public void testWarmUp() {
+        String[] enabledDicts = new String[]{"GNU Collaborative International Dictionary of English"};
+        Shelf shelf = new Shelf(enabledDicts, dictionaryFiles);
+        shelf.warmUp();
+        assertEquals(4, shelf.getBooks().size());
+        shelf.closeResources();
+    }
 }

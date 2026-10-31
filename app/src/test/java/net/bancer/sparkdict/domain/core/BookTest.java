@@ -116,4 +116,29 @@ public class BookTest {
             assertTrue(book.hasSparkDictIndex());
         }
     }
+
+    @Test
+    public void testWarmUp() {
+        try (Book book = new Book(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles)) {
+            book.setEnabled(true);
+            book.warmUp();
+            Vector<IndexEntry> suggestions = book.getSuggestions("abac");
+            assertNotNull(suggestions);
+            assertEquals(11, suggestions.size());
+        }
+    }
+
+    @Test
+    public void testGetSuggestionsWithEmptyOrNullPrefix() {
+        try (Book book = new Book(Fixtures.GCIDE_IFO_FILE_RELATIVE, dictionaryFiles)) {
+            book.setEnabled(true);
+            Vector<IndexEntry> emptySuggestions = book.getSuggestions("");
+            assertNotNull(emptySuggestions);
+            assertTrue(emptySuggestions.isEmpty());
+
+            Vector<IndexEntry> nullSuggestions = book.getSuggestions(null);
+            assertNotNull(nullSuggestions);
+            assertTrue(nullSuggestions.isEmpty());
+        }
+    }
 }
